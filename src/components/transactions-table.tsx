@@ -1,0 +1,301 @@
+"use client"
+
+import React, { useState } from "react"
+import {
+  IconSearch,
+  IconFilter,
+  IconDownload,
+  IconDotsVertical,
+  IconArrowUpRight,
+  IconArrowDownRight,
+  IconCircleCheck,
+  IconClock,
+  IconAlertTriangle,
+  IconBuildingBank,
+  IconCreditCard,
+  IconCash,
+  IconReceipt,
+  IconEye,
+  IconFileExport,
+  IconTrash,
+} from "@tabler/icons-react"
+
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+export interface Transaction {
+  id: string
+  reference: string
+  description: string
+  category: string
+  account: string
+  type: "credit" | "debit"
+  amount: number
+  status: "completed" | "pending" | "failed"
+  date: string
+}
+
+const mockTransactions: Transaction[] = [
+  {
+    id: "TXN-9021",
+    reference: "REF-2026-0801",
+    description: "Enterprise SaaS Subscription Payment",
+    category: "Revenue",
+    account: "Operating Vault - Chase",
+    type: "credit",
+    amount: 14500.0,
+    status: "completed",
+    date: "2026-08-05",
+  },
+  {
+    id: "TXN-9022",
+    reference: "REF-2026-0802",
+    description: "AWS Cloud Infrastructure Hosting",
+    category: "Infrastructure",
+    account: "Corporate Credit - SVB",
+    type: "debit",
+    amount: 3240.5,
+    status: "completed",
+    date: "2026-08-04",
+  },
+  {
+    id: "TXN-9023",
+    reference: "REF-2026-0803",
+    description: "Executive Payroll Direct Deposit",
+    category: "Payroll",
+    account: "Payroll Account - BoA",
+    type: "debit",
+    amount: 48500.0,
+    status: "completed",
+    date: "2026-08-03",
+  },
+  {
+    id: "TXN-9024",
+    reference: "REF-2026-0804",
+    description: "Client Retainer Settlement - Acme Corp",
+    category: "Revenue",
+    account: "Operating Vault - Chase",
+    type: "credit",
+    amount: 28000.0,
+    status: "pending",
+    date: "2026-08-03",
+  },
+  {
+    id: "TXN-9025",
+    reference: "REF-2026-0805",
+    description: "Office Supplies & Hardware Lease",
+    category: "Operations",
+    account: "Petty Cash Reserve",
+    type: "debit",
+    amount: 1250.75,
+    status: "completed",
+    date: "2026-08-02",
+  },
+  {
+    id: "TXN-9026",
+    reference: "REF-2026-0806",
+    description: "Cross-border Vendor Wire Transfer",
+    category: "Vendor Payment",
+    account: "International Wire Account",
+    type: "debit",
+    amount: 9800.0,
+    status: "failed",
+    date: "2026-08-01",
+  },
+]
+
+export function TransactionsTable() {
+  const [search, setSearch] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
+
+  const filteredTransactions = mockTransactions.filter((txn) => {
+    const matchesSearch =
+      txn.description.toLowerCase().includes(search.toLowerCase()) ||
+      txn.reference.toLowerCase().includes(search.toLowerCase()) ||
+      txn.id.toLowerCase().includes(search.toLowerCase()) ||
+      txn.category.toLowerCase().includes(search.toLowerCase())
+
+    const matchesStatus =
+      statusFilter === "all" || txn.status === statusFilter
+
+    return matchesSearch && matchesStatus
+  })
+
+  return (
+    <div className="space-y-4">
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2 flex-1 max-w-md">
+          <div className="relative w-full">
+            <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Filter by description, reference, ID or category..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-9 text-sm"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[140px] h-9 text-xs">
+              <IconFilter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="failed">Failed</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs">
+            <IconDownload className="h-3.5 w-3.5" />
+            <span>Export CSV</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="rounded-xl border bg-card overflow-hidden shadow-xs">
+        <Table>
+          <TableHeader className="bg-muted/40">
+            <TableRow>
+              <TableHead className="w-[120px]">TXN ID</TableHead>
+              <TableHead>Description & Reference</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Ledger Account</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredTransactions.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <IconReceipt className="h-8 w-8 text-muted-foreground/50" />
+                    <p className="text-sm font-medium">No matching transactions found</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredTransactions.map((txn) => (
+                <TableRow key={txn.id} className="hover:bg-muted/30 transition-colors">
+                  <TableCell className="font-mono text-xs font-semibold text-primary">
+                    {txn.id}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-sm text-foreground">
+                        {txn.description}
+                      </span>
+                      <span className="text-xs text-muted-foreground font-mono">
+                        {txn.reference} • {txn.date}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-xs font-normal">
+                      {txn.category}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <IconBuildingBank className="h-3.5 w-3.5 text-muted-foreground/70" />
+                      <span>{txn.account}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {txn.status === "completed" && (
+                      <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 border-emerald-500/20 text-xs gap-1 font-medium">
+                        <IconCircleCheck className="h-3 w-3" />
+                        Completed
+                      </Badge>
+                    )}
+                    {txn.status === "pending" && (
+                      <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 border-amber-500/20 text-xs gap-1 font-medium">
+                        <IconClock className="h-3 w-3 animate-spin" />
+                        Pending
+                      </Badge>
+                    )}
+                    {txn.status === "failed" && (
+                      <Badge variant="destructive" className="text-xs gap-1 font-medium">
+                        <IconAlertTriangle className="h-3 w-3" />
+                        Failed
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right font-mono font-semibold text-sm">
+                    <span
+                      className={
+                        txn.type === "credit"
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-foreground"
+                      }
+                    >
+                      {txn.type === "credit" ? "+" : "-"}
+                      ${txn.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <IconDotsVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem className="gap-2 cursor-pointer">
+                          <IconEye className="h-4 w-4 text-muted-foreground" />
+                          View Entry Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="gap-2 cursor-pointer">
+                          <IconFileExport className="h-4 w-4 text-muted-foreground" />
+                          Download Receipt
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="gap-2 cursor-pointer text-destructive focus:text-destructive">
+                          <IconTrash className="h-4 w-4" />
+                          Void Transaction
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  )
+}
