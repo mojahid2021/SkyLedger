@@ -48,7 +48,7 @@ import {
 } from "@/components/ui/select"
 
 export interface Transaction {
-  id: string
+  id: number
   reference: string
   description: string
   category: string
@@ -59,84 +59,29 @@ export interface Transaction {
   date: string
 }
 
-const mockTransactions: Transaction[] = [
-  {
-    id: "TXN-9021",
-    reference: "REF-2026-0801",
-    description: "Enterprise SaaS Subscription Payment",
-    category: "Revenue",
-    account: "Operating Vault - Chase",
-    type: "credit",
-    amount: 14500.0,
-    status: "completed",
-    date: "2026-08-05",
-  },
-  {
-    id: "TXN-9022",
-    reference: "REF-2026-0802",
-    description: "AWS Cloud Infrastructure Hosting",
-    category: "Infrastructure",
-    account: "Corporate Credit - SVB",
-    type: "debit",
-    amount: 3240.5,
-    status: "completed",
-    date: "2026-08-04",
-  },
-  {
-    id: "TXN-9023",
-    reference: "REF-2026-0803",
-    description: "Executive Payroll Direct Deposit",
-    category: "Payroll",
-    account: "Payroll Account - BoA",
-    type: "debit",
-    amount: 48500.0,
-    status: "completed",
-    date: "2026-08-03",
-  },
-  {
-    id: "TXN-9024",
-    reference: "REF-2026-0804",
-    description: "Client Retainer Settlement - Acme Corp",
-    category: "Revenue",
-    account: "Operating Vault - Chase",
-    type: "credit",
-    amount: 28000.0,
-    status: "pending",
-    date: "2026-08-03",
-  },
-  {
-    id: "TXN-9025",
-    reference: "REF-2026-0805",
-    description: "Office Supplies & Hardware Lease",
-    category: "Operations",
-    account: "Petty Cash Reserve",
-    type: "debit",
-    amount: 1250.75,
-    status: "completed",
-    date: "2026-08-02",
-  },
-  {
-    id: "TXN-9026",
-    reference: "REF-2026-0806",
-    description: "Cross-border Vendor Wire Transfer",
-    category: "Vendor Payment",
-    account: "International Wire Account",
-    type: "debit",
-    amount: 9800.0,
-    status: "failed",
-    date: "2026-08-01",
-  },
-]
-
 export function TransactionsTable() {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const filteredTransactions = mockTransactions.filter((txn) => {
+  React.useEffect(() => {
+    fetch("/api/transactions")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data)) {
+          setTransactions(data.data)
+        }
+      })
+      .catch((err) => console.log("Failed to fetch transactions", err))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const filteredTransactions = transactions.filter((txn) => {
     const matchesSearch =
       txn.description.toLowerCase().includes(search.toLowerCase()) ||
       txn.reference.toLowerCase().includes(search.toLowerCase()) ||
-      txn.id.toLowerCase().includes(search.toLowerCase()) ||
+      String(txn.id).includes(search) ||
       txn.category.toLowerCase().includes(search.toLowerCase())
 
     const matchesStatus =

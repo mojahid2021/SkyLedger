@@ -2,17 +2,13 @@
 
 import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import {
   IconBuildingBank,
-  IconShieldCheck,
-  IconUserCheck,
   IconLock,
   IconMail,
   IconArrowRight,
-  IconSparkles,
   IconAlertCircle,
-  IconShield,
-  IconUser,
 } from "@tabler/icons-react"
 
 import { useAuth } from "@/context/auth-context"
@@ -22,7 +18,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge"
 
 export default function LoginPage() {
-  const { user, login, loginAsRole, isLoading } = useAuth()
+  const { user, login, isLoading } = useAuth()
   const router = useRouter()
 
   const [email, setEmail] = useState("")
@@ -40,18 +36,16 @@ export default function LoginPage() {
     }
   }, [user, isLoading, router])
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setSubmitting(true)
 
-    setTimeout(() => {
-      const res = login(email, password)
-      setSubmitting(false)
-      if (!res.success && res.error) {
-        setError(res.error)
-      }
-    }, 400)
+    const res = await login(email, password)
+    setSubmitting(false)
+    if (!res.success && res.error) {
+      setError(res.error)
+    }
   }
 
   return (
@@ -69,65 +63,20 @@ export default function LoginPage() {
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center justify-center gap-2">
             SkyLedger
             <Badge variant="secondary" className="text-xs font-normal">
-              Auth Gateway
+              Portal
             </Badge>
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Role-Based Accounting Portal (Admin & Member Dashboards)
+            Role-Based Accounting & Ledger System
           </p>
         </div>
-
-        {/* Quick Demo Role Selection Card */}
-        <Card className="border-primary/20 bg-muted/30">
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <IconSparkles className="h-4 w-4 text-amber-500" />
-              Quick Demo Access (Select Role)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-1 grid grid-cols-2 gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => loginAsRole("admin")}
-              className="h-auto py-2.5 px-3 flex flex-col items-start text-left gap-1 border-indigo-500/30 hover:border-indigo-500 hover:bg-indigo-500/10 transition-all group"
-            >
-              <div className="flex items-center justify-between w-full">
-                <Badge className="bg-indigo-600 hover:bg-indigo-700 text-[10px] gap-1">
-                  <IconShield className="h-3 w-3" />
-                  Admin
-                </Badge>
-                <IconArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-              </div>
-              <span className="text-xs font-bold text-foreground">Alexander Vance</span>
-              <span className="text-[11px] text-muted-foreground">System Administrator</span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => loginAsRole("user")}
-              className="h-auto py-2.5 px-3 flex flex-col items-start text-left gap-1 border-emerald-500/30 hover:border-emerald-500 hover:bg-emerald-500/10 transition-all group"
-            >
-              <div className="flex items-center justify-between w-full">
-                <Badge className="bg-emerald-600 hover:bg-emerald-700 text-[10px] gap-1">
-                  <IconUser className="h-3 w-3" />
-                  User
-                </Badge>
-                <IconArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-              </div>
-              <span className="text-xs font-bold text-foreground">Sarah Jenkins</span>
-              <span className="text-[11px] text-muted-foreground">Financial Analyst</span>
-            </Button>
-          </CardContent>
-        </Card>
 
         {/* Credentials Login Form */}
         <Card className="shadow-lg border">
           <CardHeader>
             <CardTitle className="text-lg font-bold">Sign In to SkyLedger</CardTitle>
             <CardDescription className="text-xs">
-              Enter your credentials to access your dedicated role dashboard.
+              Enter your account credentials to access your dashboard.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -147,7 +96,7 @@ export default function LoginPage() {
                   <IconMail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="email"
-                    placeholder="e.g. admin@skyledger.io or user@skyledger.io"
+                    placeholder="Enter your registered email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -164,7 +113,7 @@ export default function LoginPage() {
                   <IconLock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="password"
-                    placeholder="Enter password (admin123 / user123)"
+                    placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -182,16 +131,19 @@ export default function LoginPage() {
                   <span>Authenticating...</span>
                 ) : (
                   <>
-                    <span>Log In & Auto-Redirect</span>
+                    <span>Log In</span>
                     <IconArrowRight className="h-4 w-4" />
                   </>
                 )}
               </Button>
             </form>
           </CardContent>
-          <CardFooter className="flex flex-col text-center border-t bg-muted/20 pt-3 pb-3">
-            <p className="text-[11px] text-muted-foreground">
-              Demo Credentials: <span className="font-mono font-semibold">admin@skyledger.io</span> (pass: <span className="font-mono font-semibold">admin123</span>) | <span className="font-mono font-semibold">user@skyledger.io</span> (pass: <span className="font-mono font-semibold">user123</span>)
+          <CardFooter className="flex flex-col text-center border-t bg-muted/20 pt-3 pb-3 space-y-1.5">
+            <p className="text-xs text-muted-foreground">
+              Don&apos;t have a member account?{" "}
+              <Link href="/register" className="font-semibold text-primary underline underline-offset-4 hover:text-primary/80">
+                Register as Standard User
+              </Link>
             </p>
           </CardFooter>
         </Card>

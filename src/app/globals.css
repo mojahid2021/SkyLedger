@@ -5,11 +5,40 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* ===== Delta Air Lines Design Tokens (DESIGN.md) ===== */
+  /* Brand — Delta red, used only for CTAs & active states */
+  --color-delta-red: #e31837;
+  --color-delta-red-hover: #c0112a;
+
+  /* Surface — dual-navy ladder (no gradients, no shadows) */
+  --color-delta-navy: #003366;
+  --color-delta-navy-mid: #005480;
+  --color-delta-navy-dark: #001e3d;
+  --color-delta-canvas: #ffffff;
+  --color-delta-surface-1: #f5f7fa;
+  --color-delta-surface-2: #eef2f7;
+
+  /* Text */
+  --color-delta-ink: #212121;
+  --color-delta-ink-muted: #666666;
+
+  /* Hairlines */
+  --color-delta-hairline: #d0d5dd;
+  --color-delta-hairline-light: #e8edf2;
+
+  /* Semantic status */
+  --color-delta-success: #2e7d32;
+  --color-delta-warning: #e65100;
+  --color-delta-error: #c62828;
+
+  /* Typography — soft & stylish rounded geometric (Plus Jakarta Sans) */
+  --font-delta: var(--font-jakarta), "Plus Jakarta Sans", "Segoe UI", Arial, sans-serif;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", "Segoe UI", Arial, sans-serif;
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-jakarta), "Plus Jakarta Sans", "Segoe UI", Arial, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,72 +78,86 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* ===== Delta Air Lines default theme (DESIGN.md) ===== */
+  /* Surface — white canvas, navy structural identity */
+  --background: #ffffff;            /* canvas */
+  --foreground: #212121;            /* ink */
+  --card: #ffffff;                  /* canvas */
+  --card-foreground: #212121;       /* ink */
+  --popover: #ffffff;               /* canvas */
+  --popover-foreground: #212121;    /* ink */
+
+  /* Brand — Delta red is the single CTA accent */
+  --primary: #e31837;               /* delta red */
+  --primary-foreground: #ffffff;
+  --secondary: #003366;             /* navy */
+  --secondary-foreground: #ffffff;
+
+  /* Tinted surfaces */
+  --muted: #f5f7fa;                 /* surface-1 */
+  --muted-foreground: #666666;      /* ink-muted */
+  --accent: #eef2f7;                /* surface-2 */
+  --accent-foreground: #003366;     /* navy */
+
+  --destructive: #c62828;           /* status-error */
+  --border: #d0d5dd;                /* hairline */
+  --input: #d0d5dd;                 /* hairline */
+  --ring: #003366;                  /* navy */
+
+  /* Charts — navy family with red accent */
+  --chart-1: #003366;
+  --chart-2: #005480;
+  --chart-3: #e31837;
+  --chart-4: #2e7d32;
+  --chart-5: #666666;
+
+  /* Radius — 4px default per design (no soft 12-16px tier) */
+  --radius: 0.25rem;
+
+  --sidebar: #f5f7fa;               /* surface-1 */
+  --sidebar-foreground: #212121;    /* ink */
+  --sidebar-primary: #003366;       /* navy */
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef2f7;        /* surface-2 */
+  --sidebar-accent-foreground: #003366;
+  --sidebar-border: #d0d5dd;        /* hairline */
+  --sidebar-ring: #003366;          /* navy */
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Navy-dark band — mirrors the footer surface #001e3d */
+  --background: #001e3d;            /* navy-dark */
+  --foreground: #ffffff;
+  --card: #003366;                  /* navy */
+  --card-foreground: #ffffff;
+  --popover: #003366;
+  --popover-foreground: #ffffff;
+  --primary: #e31837;               /* delta red CTA */
+  --primary-foreground: #ffffff;
+  --secondary: #005480;             /* navy-mid */
+  --secondary-foreground: #ffffff;
+  --muted: #003366;
+  --muted-foreground: #b6bdc9;
+  --accent: #005480;
+  --accent-foreground: #ffffff;
+  --destructive: #c62828;
+  --border: #005480;
+  --input: #005480;
+  --ring: #e31837;
+  --chart-1: #005480;
+  --chart-2: #003366;
+  --chart-3: #e31837;
+  --chart-4: #2e7d32;
+  --chart-5: #666666;
+  --radius: 0.25rem;
+  --sidebar: #001e3d;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #e31837;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #003366;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #005480;
+  --sidebar-ring: #e31837;
 }
 
 @layer base {

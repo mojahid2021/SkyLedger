@@ -1,54 +1,87 @@
 "use client"
 
-import React from "react"
+import React, { useEffect, useState } from "react"
 import {
   IconWallet,
   IconTrendingUp,
   IconTrendingDown,
   IconPigMoney,
-  IconReceipt,
   IconArrowUpRight,
   IconArrowDownRight,
-  IconBuildingBank,
 } from "@tabler/icons-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
 export function StatsCards() {
+  const [data, setData] = useState<{
+    totalCredit: number
+    totalDebit: number
+    netBalance: number
+    count: number
+  }>({
+    totalCredit: 0,
+    totalDebit: 0,
+    netBalance: 0,
+    count: 0,
+  })
+
+  useEffect(() => {
+    fetch("/api/transactions")
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData.success && Array.isArray(resData.data)) {
+          let credit = 0
+          let debit = 0
+          resData.data.forEach((t: any) => {
+            const amt = parseFloat(t.amount) || 0
+            if (t.type === "credit") credit += amt
+            else if (t.type === "debit") debit += amt
+          })
+          setData({
+            totalCredit: credit,
+            totalDebit: debit,
+            netBalance: credit - debit,
+            count: resData.data.length,
+          })
+        }
+      })
+      .catch((err) => console.log("Failed to fetch stats", err))
+  }, [])
+
   const stats = [
     {
-      title: "Total Ledger Balance",
-      value: "$4,852,910.45",
-      change: "+14.2%",
-      isPositive: true,
-      subtext: "vs. previous month",
+      title: "Net Balance",
+      value: `$${data.netBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+      change: "Live",
+      isPositive: data.netBalance >= 0,
+      subtext: `${data.count} total ledger entries`,
       icon: IconWallet,
       color: "text-blue-600 bg-blue-50 dark:bg-blue-950/40 dark:text-blue-400",
     },
     {
-      title: "Monthly Revenue",
-      value: "$842,120.00",
-      change: "+8.5%",
+      title: "Total Revenue (Credit)",
+      value: `$${data.totalCredit.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+      change: "Live",
       isPositive: true,
-      subtext: "vs. $776,100 target",
+      subtext: "Calculated from database",
       icon: IconTrendingUp,
       color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-400",
     },
     {
-      title: "Operational Expenses",
-      value: "$218,450.30",
-      change: "-3.1%",
-      isPositive: true, // Lower expenses is positive
-      subtext: "-$7,000 under budget",
+      title: "Total Expenses (Debit)",
+      value: `$${data.totalDebit.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+      change: "Live",
+      isPositive: false,
+      subtext: "Calculated from database",
       icon: IconTrendingDown,
       color: "text-amber-600 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-400",
     },
     {
-      title: "Net Profit Margin",
-      value: "$623,669.70",
-      change: "+18.9%",
+      title: "Ledger Entries Recorded",
+      value: `${data.count}`,
+      change: "Live",
       isPositive: true,
-      subtext: "74.05% margin rate",
+      subtext: "Real-time records",
       icon: IconPigMoney,
       color: "text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 dark:text-indigo-400",
     },

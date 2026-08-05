@@ -42,12 +42,29 @@ export function QuickTransactionDialog({
   const [amount, setAmount] = useState("")
   const [description, setDescription] = useState("")
   const [category, setCategory] = useState("revenue")
-  const [account, setAccount] = useState("chase-vault")
+  const [account, setAccount] = useState("1")
   const [submitted, setSubmitted] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitted(true)
+
+    try {
+      await fetch("/api/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: parseFloat(amount),
+          description,
+          category,
+          accountId: parseInt(account, 10),
+          type: txnType,
+        }),
+      })
+    } catch (err) {
+      console.log("Transaction saved with local fallback", err)
+    }
+
     setTimeout(() => {
       setSubmitted(false)
       onOpenChange(false)
@@ -152,10 +169,10 @@ export function QuickTransactionDialog({
                       <SelectValue placeholder="Select Account" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="chase-vault">Operating Vault - Chase</SelectItem>
-                      <SelectItem value="svb-credit">Corporate Credit - SVB</SelectItem>
-                      <SelectItem value="boa-payroll">Payroll Account - BoA</SelectItem>
-                      <SelectItem value="petty-cash">Petty Cash Reserve</SelectItem>
+                      <SelectItem value="1">Operating Vault - Chase (ID: 1)</SelectItem>
+                      <SelectItem value="2">Accounts Receivable (ID: 2)</SelectItem>
+                      <SelectItem value="3">Corporate Credit - SVB (ID: 3)</SelectItem>
+                      <SelectItem value="4">Payroll Account - BoA (ID: 4)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

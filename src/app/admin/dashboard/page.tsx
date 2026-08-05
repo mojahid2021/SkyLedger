@@ -33,16 +33,32 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function AdminDashboardPage() {
-  const { user, role, isLoading, logout, loginAsRole } = useAuth()
+  const { user, role, isLoading, logout } = useAuth()
   const router = useRouter()
+  const [usersList, setUsersList] = useState<any[]>([])
+  const [fetchingUsers, setFetchingUsers] = useState(true)
+
+  const fetchUsers = () => {
+    setFetchingUsers(true)
+    fetch("/api/admin/users")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.users)) {
+          setUsersList(data.users)
+        }
+      })
+      .catch((err) => console.log("Failed to fetch admin users", err))
+      .finally(() => setFetchingUsers(false))
+  }
 
   useEffect(() => {
     if (!isLoading) {
       if (!user) {
         router.replace("/login")
       } else if (role !== "admin") {
-        // Redirect standard user away from admin dashboard
         router.replace("/user/dashboard")
+      } else {
+        fetchUsers()
       }
     }
   }, [user, role, isLoading, router])
@@ -76,24 +92,14 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Switch Role Button for demo convenience */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => loginAsRole("user")}
-              className="hidden sm:flex items-center gap-1.5 text-xs font-semibold border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
-            >
-              <IconUser className="h-3.5 w-3.5" />
-              <span>Switch to User Mode</span>
-            </Button>
-
             <div className="flex items-center gap-2 border-l pl-3">
               <Avatar className="h-8 w-8 border border-border">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="bg-indigo-500/10 text-indigo-600 font-bold">AV</AvatarFallback>
+                <AvatarFallback className="bg-indigo-500/10 text-indigo-600 font-bold">
+                  {user.first_name?.[0]}{user.last_name?.[0]}
+                </AvatarFallback>
               </Avatar>
               <div className="hidden md:flex flex-col text-left">
-                <span className="text-xs font-bold leading-none">{user.name}</span>
+                <span className="text-xs font-bold leading-none">{user.first_name} {user.last_name}</span>
                 <span className="text-[10px] text-muted-foreground">{user.email}</span>
               </div>
               <Button
@@ -219,7 +225,7 @@ export default function AdminDashboardPage() {
                     Manage administrative privileges, role assignments, and status across the organization.
                   </CardDescription>
                 </div>
-                <Button size="sm" variant="outline" className="text-xs gap-1">
+                <Button size="sm" variant="outline" onClick={fetchUsers} className="text-xs gap-1">
                   <IconRefresh className="h-3.5 w-3.5" />
                   Refresh Directory
                 </Button>
@@ -229,75 +235,58 @@ export default function AdminDashboardPage() {
                   <Table>
                     <TableHeader className="bg-muted/40">
                       <TableRow>
-                        <TableHead>User Profile</TableHead>
+                        <TableHead>ID</TableHead>
+                        <TableHead>User Name & Email</TableHead>
+                        <TableHead>Phone Number</TableHead>
+                        <TableHead>Date of Birth</TableHead>
                         <TableHead>Assigned Role</TableHead>
-                        <TableHead>Department</TableHead>
-                        <TableHead>Account Status</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <TableRow>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8 border">
-                              <AvatarImage src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" />
-                              <AvatarFallback>AV</AvatarFallback>
-                            </Avatar>
-                            <div className="flex flex-col">
-                              <span className="font-semibold text-sm">Alexander Vance</span>
-                              <span className="text-xs text-muted-foreground font-mono">admin@skyledger.io</span>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className="bg-indigo-600 text-white text-xs gap-1 font-semibold">
-                            <IconShield className="h-3 w-3" />
-                            ADMINISTRATOR
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-xs">Executive Administration</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 text-xs gap-1">
-                            <IconCheck className="h-3 w-3" />
-                            Active
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" className="text-xs">Edit Role</Button>
-                        </TableCell>
-                      </TableRow>
-
-                      <TableRow>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8 border">
-                              <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" />
-                              <AvatarFallback>SJ</AvatarFallback>
-                            </Avatar>
-                            <div className="flex flex-col">
-                              <span className="font-semibold text-sm">Sarah Jenkins</span>
-                              <span className="text-xs text-muted-foreground font-mono">user@skyledger.io</span>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="text-xs gap-1 font-semibold">
-                            <IconUser className="h-3 w-3" />
-                            STANDARD USER
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-xs">Treasury Operations</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 text-xs gap-1">
-                            <IconCheck className="h-3 w-3" />
-                            Active
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" className="text-xs">Promote to Admin</Button>
-                        </TableCell>
-                      </TableRow>
+                      {usersList.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-6 text-muted-foreground text-xs">
+                            No registered users found in database.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        usersList.map((u) => (
+                          <TableRow key={u.id}>
+                            <TableCell className="font-mono text-xs font-bold text-indigo-600">
+                              #{u.id}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="font-semibold text-sm">{u.first_name} {u.last_name}</span>
+                                <span className="text-xs text-muted-foreground font-mono">{u.email}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs font-mono">
+                              {u.phone || "—"}
+                            </TableCell>
+                            <TableCell className="text-xs font-mono">
+                              {u.date_of_birth || "—"}
+                            </TableCell>
+                            <TableCell>
+                              {u.role === "admin" ? (
+                                <Badge className="bg-indigo-600 text-white text-xs gap-1 font-semibold">
+                                  <IconShield className="h-3 w-3" />
+                                  ADMINISTRATOR
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary" className="text-xs gap-1 font-semibold">
+                                  <IconUser className="h-3 w-3" />
+                                  STANDARD USER
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="sm" className="text-xs">Manage User</Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </div>

@@ -24,14 +24,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { useAuth } from "@/context/auth-context"
 
 interface NavbarProps {
   onNewTransaction?: () => void
 }
 
 export function Navbar({ onNewTransaction }: NavbarProps) {
+  const { user, logout } = useAuth()
   const [dark, setDark] = React.useState(false)
 
   const toggleTheme = () => {
@@ -107,9 +109,8 @@ export function Navbar({ onNewTransaction }: NavbarProps) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9 border border-border">
-                  <AvatarImage src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Avatar" />
                   <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                    SL
+                    {user ? `${user.first_name?.[0] || ""}${user.last_name?.[0] || ""}` : "U"}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -117,9 +118,11 @@ export function Navbar({ onNewTransaction }: NavbarProps) {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">Sarah Jenkins</p>
+                  <p className="text-sm font-medium leading-none">
+                    {user ? `${user.first_name} ${user.last_name}` : "Member Name"}
+                  </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    sarah.j@skyledger.io
+                    {user?.email || "member@skyledger.io"}
                   </p>
                 </div>
               </DropdownMenuLabel>
@@ -137,7 +140,7 @@ export function Navbar({ onNewTransaction }: NavbarProps) {
                 <span>Preferences</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive gap-2">
+              <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive gap-2" onClick={logout}>
                 <IconLogout className="h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>

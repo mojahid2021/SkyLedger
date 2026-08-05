@@ -6,44 +6,30 @@ import { useRouter, usePathname } from "next/navigation"
 export type UserRole = "admin" | "user"
 
 export interface UserProfile {
-  id: string
-  name: string
+  id: number
+  first_name: string
+  last_name: string
   email: string
+  phone?: string
+  date_of_birth?: string
   role: UserRole
-  avatar: string
-  title: string
-  department: string
 }
 
-export const MOCK_USERS: Record<string, UserProfile & { passwordHash: string }> = {
-  "admin@skyledger.io": {
-    id: "usr-admin-01",
-    name: "Alexander Vance",
-    email: "admin@skyledger.io",
-    passwordHash: "admin123",
-    role: "admin",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
-    title: "Chief Risk & Ledger Officer",
-    department: "Executive Administration",
-  },
-  "user@skyledger.io": {
-    id: "usr-user-02",
-    name: "Sarah Jenkins",
-    email: "user@skyledger.io",
-    passwordHash: "user123",
-    role: "user",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
-    title: "Senior Financial Analyst",
-    department: "Treasury Operations",
-  },
+interface RegisterData {
+  first_name: string
+  last_name: string
+  email: string
+  password: string
+  phone?: string
+  date_of_birth?: string
 }
 
 interface AuthContextType {
   user: UserProfile | null
   role: UserRole | null
   isLoading: boolean
-  login: (email: string, password: string) => { success: boolean; error?: string }
-  loginAsRole: (targetRole: UserRole) => void
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
+  register: (data: RegisterData) => Promise<{ success: boolean; error?: string }>
   logout: () => void
 }
 
@@ -63,56 +49,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
-        if (parsed && MOCK_USERS[parsed.email]) {
-          setUser(MOCK_USERS[parsed.email])
+        if (parsed && parsed.email) {
+          setUser(parsed)
         }
       } catch (e) {
         console.error("Failed to restore session", e)
       }
     } else {
-      // Default to null if no session
       setUser(null)
     }
     setIsLoading(false)
   }, [])
 
-  const login = (email: string, password: string) => {
-    const account = MOCK_USERS[email.toLowerCase().trim()]
-    if (!account) {
-      return { success: false, error: "Invalid email or password" }
+  const login = async (email: string, password: string) => {
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+      const data = await res.json()
+
+      if (data.success && data.user) {
+        setUser(data.user)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data.user))
+
+        if (data.user.role === "admin") {
+          router.push("/admin/dashboard")
+        } else {
+          router.push("/user/dashboard")
+        }
+        return { success: true }
+      } else {
+        return { success: false, error: data.error || "Authentication failed" }
+      }
+    } catch (err) {
+      return { success: false, error: "Network error or database unreachable" }
     }
-
-    if (account.passwordHash !== password) {
-      return { success: false, error: "Invalid email or password" }
-    }
-
-    const { passwordHash, ...userObj } = account
-    setUser(userObj)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(userObj))
-
-    // Automatically route to dedicated dashboard based on role
-    if (userObj.role === "admin") {
-      router.push("/admin/dashboard")
-    } else {
-      router.push("/user/dashboard")
-    }
-
-    return { success: true }
   }
 
-  const loginAsRole = (targetRole: UserRole) => {
-    const targetEmail = targetRole === "admin" ? "admin@skyledger.io" : "user@skyledger.io"
-    const targetUser = MOCK_USERS[targetEmail]
-    if (targetUser) {
-      const { passwordHash, ...userObj } = targetUser
-      setUser(userObj)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(userObj))
+  const register = async (data: RegisterData) => {
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+      const result = await res.json()
 
-      if (targetRole === "admin") {
-        router.push("/admin/dashboard")
-      } else {
+      if (result.success && result.user) {
+        setUser(result.user)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(result.user))
         router.push("/user/dashboard")
+        return { success: true }
+      } else {
+        return { success: false, error: result.error || "Registration failed" }
       }
+    } catch (err) {
+      return { success: false, error: "Network error during registration" }
     }
   }
 
@@ -129,7 +123,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: user?.role || null,
         isLoading,
         login,
-        loginAsRole,
+        register,
         logout,
       }}
     >

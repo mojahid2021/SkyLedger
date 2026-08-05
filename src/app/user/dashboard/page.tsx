@@ -33,7 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { QuickTransactionDialog } from "@/components/quick-transaction-dialog"
 
 export default function UserDashboardPage() {
-  const { user, role, isLoading, logout, loginAsRole } = useAuth()
+  const { user, role, isLoading, logout } = useAuth()
   const router = useRouter()
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -72,25 +72,15 @@ export default function UserDashboardPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Switch Role Button for demo convenience */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => loginAsRole("admin")}
-              className="hidden sm:flex items-center gap-1.5 text-xs font-semibold border-indigo-500/30 text-indigo-600 hover:bg-indigo-500/10"
-            >
-              <IconShield className="h-3.5 w-3.5" />
-              <span>Switch to Admin Mode</span>
-            </Button>
-
             <div className="flex items-center gap-2 border-l pl-3">
               <Avatar className="h-8 w-8 border border-border">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="bg-emerald-500/10 text-emerald-600 font-bold">SJ</AvatarFallback>
+                <AvatarFallback className="bg-emerald-500/10 text-emerald-600 font-bold">
+                  {user.first_name?.[0]}{user.last_name?.[0]}
+                </AvatarFallback>
               </Avatar>
               <div className="hidden md:flex flex-col text-left">
-                <span className="text-xs font-bold leading-none">{user.name}</span>
-                <span className="text-[10px] text-muted-foreground">{user.department}</span>
+                <span className="text-xs font-bold leading-none">{user.first_name} {user.last_name}</span>
+                <span className="text-[10px] text-muted-foreground">{user.email}</span>
               </div>
               <Button
                 variant="ghost"
@@ -116,9 +106,9 @@ export default function UserDashboardPage() {
             </div>
             <div>
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                Welcome back, {user.name}!
+                Welcome back, {user.first_name}!
                 <Badge variant="outline" className="text-[10px] border-emerald-500/40 text-emerald-700 dark:text-emerald-300">
-                  {user.title}
+                  Member
                 </Badge>
               </h2>
               <p className="text-xs text-muted-foreground">
