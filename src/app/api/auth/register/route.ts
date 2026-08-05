@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
+import { recordAuditLog } from "@/lib/mongodb"
 
 export async function POST(request: Request) {
   try {
@@ -20,6 +21,11 @@ export async function POST(request: Request) {
     // Check if user already exists in MySQL
     const existing = await query<any[]>("SELECT id FROM users WHERE email = ?", [cleanEmail])
     if (existing && existing.length > 0) {
+      await recordAuditLog({
+        event: "Registration Blocked (Duplicate Email)",
+        actor: cleanEmail,
+        status: "blocked",
+      })
       return NextResponse.json(
         { success: false, error: "An account with this email address already exists" },
         { status: 409 }
@@ -41,6 +47,14 @@ export async function POST(request: Request) {
     )
 
     const newUserId = result.insertId
+
+    // Record new registration audit log in MongoDB
+    await recordAuditLog({
+      event: "New Member Registered",
+      actor: cleanEmail,
+      status: "success",
+      metadata: { userId: newUserId, role: forcedRole },
+    })
 
     const newProfile = {
       id: newUserId,

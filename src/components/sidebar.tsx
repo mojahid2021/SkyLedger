@@ -4,7 +4,6 @@ import React from "react"
 import {
   IconLayoutDashboard,
   IconReceipt,
-  IconBuildingBank,
   IconFileText,
   IconChartBar,
   IconUsers,
@@ -68,16 +67,16 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         {/* Quick Ledger Status Card */}
         <div className="p-3.5 rounded-xl border bg-card/80 text-card-foreground shadow-xs space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground uppercase">Ledger Sync</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase">Database Sync</span>
             <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
           </div>
-          <p className="text-xs font-medium">PostgreSQL & Mongo Replica Active</p>
+          <p className="text-xs font-medium">MySQL Database Connected</p>
           <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
             <div className="bg-emerald-500 h-full w-[94%]" />
           </div>
           <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>Latency: 4ms</span>
-            <span className="font-semibold text-emerald-600 dark:text-emerald-400">99.99% Sync</span>
+            <span>SkyLedger ledger</span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">Operational</span>
           </div>
         </div>
       </div>

@@ -94,7 +94,12 @@ export async function initMySQLDatabase() {
       );
     `)
 
-    return { success: true, message: "MySQL database tables initialized successfully" }
+    // Seed admin login (inserted only if not already present)
+    await p.execute(`
+      INSERT IGNORE INTO users (first_name, last_name, email, phone, date_of_birth, password_hash, role)
+      VALUES
+      ('Alexander', 'Vance', 'admin@skyledger.io', '+1 (404) 555-0101', '1985-03-14', 'admin123', 'admin');
+    `)
 
     return { success: true, message: "MySQL database tables initialized successfully" }
   } catch (error) {

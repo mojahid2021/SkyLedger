@@ -18,6 +18,8 @@ import {
   IconEye,
   IconFileExport,
   IconTrash,
+  IconChevronLeft,
+  IconChevronRight,
 } from "@tabler/icons-react"
 
 import { Input } from "@/components/ui/input"
@@ -64,6 +66,8 @@ export function TransactionsTable() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 5
 
   React.useEffect(() => {
     fetch("/api/transactions")
@@ -89,6 +93,12 @@ export function TransactionsTable() {
 
     return matchesSearch && matchesStatus
   })
+
+  const totalPages = Math.ceil(filteredTransactions.length / pageSize) || 1
+  const validPage = Math.min(Math.max(currentPage, 1), totalPages)
+  const startIndex = (validPage - 1) * pageSize
+  const endIndex = Math.min(startIndex + pageSize, filteredTransactions.length)
+  const paginatedTxns = filteredTransactions.slice(startIndex, endIndex)
 
   return (
     <div className="space-y-4">
@@ -152,7 +162,7 @@ export function TransactionsTable() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredTransactions.map((txn) => (
+              paginatedTxns.map((txn) => (
                 <TableRow key={txn.id} className="hover:bg-muted/30 transition-colors">
                   <TableCell className="font-mono text-xs font-semibold text-primary">
                     {txn.id}
@@ -241,6 +251,39 @@ export function TransactionsTable() {
           </TableBody>
         </Table>
       </div>
+
+      {filteredTransactions.length > 0 && (
+        <div className="flex items-center justify-between border-t pt-3 text-xs text-muted-foreground">
+          <div>
+            Showing <span className="font-semibold text-foreground">{startIndex + 1}</span> to{" "}
+            <span className="font-semibold text-foreground">{endIndex}</span> of{" "}
+            <span className="font-semibold text-foreground">{filteredTransactions.length}</span> entries
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="mr-2 font-medium">
+              Page {validPage} of {totalPages}
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={validPage <= 1}
+              className="h-8 w-8 p-0"
+            >
+              <IconChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              disabled={validPage >= totalPages}
+              className="h-8 w-8 p-0"
+            >
+              <IconChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

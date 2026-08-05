@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
+import { recordAuditLog } from "@/lib/mongodb"
 
 export async function POST(request: Request) {
   try {
@@ -19,6 +20,11 @@ export async function POST(request: Request) {
     )
 
     if (!users || users.length === 0) {
+      await recordAuditLog({
+        event: "Unrecognized User Login Attempt",
+        actor: email,
+        status: "blocked",
+      })
       return NextResponse.json(
         { success: false, error: "Invalid email or password" },
         { status: 401 }
@@ -27,11 +33,24 @@ export async function POST(request: Request) {
 
     const user = users[0]
     if (user.password_hash !== password) {
+      await recordAuditLog({
+        event: "Failed Sign-In Attempt (Invalid Password)",
+        actor: email,
+        status: "blocked",
+      })
       return NextResponse.json(
         { success: false, error: "Invalid email or password" },
         { status: 401 }
       )
     }
+
+    // Record successful login audit log in MongoDB
+    await recordAuditLog({
+      event: user.role === "admin" ? "Admin Login Success" : "User Sign-In Success",
+      actor: email,
+      status: "success",
+      metadata: { role: user.role },
+    })
 
     const { password_hash, ...userProfile } = user
     return NextResponse.json({ success: true, user: userProfile })
