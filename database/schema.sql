@@ -54,6 +54,22 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 5. Airports Table (AirLabs Sync Target)
+CREATE TABLE IF NOT EXISTS airports (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  iata_code VARCHAR(10) NULL,
+  icao_code VARCHAR(10) NULL,
+  lat DECIMAL(10, 6) NULL,
+  lng DECIMAL(10, 6) NULL,
+  country_code VARCHAR(10) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_iata (iata_code),
+  INDEX idx_icao (icao_code),
+  INDEX idx_country (country_code)
+);
+
 -- Seed Admin Login (inserted only if not already present)
 INSERT IGNORE INTO users (first_name, last_name, email, phone, date_of_birth, password_hash, role)
 VALUES

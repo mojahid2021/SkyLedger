@@ -7,20 +7,47 @@ import {
   ShieldCheck,
   Settings,
   Server,
+  Plane,
+  FolderKanban,
+  MapPin,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-export type AdminSection = "overview" | "users" | "audit" | "settings"
+export type AdminSection = "overview" | "users" | "audit" | "airports" | "cities" | "settings"
 
 type DbStatus = "connecting" | "connected" | "error"
 
-const NAV_ITEMS: { id: AdminSection; label: string; icon: typeof Users }[] = [
-  { id: "overview", label: "Control Overview", icon: LayoutDashboard },
-  { id: "users", label: "User Access & Roles", icon: Users },
-  { id: "audit", label: "System Audit Logs", icon: ShieldCheck },
-  { id: "settings", label: "System Settings", icon: Settings },
+interface NavGroup {
+  header: string
+  items: { id: AdminSection; label: string; icon: typeof Users }[]
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    header: "Administration",
+    items: [
+      { id: "overview", label: "Control Overview", icon: LayoutDashboard },
+      { id: "users", label: "User Access & Roles", icon: Users },
+      { id: "audit", label: "System Audit Logs", icon: ShieldCheck },
+    ],
+  },
+  {
+    header: "Content",
+    items: [
+      { id: "airports", label: "Airports Directory", icon: Plane },
+      { id: "cities", label: "Cities Directory", icon: MapPin },
+    ],
+  },
+  {
+    header: "System",
+    items: [
+      { id: "settings", label: "System Settings", icon: Settings },
+    ],
+  },
 ]
+
+const ALL_NAV_ITEMS = NAV_GROUPS.flatMap((g) => g.items)
 
 interface AdminSidebarProps {
   activeSection: AdminSection
@@ -42,46 +69,50 @@ export function AdminSidebar({
 }: AdminSidebarProps) {
   return (
     <aside className="hidden w-60 shrink-0 flex-col border-r border-white/10 bg-delta-navy-dark text-white lg:flex">
-      <div className="flex-1 overflow-y-auto p-4">
-        <p className="px-2 pb-3 text-[11px] font-[600] uppercase tracking-wider text-white/45">
-          Administration
-        </p>
-        <nav className="space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon
-            const isActive = activeSection === item.id
+      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.header}>
+            <p className="px-2 pb-2 text-[11px] font-[600] uppercase tracking-wider text-white/45">
+              {group.header}
+            </p>
+            <nav className="space-y-1">
+              {group.items.map((item) => {
+                const Icon = item.icon
+                const isActive = activeSection === item.id
 
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onSectionChange(item.id)}
-                aria-current={isActive ? "page" : undefined}
-                className={cn(
-                  "group relative flex w-full items-center gap-3 rounded-[4px] px-3 py-2.5 text-left text-[13px] font-[500] transition-colors",
-                  isActive
-                    ? "bg-white/10 text-white"
-                    : "text-white/55 hover:bg-white/5 hover:text-white"
-                )}
-              >
-                {/* Red active-state indicator — left edge */}
-                <span
-                  className={cn(
-                    "absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-delta-red transition-opacity",
-                    isActive ? "opacity-100" : "opacity-0 group-hover:opacity-40"
-                  )}
-                />
-                <Icon
-                  className={cn(
-                    "h-4 w-4 shrink-0",
-                    isActive ? "text-delta-red" : "text-white/45 group-hover:text-white/70"
-                  )}
-                />
-                <span>{item.label}</span>
-              </button>
-            )
-          })}
-        </nav>
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => onSectionChange(item.id)}
+                    aria-current={isActive ? "page" : undefined}
+                    className={cn(
+                      "group relative flex w-full items-center gap-3 rounded-[4px] px-3 py-2.5 text-left text-[13px] font-[500] transition-colors",
+                      isActive
+                        ? "bg-white/10 text-white"
+                        : "text-white/55 hover:bg-white/5 hover:text-white"
+                    )}
+                  >
+                    {/* Red active-state indicator — left edge */}
+                    <span
+                      className={cn(
+                        "absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-delta-red transition-opacity",
+                        isActive ? "opacity-100" : "opacity-0 group-hover:opacity-40"
+                      )}
+                    />
+                    <Icon
+                      className={cn(
+                        "h-4 w-4 shrink-0",
+                        isActive ? "text-delta-red" : "text-white/45 group-hover:text-white/70"
+                      )}
+                    />
+                    <span>{item.label}</span>
+                  </button>
+                )
+              })}
+            </nav>
+          </div>
+        ))}
       </div>
 
       {/* Database connection status — real state from the users API */}
@@ -132,7 +163,7 @@ export function AdminMobileNav({
 }: AdminSidebarProps) {
   return (
     <nav className="sticky top-0 z-30 flex gap-1 overflow-x-auto border-b border-delta-hairline bg-delta-surface-1 px-4 py-2 lg:hidden">
-      {NAV_ITEMS.map((item) => {
+      {ALL_NAV_ITEMS.map((item) => {
         const Icon = item.icon
         const isActive = activeSection === item.id
 

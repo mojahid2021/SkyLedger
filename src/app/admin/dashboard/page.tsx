@@ -11,6 +11,9 @@ import { AdminSidebar, AdminMobileNav, type AdminSection } from "@/components/ad
 import { AdminStatsCards } from "@/components/admin/admin-stats-cards"
 import { UserDirectoryTable, type AdminUser } from "@/components/admin/user-directory-table"
 import { AuditLogList } from "@/components/admin/audit-log-list"
+import { AirportsDirectoryTable } from "@/components/admin/airports-directory-table"
+import { CitiesDirectoryTable } from "@/components/admin/cities-directory-table"
+
 
 function AdminDashboardContent() {
   const { user, role, isLoading } = useAuth()
@@ -25,7 +28,7 @@ function AdminDashboardContent() {
   const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
-    if (tabParam && ["overview", "users", "audit", "settings"].includes(tabParam)) {
+    if (tabParam && ["overview", "users", "audit", "airports", "settings"].includes(tabParam)) {
       setActiveSection(tabParam)
     }
   }, [tabParam])
@@ -166,6 +169,29 @@ function AdminDashboardContent() {
                 <AuditLogList />
               </div>
             )}
+
+            {activeSection === "airports" && (
+              <div className="space-y-4">
+                <SectionHeading
+                  eyebrow="Content Management"
+                  title="Airports Directory"
+                  description="Global flight origin and destination database synchronized with AirLabs API."
+                />
+                <AirportsDirectoryTable />
+              </div>
+            )}
+
+            {activeSection === "cities" && (
+              <div className="space-y-4">
+                <SectionHeading
+                  eyebrow="Content Management"
+                  title="Cities Directory"
+                  description="Global cities database synchronized with AirLabs."
+                />
+                <CitiesDirectoryTable />
+              </div>
+            )}
+
 
             {activeSection === "settings" && (
               <div className="space-y-4">

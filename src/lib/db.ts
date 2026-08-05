@@ -102,6 +102,40 @@ export async function initMySQLDatabase() {
       );
     `)
 
+    // Create airports table
+    await p.execute(`
+      CREATE TABLE IF NOT EXISTS airports (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        iata_code VARCHAR(10) NULL,
+        icao_code VARCHAR(10) NULL,
+        lat DECIMAL(10, 6) NULL,
+        lng DECIMAL(10, 6) NULL,
+        country_code VARCHAR(10) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_iata (iata_code),
+        INDEX idx_icao (icao_code),
+        INDEX idx_country (country_code)
+      );
+    `)
+
+    // Create cities table
+    await p.execute(`
+      CREATE TABLE IF NOT EXISTS cities (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        city_code VARCHAR(10) NULL,
+        lat DECIMAL(10, 6) NULL,
+        lng DECIMAL(10, 6) NULL,
+        country_code VARCHAR(10) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_city_code (city_code),
+        INDEX idx_country (country_code)
+      );
+    `)
+
     // Seed admin login (inserted only if not already present)
     await p.execute(`
       INSERT IGNORE INTO users (first_name, last_name, email, phone, date_of_birth, password_hash, role)
