@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useCallback, useRef, useEffect } from "react"
 import {
   Plane,
   ArrowRightLeft,
@@ -10,49 +10,156 @@ import {
   ChevronDown,
   Minus,
   Plus,
+  MapPin,
+  Building2,
 } from "lucide-react"
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
+
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 
-const AIRPORTS = [
-  "ATL — Atlanta (ATL)",
-  "JFK — New York (JFK)",
-  "LAX — Los Angeles (LAX)",
-  "ORD — Chicago (ORD)",
-  "DFW — Dallas-Fort Worth (DFW)",
-  "DEN — Denver (DEN)",
-  "SFO — San Francisco (SFO)",
-  "SEA — Seattle (SEA)",
-  "MIA — Miami (MIA)",
-  "BOS — Boston (BOS)",
-  "LHR — London Heathrow (LHR)",
-  "CDG — Paris Charles de Gaulle (CDG)",
-  "AMS — Amsterdam (AMS)",
-  "HND — Tokyo Haneda (HND)",
-]
+interface LocationResult {
+  type: "city" | "airport"
+  id: number
+  name: string
+  code: string | null
+  country_code: string | null
+}
 
 const CABIN_CLASSES = ["Main Cabin", "Comfort+", "First Class", "Delta One"]
 
+function useLocationSearch(query: string): { results: LocationResult[]; loading: boolean } {
+  const [results, setResults] = useState<LocationResult[]>([])
+  const [loading, setLoading] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+
+    if (!query || query.trim().length < 2) {
+      setResults([])
+      return
+    }
+
+    timerRef.current = setTimeout(() => {
+      setLoading(true)
+      fetch(`/api/locations?q=${encodeURIComponent(query.trim())}`)
+        .then((r) => r.json())
+        .then((d) => { if (d.success) setResults(d.data) })
+        .finally(() => setLoading(false))
+    }, 200)
+
+    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
+  }, [query])
+
+  return { results, loading }
+}
+
+function formatLabel(loc: LocationResult): string {
+  const code = loc.code ? ` (${loc.code})` : ""
+  const country = loc.country_code ? ` · ${loc.country_code}` : ""
+  return `${loc.name}${code}${country}`
+}
+
+function LocationInput({
+  label,
+  icon,
+  value,
+  onChange,
+}: {
+  label: string
+  icon: React.ReactNode
+  value: string
+  onChange: (val: string) => void
+}) {
+  const [query, setQuery] = useState(value)
+  const [open, setOpen] = useState(false)
+  const { results, loading } = useLocationSearch(query)
+
+  return (
+    <div className="space-y-1.5">
+      <label className="text-[12px] font-[500] text-delta-navy uppercase tracking-wide">{label}</label>
+      <div className="relative">
+        <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-delta-ink-muted">
+          {icon}
+        </div>
+        <input
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            onChange(e.target.value)
+            setOpen(true)
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          placeholder={`City or airport...`}
+          className="h-[44px] w-full rounded-[4px] border border-delta-hairline bg-delta-canvas pl-9 pr-3 text-[15px] text-delta-ink outline-none focus:border-delta-navy focus:ring-2 focus:ring-delta-navy/10"
+        />
+        {open && query.trim().length >= 2 && (
+          <div className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-[4px] border border-delta-hairline bg-delta-canvas shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
+            {loading && (
+              <p className="px-3 py-2 text-[13px] text-delta-ink-muted">Searching...</p>
+            )}
+            {!loading && results.length === 0 && (
+              <p className="px-3 py-2 text-[13px] text-delta-ink-muted">No results found</p>
+            )}
+            {!loading && results.map((loc) => {
+              const label = formatLabel(loc)
+              return (
+                <button
+                  key={`${loc.type}-${loc.id}`}
+                  type="button"
+                  onMouseDown={() => {
+                    setQuery(label)
+                    onChange(label)
+                    setOpen(false)
+                  }}
+                  className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] text-delta-ink hover:bg-delta-surface-1"
+                >
+                  {loc.type === "airport" ? (
+                    <Plane className="h-3.5 w-3.5 shrink-0 text-delta-navy/50" />
+                  ) : (
+                    <Building2 className="h-3.5 w-3.5 shrink-0 text-delta-red/70" />
+                  )}
+                  <span className="flex-1 truncate">{loc.name}</span>
+                  <span className="flex items-center gap-1.5 shrink-0">
+                    {loc.code && (
+                      <span className="rounded bg-delta-navy px-1.5 py-0.5 font-mono text-[10px] font-[700] text-white">
+                        {loc.code}
+                      </span>
+                    )}
+                    {loc.country_code && (
+                      <span className="text-[11px] text-delta-ink-muted">{loc.country_code}</span>
+                    )}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function FlightSearchWidget() {
   const [tripType, setTripType] = useState<"round" | "oneway">("round")
-  const [from, setFrom] = useState("ATL — Atlanta (ATL)")
-  const [to, setTo] = useState("JFK — New York (JFK)")
+  const [from, setFrom] = useState("")
+  const [to, setTo] = useState("")
   const [depart, setDepart] = useState(format(new Date(), "yyyy-MM-dd"))
   const [returnDate, setReturnDate] = useState(
     format(new Date(Date.now() + 7 * 86400000), "yyyy-MM-dd")
   )
   const [passengers, setPassengers] = useState(1)
   const [cabin, setCabin] = useState("Main Cabin")
-  const [showFromList, setShowFromList] = useState(false)
-  const [showToList, setShowToList] = useState(false)
   const [showPassengerPopover, setShowPassengerPopover] = useState(false)
-  const [fromQuery, setFromQuery] = useState("")
-  const [toQuery, setToQuery] = useState("")
 
-  const fromResults = AIRPORTS.filter((a) =>
-    a.toLowerCase().includes(fromQuery.toLowerCase())
-  )
-  const toResults = AIRPORTS.filter((a) => a.toLowerCase().includes(toQuery.toLowerCase()))
 
   return (
     <div className="w-full bg-delta-canvas rounded-[8px] border border-delta-hairline-light p-6 sm:p-8 shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
@@ -78,90 +185,20 @@ export function FlightSearchWidget() {
       {/* Fields */}
       <div className="mt-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* From */}
-        <div className="space-y-1.5">
-          <label className="text-[12px] font-[500] text-delta-navy uppercase tracking-wide">
-            From
-          </label>
-          <div className="relative">
-            <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-delta-ink-muted">
-              <Plane className="h-4 w-4" />
-            </div>
-            <input
-              value={from}
-              onChange={(e) => {
-                setFrom(e.target.value)
-                setFromQuery(e.target.value)
-                setShowFromList(true)
-              }}
-              onFocus={() => setShowFromList(true)}
-              onBlur={() => setTimeout(() => setShowFromList(false), 150)}
-              className="h-[44px] w-full rounded-[4px] border border-delta-hairline bg-delta-canvas pl-9 pr-3 text-[16px] text-delta-ink outline-none focus:border-delta-navy focus:ring-2 focus:ring-delta-navy/10"
-            />
-            {showFromList && (
-              <div className="absolute z-20 mt-1 max-h-52 w-full overflow-auto rounded-[4px] border border-delta-hairline bg-delta-canvas shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
-                {fromResults.length === 0 && (
-                  <p className="px-3 py-2 text-[13px] text-delta-ink-muted">No airports match</p>
-                )}
-                {fromResults.map((a) => (
-                  <button
-                    key={a}
-                    type="button"
-                    onMouseDown={() => {
-                      setFrom(a)
-                      setShowFromList(false)
-                    }}
-                    className="block w-full px-3 py-2 text-left text-[14px] text-delta-ink hover:bg-delta-surface-1"
-                  >
-                    {a}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <LocationInput
+          label="From"
+          icon={<Plane className="h-4 w-4" />}
+          value={from}
+          onChange={setFrom}
+        />
 
         {/* To */}
-        <div className="space-y-1.5">
-          <label className="text-[12px] font-[500] text-delta-navy uppercase tracking-wide">
-            To
-          </label>
-          <div className="relative">
-            <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-delta-ink-muted">
-              <ArrowRightLeft className="h-4 w-4" />
-            </div>
-            <input
-              value={to}
-              onChange={(e) => {
-                setTo(e.target.value)
-                setToQuery(e.target.value)
-                setShowToList(true)
-              }}
-              onFocus={() => setShowToList(true)}
-              onBlur={() => setTimeout(() => setShowToList(false), 150)}
-              className="h-[44px] w-full rounded-[4px] border border-delta-hairline bg-delta-canvas pl-9 pr-3 text-[16px] text-delta-ink outline-none focus:border-delta-navy focus:ring-2 focus:ring-delta-navy/10"
-            />
-            {showToList && (
-              <div className="absolute z-20 mt-1 max-h-52 w-full overflow-auto rounded-[4px] border border-delta-hairline bg-delta-canvas shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
-                {toResults.length === 0 && (
-                  <p className="px-3 py-2 text-[13px] text-delta-ink-muted">No airports match</p>
-                )}
-                {toResults.map((a) => (
-                  <button
-                    key={a}
-                    type="button"
-                    onMouseDown={() => {
-                      setTo(a)
-                      setShowToList(false)
-                    }}
-                    className="block w-full px-3 py-2 text-left text-[14px] text-delta-ink hover:bg-delta-surface-1"
-                  >
-                    {a}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <LocationInput
+          label="To"
+          icon={<ArrowRightLeft className="h-4 w-4" />}
+          value={to}
+          onChange={setTo}
+        />
 
         {/* Depart */}
         <div className="space-y-1.5">
@@ -204,13 +241,46 @@ export function FlightSearchWidget() {
         )}
       </div>
 
-      {/* Passengers + Cabin + Search */}
       <div className="mt-4 flex flex-col sm:flex-row gap-3">
         {/* Passengers */}
         <div className="relative flex-1 sm:flex-none">
           <button
             type="button"
             onClick={() => setShowPassengerPopover((v) => !v)}
+            className="flex h-[44px] w-full items-center justify-between rounded-[4px] border border-delta-hairline bg-delta-canvas px-3 text-[15px] font-[400] text-delta-ink outline-none hover:bg-delta-surface-1"
+          >
+            <span className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-delta-ink-muted" />
+              {passengers} Passenger(s)
+            </span>
+          </button>
+          
+          {showPassengerPopover && (
+            <div className="absolute top-full mt-2 w-60 z-30 rounded-[4px] border border-delta-hairline bg-delta-canvas p-4 shadow-lg">
+                <div className="flex items-center justify-between">
+                    <span className="text-sm font-[600]">Passengers</span>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPassengers(Math.max(1, passengers - 1))}><Minus className="h-3 w-3"/></Button>
+                        <span className="text-sm font-mono w-4 text-center">{passengers}</span>
+                        <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setPassengers(passengers + 1)}><Plus className="h-3 w-3"/></Button>
+                    </div>
+                </div>
+            </div>
+          )}
+        </div>
+        
+        <div className="flex-1">
+            <Button size="lg" className="h-[44px] w-full bg-delta-red px-10 text-white font-[700] hover:bg-delta-red/90">
+                Search Flights
+            </Button>
+        </div>
+      </div>
+
+      <div className="mt-6 flex justify-end">
+        <Button size="lg" className="h-[48px] bg-delta-red px-10 text-white font-[700] hover:bg-delta-red/90">
+            Search Flights
+        </Button>
+      </div>
             className="h-[44px] w-full sm:w-[220px] rounded-[4px] border border-delta-hairline bg-delta-canvas px-3 text-left text-[14px] text-delta-ink hover:border-delta-navy flex items-center justify-between"
           >
             <span className="flex items-center gap-2">
