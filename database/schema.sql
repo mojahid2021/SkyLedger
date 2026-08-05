@@ -17,14 +17,16 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. Ledger Accounts Table (Numerical ID)
+-- 2. Ledger Accounts Table (Numerical ID & Linked User ID)
 CREATE TABLE IF NOT EXISTS accounts (
   id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNIQUE NULL,
   code INT NOT NULL UNIQUE,
   name VARCHAR(150) NOT NULL,
   type ENUM('Asset', 'Liability', 'Equity', 'Revenue', 'Expense') NOT NULL,
   balance DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- 3. Transactions Table (Numerical ID & Numerical Foreign Key)
@@ -56,3 +58,23 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 INSERT IGNORE INTO users (first_name, last_name, email, phone, date_of_birth, password_hash, role)
 VALUES
 ('Alexander', 'Vance', 'admin@skyledger.io', '+1 (404) 555-0101', '1985-03-14', 'admin123', 'admin');
+
+-- 5. Trigger: Automatically Create User Wallet Account on User Registration
+DROP TRIGGER IF EXISTS after_user_insert;
+
+DELIMITER //
+CREATE TRIGGER after_user_insert
+AFTER INSERT ON users
+FOR EACH ROW
+BEGIN
+  INSERT INTO accounts (user_id, code, name, type, balance)
+  VALUES (NEW.id, 1000 + NEW.id, CONCAT(NEW.first_name, ' ', NEW.last_name, ' Wallet'), 'Asset', 0.00);
+END;
+//
+DELIMITER ;
+
+-- Ensure all existing users have a wallet account
+INSERT IGNORE INTO accounts (user_id, code, name, type, balance)
+SELECT id, 1000 + id, CONCAT(first_name, ' ', last_name, ' Wallet'), 'Asset', 0.00
+FROM users
+WHERE id NOT IN (SELECT user_id FROM accounts WHERE user_id IS NOT NULL);

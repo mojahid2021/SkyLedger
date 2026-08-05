@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import {
   IconPlus,
   IconBuildingBank,
@@ -34,6 +34,14 @@ interface QuickTransactionDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
+interface DbAccount {
+  id: number
+  code: number
+  name: string
+  type: string
+  balance: number | string
+}
+
 export function QuickTransactionDialog({
   open,
   onOpenChange,
@@ -44,6 +52,21 @@ export function QuickTransactionDialog({
   const [category, setCategory] = useState("revenue")
   const [account, setAccount] = useState("1")
   const [submitted, setSubmitted] = useState(false)
+  const [dbAccounts, setDbAccounts] = useState<DbAccount[]>([])
+
+  useEffect(() => {
+    if (open) {
+      fetch("/api/accounts")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+            setDbAccounts(data.data)
+            setAccount(String(data.data[0].id))
+          }
+        })
+        .catch((err) => console.log("Failed to fetch accounts", err))
+    }
+  }, [open])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -169,10 +192,20 @@ export function QuickTransactionDialog({
                       <SelectValue placeholder="Select Account" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">Operating Vault - Chase (ID: 1)</SelectItem>
-                      <SelectItem value="2">Accounts Receivable (ID: 2)</SelectItem>
-                      <SelectItem value="3">Corporate Credit - SVB (ID: 3)</SelectItem>
-                      <SelectItem value="4">Payroll Account - BoA (ID: 4)</SelectItem>
+                      {dbAccounts.length > 0 ? (
+                        dbAccounts.map((acc) => (
+                          <SelectItem key={acc.id} value={String(acc.id)}>
+                            {acc.name} (ID: {acc.id})
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <>
+                          <SelectItem value="1">Operating Vault - Chase (ID: 1)</SelectItem>
+                          <SelectItem value="2">Accounts Receivable (ID: 2)</SelectItem>
+                          <SelectItem value="3">Corporate Credit - SVB (ID: 3)</SelectItem>
+                          <SelectItem value="4">Payroll Account - BoA (ID: 4)</SelectItem>
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

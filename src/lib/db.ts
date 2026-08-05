@@ -58,13 +58,21 @@ export async function initMySQLDatabase() {
     await p.execute(`
       CREATE TABLE IF NOT EXISTS accounts (
         id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT UNIQUE NULL,
         code INT NOT NULL UNIQUE,
         name VARCHAR(150) NOT NULL,
         type ENUM('Asset', 'Liability', 'Equity', 'Revenue', 'Expense') NOT NULL,
         balance DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       );
     `)
+
+    try {
+      await p.query(`ALTER TABLE accounts ADD COLUMN IF NOT EXISTS user_id INT UNIQUE NULL AFTER id;`)
+    } catch {
+      // Column may already exist
+    }
 
     // Create transactions table
     await p.execute(`
@@ -100,6 +108,34 @@ export async function initMySQLDatabase() {
       VALUES
       ('Alexander', 'Vance', 'admin@skyledger.io', '+1 (404) 555-0101', '1985-03-14', 'admin123', 'admin');
     `)
+
+    // Create MariaDB Trigger to automatically create a wallet account upon user registration
+    try {
+      await p.query(`DROP TRIGGER IF EXISTS after_user_insert;`)
+      await p.query(`
+        CREATE TRIGGER after_user_insert
+        AFTER INSERT ON users
+        FOR EACH ROW
+        BEGIN
+          INSERT INTO accounts (user_id, code, name, type, balance)
+          VALUES (NEW.id, 1000 + NEW.id, CONCAT(NEW.first_name, ' ', NEW.last_name, ' Wallet'), 'Asset', 0.00);
+        END;
+      `)
+    } catch (triggerErr) {
+      console.warn("Notice: MariaDB trigger initialization message:", (triggerErr as Error).message)
+    }
+
+    // Ensure all existing users have a wallet account
+    try {
+      await p.query(`
+        INSERT INTO accounts (user_id, code, name, type, balance)
+        SELECT id, 1000 + id, CONCAT(first_name, ' ', last_name, ' Wallet'), 'Asset', 0.00
+        FROM users
+        WHERE id NOT IN (SELECT user_id FROM accounts WHERE user_id IS NOT NULL);
+      `)
+    } catch {
+      // Wallet accounts already exist
+    }
 
     return { success: true, message: "MySQL database tables initialized successfully" }
   } catch (error) {
