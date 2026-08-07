@@ -12,15 +12,13 @@ export async function GET(request: Request) {
 
     const searchTerm = `%${search.toLowerCase()}%`
     
-    // We want to return airports.
-    // If the user searches by name, iata_code or icao_code (from airport) -> return matching airports.
-    // If the user searches by city name (from city) -> find airports matching that city's city_code (iata_code).
+    // Search airports directly by airport name, IATA code, ICAO code, or city name/code
     const sql = `
       SELECT DISTINCT
-        'airport' AS type,
         a.id,
         a.name,
-        a.iata_code AS code,
+        a.iata_code,
+        a.icao_code,
         a.country_code
       FROM airports a
       LEFT JOIN cities c ON a.iata_code = c.city_code
@@ -29,20 +27,25 @@ export async function GET(request: Request) {
         OR LOWER(a.iata_code) LIKE ? 
         OR LOWER(a.icao_code) LIKE ?
         OR LOWER(c.name) LIKE ?
+        OR LOWER(c.city_code) LIKE ?
       ORDER BY 
         CASE 
-          WHEN a.iata_code LIKE ? THEN 1
-          WHEN a.name LIKE ? THEN 2
-          ELSE 3
+          WHEN LOWER(a.iata_code) = ? THEN 1
+          WHEN LOWER(a.icao_code) = ? THEN 2
+          WHEN LOWER(a.iata_code) LIKE ? THEN 3
+          WHEN LOWER(a.icao_code) LIKE ? THEN 4
+          WHEN LOWER(a.name) LIKE ? THEN 5
+          ELSE 6
         END,
         a.name ASC
       LIMIT 20
     `
 
     const params = [
-      searchTerm, searchTerm, searchTerm, searchTerm, // Match airports by name/code or cities by name
-      `${search.toLowerCase()}%`, // Ordering rank 1
-      `${search.toLowerCase()}%`  // Ordering rank 2
+      searchTerm, searchTerm, searchTerm, searchTerm, searchTerm,
+      search.toLowerCase(), search.toLowerCase(),
+      `${search.toLowerCase()}%`, `${search.toLowerCase()}%`,
+      `${search.toLowerCase()}%`
     ]
 
     const results = await query<any[]>(sql, params)
