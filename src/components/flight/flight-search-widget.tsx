@@ -12,12 +12,37 @@ import {
   Plus,
   Leaf,
   ExternalLink,
+  Luggage,
+  Wifi,
+  Zap,
+  ShieldCheck,
+  ShieldAlert,
+  RefreshCw,
+  Clock,
+  FileText,
+  Tag,
+  Award,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+
+const AIRLINE_NAMES: Record<string, string> = {
+  BG: "Biman Bangladesh Airlines",
+  BS: "US-Bangla Airlines",
+  VQ: "NOVOAIR",
+  DL: "Delta Air Lines",
+  AA: "American Airlines",
+  UA: "United Airlines",
+  BA: "British Airways",
+  LH: "Lufthansa",
+  AF: "Air France",
+  EK: "Emirates",
+  QR: "Qatar Airways",
+  SQ: "Singapore Airlines",
+  ZZ: "Duffel Airways",
+}
 
 interface LocationResult {
   id: number
@@ -27,68 +52,154 @@ interface LocationResult {
   country_code: string | null
 }
 
-interface TimEmissionsDetails {
-  emissionsGramsPerPax?: {
-    first?: number
-    business?: number
-    premiumEconomy?: number
-    economy?: number
-    mean?: number
-  }
-  emissionsBreakdown?: {
-    wttEmissionsGramsPerPax?: { first?: number; business?: number; premiumEconomy?: number; economy?: number; mean?: number }
-    ttwEmissionsGramsPerPax?: { first?: number; business?: number; premiumEconomy?: number; economy?: number; mean?: number }
-  }
-  contrailsImpactBucket?: string
-  source?: string
-  timWebsiteEmissionsCalculatorUrl?: string
+interface DuffelCarrier {
+  id?: string
+  name?: string
+  iata_code?: string
+  logo_symbol_url?: string | null
+  logo_lockup_url?: string | null
+  conditions_of_carriage_url?: string | null
 }
 
-function getCabinEmissions(details: TimEmissionsDetails | undefined, selectedCabin: string) {
-  if (!details || !details.emissionsGramsPerPax) return null
+interface DuffelLocation {
+  id?: string
+  name?: string
+  iata_code?: string
+  city_name?: string | null
+  iata_country_code?: string | null
+  time_zone?: string | null
+}
 
-  const keyMap: Record<string, keyof NonNullable<TimEmissionsDetails["emissionsGramsPerPax"]>> = {
-    "Main Cabin": "economy",
-    "Comfort+": "premiumEconomy",
-    "First Class": "first",
-    "Delta One": "business",
+interface DuffelBaggage {
+  quantity?: number
+  type?: "checked" | "carry_on" | string
+}
+
+interface DuffelAmenityDetail {
+  seat?: { pitch?: string | null; legroom?: string | null; type?: string | null }
+  wifi?: { available?: boolean | null; cost?: string | null }
+  power?: { available?: boolean | null }
+}
+
+interface DuffelPassengerSegment {
+  passenger_id?: string
+  cabin_class?: string
+  cabin_class_marketing_name?: string | null
+  fare_basis_code?: string | null
+  cabin?: {
+    name?: string
+    marketing_name?: string
+    amenities?: DuffelAmenityDetail
   }
+  baggages?: DuffelBaggage[]
+}
 
-  const classKey = keyMap[selectedCabin] || "economy"
-  const totalGrams = details.emissionsGramsPerPax[classKey] ?? details.emissionsGramsPerPax.economy ?? details.emissionsGramsPerPax.mean ?? 0
-  const wttGrams = details.emissionsBreakdown?.wttEmissionsGramsPerPax?.[classKey] ?? details.emissionsBreakdown?.wttEmissionsGramsPerPax?.economy ?? details.emissionsBreakdown?.wttEmissionsGramsPerPax?.mean ?? 0
-  const ttwGrams = details.emissionsBreakdown?.ttwEmissionsGramsPerPax?.[classKey] ?? details.emissionsBreakdown?.ttwEmissionsGramsPerPax?.economy ?? details.emissionsBreakdown?.ttwEmissionsGramsPerPax?.mean ?? 0
+interface DuffelSegment {
+  id?: string
+  departing_at?: string
+  arriving_at?: string
+  duration?: string
+  origin_terminal?: string | null
+  destination_terminal?: string | null
+  operating_carrier_flight_number?: string | null
+  marketing_carrier_flight_number?: string | null
+  distance?: string | null
+  aircraft?: { id?: string; iata_code?: string | null; name?: string | null } | null
+  stops?: any[]
+  operating_carrier?: DuffelCarrier | null
+  marketing_carrier?: DuffelCarrier | null
+  origin?: DuffelLocation | null
+  destination?: DuffelLocation | null
+  passengers?: DuffelPassengerSegment[]
+}
 
-  return {
-    totalKg: Math.round(totalGrams / 1000),
-    wttKg: Math.round(wttGrams / 1000),
-    ttwKg: Math.round(ttwGrams / 1000),
+interface DuffelSlice {
+  id?: string
+  duration?: string
+  fare_brand_name?: string | null
+  ngs_shelf?: number | null
+  origin?: DuffelLocation | null
+  destination?: DuffelLocation | null
+  segments?: DuffelSegment[]
+  conditions?: {
+    change_before_departure?: { allowed?: boolean; penalty_amount?: string | null; penalty_currency?: string | null } | null
+    priority_check_in?: boolean | null
+    priority_boarding?: boolean | null
+    advance_seat_selection?: boolean | null
+  } | null
+}
+
+interface DuffelOffer {
+  id: string
+  total_amount: string
+  total_currency: string
+  base_amount: string
+  base_currency: string
+  tax_amount: string
+  tax_currency: string
+  total_emissions_kg?: string | null
+  created_at?: string
+  expires_at?: string
+  passenger_identity_documents_required?: boolean
+  supported_passenger_identity_document_types?: string[]
+  supported_loyalty_programmes?: string[]
+  payment_requirements?: {
+    requires_instant_payment?: boolean
+    price_guarantee_expires_at?: string | null
+    payment_required_by?: string | null
+  } | null
+  owner?: DuffelCarrier | null
+  conditions?: {
+    refund_before_departure?: { allowed?: boolean; penalty_amount?: string | null; penalty_currency?: string | null } | null
+    change_before_departure?: { allowed?: boolean; penalty_amount?: string | null; penalty_currency?: string | null } | null
+  } | null
+  slices?: DuffelSlice[]
+  passengers?: any[]
+}
+
+function formatDuration(isoDuration?: string | null): string {
+  if (!isoDuration) return ""
+  const match = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/)
+  if (!match) return isoDuration
+  const hours = parseInt(match[1] || "0", 10)
+  const mins = parseInt(match[2] || "0", 10)
+  if (hours > 0 && mins > 0) return `${hours}h ${mins}m`
+  if (hours > 0) return `${hours}h`
+  if (mins > 0) return `${mins}m`
+  return ""
+}
+
+function formatFlightTime(isoString?: string | null): string {
+  if (!isoString) return ""
+  try {
+    const d = new Date(isoString)
+    if (isNaN(d.getTime())) return isoString
+    return format(d, "HH:mm")
+  } catch {
+    return isoString
   }
 }
 
-function formatContrailBucket(bucket?: string): string {
-  if (!bucket) return "Contrail Impact: Low"
-  const clean = bucket.replace("CONTRAILS_IMPACT_", "").toLowerCase()
-  return `Contrail Impact: ${clean.charAt(0).toUpperCase() + clean.slice(1)}`
+function formatFlightDate(isoString?: string | null): string {
+  if (!isoString) return ""
+  try {
+    const d = new Date(isoString)
+    if (isNaN(d.getTime())) return isoString
+    return format(d, "EEE, d MMM yyyy")
+  } catch {
+    return isoString
+  }
 }
 
-interface AviasalesFlight {
-  origin: string
-  destination: string
-  origin_airport?: string
-  destination_airport?: string
-  price: number
-  airline: string
-  flight_number: string | number
-  departure_at: string
-  return_at?: string
-  transfers?: number
-  return_transfers?: number
-  duration?: number
-  duration_to?: number
-  duration_back?: number
-  link?: string
-  emissionsDetails?: TimEmissionsDetails
+function formatFlightDateTime(isoString?: string | null): string {
+  if (!isoString) return ""
+  try {
+    const d = new Date(isoString)
+    if (isNaN(d.getTime())) return isoString
+    return format(d, "d MMM yyyy, HH:mm")
+  } catch {
+    return isoString
+  }
 }
 
 const CABIN_CLASSES = ["Main Cabin", "Comfort+", "First Class", "Delta One"]
@@ -208,6 +319,352 @@ function LocationInput({
   )
 }
 
+function FlightOfferCard({ offer, index }: { offer: DuffelOffer; index: number }) {
+  const owner = offer.owner || {}
+  const ownerName = owner.name || (owner.iata_code ? AIRLINE_NAMES[owner.iata_code] : undefined) || "Airline"
+  const ownerLogo = owner.logo_symbol_url || owner.logo_lockup_url || (owner.iata_code ? `https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/${owner.iata_code}.svg` : null)
+
+  const slices = offer.slices || []
+  const firstSlice = slices[0]
+  const firstSeg = firstSlice?.segments?.[0]
+
+  const flightNumber = firstSeg?.operating_carrier_flight_number || firstSeg?.marketing_carrier_flight_number || ""
+  const carrierCode = firstSeg?.operating_carrier?.iata_code || owner.iata_code || ""
+
+  const emissionsKg = offer.total_emissions_kg
+  const totalAmount = offer.total_amount
+  const currency = offer.total_currency || "USD"
+  const baseAmount = offer.base_amount
+  const taxAmount = offer.tax_amount
+
+  const refCond = offer.conditions?.refund_before_departure
+  const chgCond = offer.conditions?.change_before_departure
+
+  const payReq = offer.payment_requirements
+  const priceGuaranteeExp = payReq?.price_guarantee_expires_at ? formatFlightDateTime(payReq.price_guarantee_expires_at) : null
+  const payRequiredBy = payReq?.payment_required_by ? formatFlightDateTime(payReq.payment_required_by) : null
+
+  const carriageUrl = owner.conditions_of_carriage_url || firstSeg?.operating_carrier?.conditions_of_carriage_url
+  const loyaltyProgs = offer.supported_loyalty_programmes || []
+  const docsRequired = offer.passenger_identity_documents_required
+
+  return (
+    <div className="group rounded-[8px] border border-delta-hairline bg-white shadow-sm hover:border-delta-navy hover:shadow-md transition-all overflow-hidden">
+      {/* Top Header Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50/80 px-5 py-3 border-b border-delta-hairline-light">
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Airline Logo */}
+          <div className="flex h-9 w-12 shrink-0 items-center justify-center rounded bg-white border border-delta-hairline p-1 shadow-2xs">
+            {ownerLogo ? (
+              <img
+                src={ownerLogo}
+                alt={ownerName}
+                className="max-h-full max-w-full object-contain"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement
+                  if (owner.iata_code && !target.src.includes("pics.avs.io")) {
+                    target.src = `https://pics.avs.io/80/40/${owner.iata_code}.png`
+                  } else {
+                    target.style.display = "none"
+                  }
+                }}
+              />
+            ) : (
+              <span className="font-bold text-[11px] text-delta-navy">{owner.iata_code || "FL"}</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-[700] text-[15px] text-delta-navy">{ownerName}</span>
+            {flightNumber && (
+              <span className="rounded bg-delta-navy/10 px-2 py-0.5 text-[11px] font-mono font-[700] text-delta-navy">
+                {carrierCode} {flightNumber}
+              </span>
+            )}
+            {firstSlice?.fare_brand_name && (
+              <span className="rounded bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 text-[11px] font-[600]">
+                {firstSlice.fare_brand_name}
+              </span>
+            )}
+            {firstSlice?.ngs_shelf && (
+              <span className="rounded bg-slate-100 text-slate-700 px-2 py-0.5 text-[10px] font-mono font-[600]">
+                Shelf {firstSlice.ngs_shelf}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Top Right Badges: Eco Emissions & Price Guarantee */}
+        <div className="flex items-center gap-2 flex-wrap text-[11px]">
+          {emissionsKg && (
+            <span className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-[600] border",
+              parseInt(emissionsKg, 10) < 100
+                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                : "bg-emerald-50/70 text-emerald-900 border-emerald-200/60"
+            )}>
+              <Leaf className="h-3.5 w-3.5 text-emerald-600" />
+              <span>{emissionsKg} kg CO₂</span>
+            </span>
+          )}
+
+          {priceGuaranteeExp && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 font-[500]">
+              <Clock className="h-3.5 w-3.5 text-amber-600" />
+              <span>Price locked until {priceGuaranteeExp}</span>
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Slices (Itinerary / Route info) */}
+      <div className="p-5 space-y-4">
+        {slices.map((slice, sIdx) => {
+          const sSeg0 = slice.segments?.[0]
+          const sSegLast = slice.segments?.[slice.segments.length - 1]
+          if (!sSeg0 || !sSegLast) return null
+
+          const origin = sSeg0.origin || slice.origin || {}
+          const dest = sSegLast.destination || slice.destination || {}
+          const stopsCount = (slice.segments?.length || 1) - 1
+
+          const departTime = formatFlightTime(sSeg0.departing_at)
+          const departDateStr = formatFlightDate(sSeg0.departing_at)
+          const arrivalTime = formatFlightTime(sSegLast.arriving_at)
+          const arrivalDateStr = formatFlightDate(sSegLast.arriving_at)
+          const durationStr = formatDuration(slice.duration || sSeg0.duration)
+          const aircraftName = sSeg0.aircraft?.name || (sSeg0.aircraft?.iata_code ? `Aircraft (${sSeg0.aircraft.iata_code})` : null)
+
+          return (
+            <div key={slice.id || sIdx} className={cn(sIdx > 0 && "pt-4 border-t border-delta-hairline-light")}>
+              {slices.length > 1 && (
+                <div className="mb-2 text-[12px] font-[700] uppercase tracking-wider text-delta-red flex items-center gap-1.5">
+                  <Plane className={cn("h-3.5 w-3.5", sIdx === 1 && "rotate-180")} />
+                  {sIdx === 0 ? "Outbound Flight" : "Return Flight"}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                {/* Origin */}
+                <div className="md:col-span-4 flex flex-col">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[22px] font-[800] text-delta-navy">{departTime}</span>
+                    <span className="text-[14px] font-[700] text-delta-navy">{origin.iata_code}</span>
+                  </div>
+                  <span className="text-[13px] font-[500] text-delta-ink truncate">{origin.city_name || origin.name}</span>
+                  <span className="text-[11px] text-delta-ink-muted truncate">
+                    {origin.name}
+                    {sSeg0.origin_terminal && ` · Terminal ${sSeg0.origin_terminal}`}
+                  </span>
+                  <span className="text-[11px] text-delta-ink-muted font-mono">{departDateStr}</span>
+                </div>
+
+                {/* Timeline / Duration / Stops */}
+                <div className="md:col-span-4 flex flex-col items-center justify-center px-2">
+                  <span className="text-[12px] font-[600] text-delta-ink-muted">{durationStr}</span>
+                  <div className="relative w-full my-1.5 flex items-center justify-center">
+                    <div className="w-full h-[2px] bg-delta-hairline" />
+                    <div className="absolute bg-white px-1">
+                      <Plane className="h-4 w-4 text-delta-navy rotate-90" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {stopsCount === 0 ? (
+                      <span className="text-[11px] font-[700] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        Non-stop
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-[700] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                        {stopsCount} stop{stopsCount > 1 ? "s" : ""}
+                      </span>
+                    )}
+                    {aircraftName && (
+                      <span className="text-[11px] text-delta-ink-muted truncate max-w-[150px]" title={aircraftName}>
+                        {aircraftName}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Destination */}
+                <div className="md:col-span-4 flex flex-col md:text-right">
+                  <div className="flex items-baseline gap-2 md:justify-end">
+                    <span className="text-[22px] font-[800] text-delta-navy">{arrivalTime}</span>
+                    <span className="text-[14px] font-[700] text-delta-navy">{dest.iata_code}</span>
+                  </div>
+                  <span className="text-[13px] font-[500] text-delta-ink truncate">{dest.city_name || dest.name}</span>
+                  <span className="text-[11px] text-delta-ink-muted truncate">
+                    {dest.name}
+                    {sSegLast.destination_terminal && ` · Terminal ${sSegLast.destination_terminal}`}
+                  </span>
+                  <span className="text-[11px] text-delta-ink-muted font-mono">{arrivalDateStr}</span>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+
+        {/* Passenger Amenities & Features Footer */}
+        {(() => {
+          const pass0 = firstSeg?.passengers?.[0]
+          const amenities = pass0?.cabin?.amenities
+          const baggages = pass0?.baggages || []
+          let checkedQty = 0
+          let carryOnQty = 0
+          baggages.forEach((b) => {
+            if (b.type === "checked") checkedQty += b.quantity || 1
+            if (b.type === "carry_on") carryOnQty += b.quantity || 1
+          })
+
+          const seatPitch = amenities?.seat?.pitch
+          const seatLegroom = amenities?.seat?.legroom
+          const wifi = amenities?.wifi
+          const power = amenities?.power
+          const fareCode = pass0?.fare_basis_code
+
+          return (
+            <div className="mt-3 pt-3 border-t border-delta-hairline-light flex flex-wrap items-center justify-between gap-3 text-[12px]">
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Baggage */}
+                {(checkedQty > 0 || carryOnQty > 0) && (
+                  <span className="inline-flex items-center gap-1.5 rounded bg-slate-100 px-2.5 py-1 font-[500] text-delta-navy border border-slate-200">
+                    <Luggage className="h-3.5 w-3.5 text-delta-navy" />
+                    {carryOnQty > 0 && `${carryOnQty} Carry-on`}
+                    {carryOnQty > 0 && checkedQty > 0 && " · "}
+                    {checkedQty > 0 && `${checkedQty} Checked`}
+                  </span>
+                )}
+
+                {/* Wi-Fi */}
+                {wifi?.available && (
+                  <span className="inline-flex items-center gap-1.5 rounded bg-emerald-50 px-2.5 py-1 font-[500] text-emerald-800 border border-emerald-200">
+                    <Wifi className="h-3.5 w-3.5 text-emerald-600" />
+                    {wifi.cost === "paid" ? "Wi-Fi (Paid)" : "Free Wi-Fi"}
+                  </span>
+                )}
+
+                {/* Power */}
+                {power?.available && (
+                  <span className="inline-flex items-center gap-1.5 rounded bg-amber-50 px-2.5 py-1 font-[500] text-amber-800 border border-amber-200">
+                    <Zap className="h-3.5 w-3.5 text-amber-600" />
+                    In-seat Power
+                  </span>
+                )}
+
+                {/* Seat Pitch */}
+                {seatPitch && (
+                  <span className="inline-flex items-center gap-1.5 rounded bg-slate-100 px-2.5 py-1 font-[500] text-slate-700 border border-slate-200">
+                    <span>Pitch: {seatPitch}&quot;</span>
+                    {seatLegroom && seatLegroom !== "n/a" && <span className="capitalize">({seatLegroom})</span>}
+                  </span>
+                )}
+
+                {/* Loyalty */}
+                {loyaltyProgs.length > 0 && (
+                  <span className="inline-flex items-center gap-1.5 rounded bg-blue-50 px-2.5 py-1 font-[500] text-blue-800 border border-blue-200">
+                    <Award className="h-3.5 w-3.5 text-blue-600" />
+                    <span>Earn {loyaltyProgs.join(", ")} miles</span>
+                  </span>
+                )}
+
+                {/* Fare Code */}
+                {fareCode && (
+                  <span className="inline-flex items-center gap-1 rounded bg-slate-50 px-2 py-0.5 font-mono text-[10px] font-[600] text-slate-600 border border-slate-200" title="Fare basis code">
+                    <Tag className="h-3 w-3 text-slate-400" />
+                    {fareCode}
+                  </span>
+                )}
+              </div>
+
+              {/* Conditions / Policy Badges */}
+              <div className="flex flex-wrap items-center gap-2 font-[600] text-[11px]">
+                {refCond?.allowed ? (
+                  <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                    {refCond.penalty_amount ? `Refundable (${refCond.penalty_currency || "USD"} ${refCond.penalty_amount} fee)` : "Fully Refundable"}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                    <ShieldAlert className="h-3 w-3 text-slate-500" />
+                    Non-refundable
+                  </span>
+                )}
+
+                {chgCond?.allowed ? (
+                  <span className="inline-flex items-center gap-1 text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                    <RefreshCw className="h-3 w-3 text-blue-600" />
+                    {chgCond.penalty_amount ? `Changeable (${chgCond.penalty_currency || "USD"} ${chgCond.penalty_amount} fee)` : "Free Changes"}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                    Non-changeable
+                  </span>
+                )}
+
+                {docsRequired && (
+                  <span className="inline-flex items-center gap-1 text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    <FileText className="h-3 w-3 text-amber-600" />
+                    Passport Required
+                  </span>
+                )}
+              </div>
+            </div>
+          )
+        })()}
+      </div>
+
+      {/* Card Footer Bar: Price, Tax & Book Action */}
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-50 px-5 py-3 border-t border-delta-hairline-light">
+        <div className="flex items-center gap-4">
+          <div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-[22px] font-[800] text-delta-red">${totalAmount}</span>
+              <span className="text-[12px] font-[700] text-delta-navy">{currency}</span>
+            </div>
+            <div className="text-[11px] text-delta-ink-muted">
+              Base: ${baseAmount} + Tax: ${taxAmount} · Total per traveler
+            </div>
+          </div>
+
+          {payRequiredBy && (
+            <div className="hidden sm:block text-[11px] text-slate-600 border-l border-delta-hairline-light pl-3">
+              <span className="font-[600]">Payment due:</span> {payRequiredBy}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3 ml-auto">
+          {carriageUrl && (
+            <a
+              href={carriageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden lg:inline-flex items-center gap-1 text-[11px] font-[500] text-delta-navy hover:underline"
+            >
+              Conditions of carriage <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+
+          <Button
+            size="sm"
+            onClick={() => {
+              if (carriageUrl) {
+                window.open(carriageUrl, "_blank")
+              } else {
+                alert(`Selected Offer ID: ${offer.id}\nTotal: $${totalAmount} ${currency}`)
+              }
+            }}
+            className="bg-delta-red hover:bg-delta-red/90 text-white font-[700] px-6 h-10 flex items-center gap-2 rounded-[4px]"
+          >
+            <span>Book Deal</span>
+            <ExternalLink className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function FlightSearchWidget() {
   const [tripType, setTripType] = useState<"round" | "oneway">("round")
   const [from, setFrom] = useState("")
@@ -224,7 +681,7 @@ export function FlightSearchWidget() {
 
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
-  const [searchResults, setSearchResults] = useState<AviasalesFlight[] | null>(null)
+  const [searchResults, setSearchResults] = useState<DuffelOffer[] | null>(null)
   const [routeInfo, setRouteInfo] = useState<{ origin: string; destination: string } | null>(null)
 
   const handleSearch = async () => {
@@ -240,29 +697,21 @@ export function FlightSearchWidget() {
     setSearchError(null)
 
     try {
-      let url = `/api/flights/search?origin=${encodeURIComponent(originParam)}&destination=${encodeURIComponent(destParam)}&departure_at=${depart}&one_way=${tripType === "oneway"}&cy=usd&currency=usd`
-      if (tripType === "round" && returnDate) {
-        url += `&return_at=${returnDate}`
-      }
+      let reqCabin = "economy"
+      if (cabin === "Comfort+") reqCabin = "premium_economy"
+      if (cabin === "First Class") reqCabin = "first"
+      if (cabin === "Delta One") reqCabin = "business"
 
-      const res = await fetch(url)
-      const data = await res.json()
+      const url = `/api/flights/search?origin=${encodeURIComponent(originParam)}&destination=${encodeURIComponent(destParam)}&departure_at=${depart}&one_way=${tripType === "oneway"}&cabin=${reqCabin}&passengers=${passengers}`
+      const res = await fetch(tripType === "round" && returnDate ? url + `&return_at=${returnDate}` : url)
+      const duffelData = await res.json()
 
-      if (data.success && Array.isArray(data.data)) {
-        setSearchResults(data.data)
-        setRouteInfo({
-          origin: data.originCode || originParam,
-          destination: data.destinationCode || destParam,
-        })
-      } else if (data.success && data.data && typeof data.data === "object") {
-        const list = Object.values(data.data).flat() as AviasalesFlight[]
-        setSearchResults(list)
-        setRouteInfo({
-          origin: data.originCode || originParam,
-          destination: data.destinationCode || destParam,
-        })
+      if (duffelData.success && Array.isArray(duffelData.data)) {
+        setSearchResults(duffelData.data)
+        setRouteInfo({ origin: originParam, destination: destParam })
       } else {
-        setSearchError(data.error || "No flights found matching your search criteria.")
+        const errMessage = duffelData.details ? duffelData.details[0]?.message : (duffelData.error || "No flights found matching your search criteria.")
+        setSearchError(errMessage)
         setSearchResults([])
       }
     } catch (err) {
@@ -464,137 +913,10 @@ export function FlightSearchWidget() {
               No flight deals found for this route on the selected dates. Try adjusting your departure date or choosing different airports.
             </div>
           ) : (
-            <div className="space-y-3">
-              {searchResults.map((flight, idx) => {
-                const departDate = flight.departure_at ? new Date(flight.departure_at) : null
-                const returnDt = flight.return_at ? new Date(flight.return_at) : null
-                const formattedDepart = departDate && !isNaN(departDate.getTime()) ? format(departDate, "MMM d, yyyy HH:mm") : (flight.departure_at || "")
-                const formattedReturn = returnDt && !isNaN(returnDt.getTime()) ? format(returnDt, "MMM d, yyyy HH:mm") : (flight.return_at || "")
-                const flightUrl = flight.link
-                  ? (flight.link.startsWith("http") ? flight.link : `https://www.aviasales.com${flight.link}`)
-                  : `https://www.aviasales.com/search/${flight.origin}${depart.replace(/-/g, "")}${flight.destination}`
-
-                const totalDuration = flight.duration || (flight.duration_to ? flight.duration_to + (flight.duration_back || 0) : 0)
-                const durationHours = Math.floor(totalDuration / 60)
-                const durationMins = totalDuration % 60
-
-                return (
-                  <div
-                    key={`${flight.airline}-${flight.flight_number}-${idx}`}
-                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-[6px] border border-delta-hairline bg-white p-4 shadow-sm hover:border-delta-navy transition-all"
-                  >
-                    <div className="flex items-center gap-4 flex-1">
-                      {/* Airline logo */}
-                      <div className="flex h-10 w-12 shrink-0 items-center justify-center rounded bg-delta-surface-1 border border-delta-hairline p-1">
-                        <img
-                          src={`https://pics.avs.io/80/40/${flight.airline}.png`}
-                          alt={flight.airline}
-                          className="max-h-full max-w-full object-contain"
-                          onError={(e) => {
-                            (e.target as HTMLElement).style.display = "none"
-                          }}
-                        />
-                        <span className="font-bold text-[12px] text-delta-navy">{flight.airline}</span>
-                      </div>
-
-                      {/* Flight Details */}
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-[700] text-[15px] text-delta-navy">
-                            {flight.origin_airport || flight.origin} → {flight.destination_airport || flight.destination}
-                          </span>
-                          <span className="rounded bg-delta-navy/10 px-2 py-0.5 text-[11px] font-mono font-[600] text-delta-navy">
-                            {flight.airline} {flight.flight_number}
-                          </span>
-                          {flight.transfers === 0 ? (
-                            <span className="rounded bg-green-100 px-2 py-0.5 text-[11px] font-[600] text-green-800">
-                              Non-stop
-                            </span>
-                          ) : (
-                            <span className="rounded bg-amber-100 px-2 py-0.5 text-[11px] font-[600] text-amber-800">
-                              {flight.transfers} stop{flight.transfers! > 1 ? "s" : ""}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-delta-ink-muted">
-                          <span>Depart: <strong className="text-delta-ink font-[500]">{formattedDepart}</strong></span>
-                          {formattedReturn && (
-                            <span>Return: <strong className="text-delta-ink font-[500]">{formattedReturn}</strong></span>
-                          )}
-                          {totalDuration > 0 && (
-                            <span>Duration: <strong className="text-delta-ink font-[500]">{durationHours}h {durationMins}m</strong></span>
-                          )}
-                        </div>
-
-                        {/* Google Travel Impact Model (TIM) Emissions */}
-                        {flight.emissionsDetails && (() => {
-                          const emissionsInfo = getCabinEmissions(flight.emissionsDetails, cabin)
-                          if (!emissionsInfo) return null
-
-                          return (
-                            <div className="mt-2.5 flex flex-wrap items-center gap-2 pt-2 border-t border-delta-hairline-light text-[12px]">
-                              <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 font-[600] text-emerald-800 border border-emerald-200">
-                                <Leaf className="h-3 w-3 text-emerald-600" />
-                                {emissionsInfo.totalKg > 0 ? `${emissionsInfo.totalKg} kg CO2e / pax` : "Emissions Calculated"}
-                              </span>
-
-                              {(emissionsInfo.ttwKg > 0 || emissionsInfo.wttKg > 0) && (
-                                <span className="text-delta-ink-muted">
-                                  (TTW: {emissionsInfo.ttwKg} kg · WTT: {emissionsInfo.wttKg} kg)
-                                </span>
-                              )}
-
-                              {flight.emissionsDetails.contrailsImpactBucket && (
-                                <span className="rounded bg-sky-50 px-1.5 py-0.5 text-[11px] font-[500] text-sky-700 border border-sky-200">
-                                  {formatContrailBucket(flight.emissionsDetails.contrailsImpactBucket)}
-                                </span>
-                              )}
-
-                              {flight.emissionsDetails.source && (
-                                <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-mono font-[700] text-gray-700">
-                                  {flight.emissionsDetails.source}
-                                </span>
-                              )}
-
-                              {flight.emissionsDetails.timWebsiteEmissionsCalculatorUrl && (
-                                <a
-                                  href={flight.emissionsDetails.timWebsiteEmissionsCalculatorUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-[11px] text-delta-navy font-[600] hover:underline ml-auto"
-                                >
-                                  Travel Impact Model (TIM)
-                                  <ExternalLink className="h-3 w-3" />
-                                </a>
-                              )}
-                            </div>
-                          )
-                        })()}
-                      </div>
-                    </div>
-
-                    {/* Price & Book */}
-                    <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-delta-hairline-light pt-3 sm:pt-0">
-                      <div className="text-right">
-                        <div className="text-[20px] font-[800] text-delta-red">
-                          ${flight.price}
-                        </div>
-                        <div className="text-[11px] text-delta-ink-muted uppercase">per traveler</div>
-                      </div>
-
-                      <a
-                        href={flightUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="rounded-[4px] bg-delta-red px-5 py-2.5 text-[14px] font-[700] text-white hover:bg-delta-red/90 transition-colors shrink-0"
-                      >
-                        Book Deal
-                      </a>
-                    </div>
-                  </div>
-                )
-              })}
+            <div className="space-y-4">
+              {searchResults.map((offer, idx) => (
+                <FlightOfferCard key={offer.id || `offer-${idx}`} offer={offer} index={idx} />
+              ))}
             </div>
           )}
         </div>
