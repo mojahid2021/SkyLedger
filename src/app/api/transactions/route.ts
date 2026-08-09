@@ -1,11 +1,22 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const transactions = await query(
-      "SELECT t.id, t.reference, t.description, t.category, a.name as account, t.type, t.amount, t.status, DATE_FORMAT(t.transaction_date, '%Y-%m-%d') as date FROM transactions t LEFT JOIN accounts a ON t.account_id = a.id ORDER BY t.created_at DESC"
-    )
+    const { searchParams } = new URL(request.url)
+    const userIdStr = searchParams.get("userId")
+
+    let sql = "SELECT t.id, t.reference, t.description, t.category, a.name as account, t.type, t.amount, t.status, DATE_FORMAT(t.transaction_date, '%Y-%m-%d') as date FROM transactions t LEFT JOIN accounts a ON t.account_id = a.id"
+    let params: any[] = []
+
+    if (userIdStr) {
+      sql += " WHERE a.user_id = ?"
+      params.push(parseInt(userIdStr, 10))
+    }
+
+    sql += " ORDER BY t.created_at DESC"
+
+    const transactions = await query(sql, params)
 
     return NextResponse.json({ success: true, data: transactions || [] })
   } catch (error) {

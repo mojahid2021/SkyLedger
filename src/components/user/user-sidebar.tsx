@@ -4,8 +4,9 @@ import {
   IconReceipt,
   IconFileText,
   IconChartBar,
-  IconUsers,
   IconSettings,
+  IconPlane,
+  IconWallet,
 } from "@tabler/icons-react"
 import { cn } from "@/lib/utils"
 
@@ -17,6 +18,8 @@ interface UserSidebarProps {
 export function UserSidebar({ activeTab, setActiveTab }: UserSidebarProps) {
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: IconLayoutDashboard },
+    { id: "trips", label: "My Trips & Tickets", icon: IconPlane },
+    { id: "wallet", label: "Digital Wallet", icon: IconWallet },
     { id: "transactions", label: "Transactions", icon: IconReceipt },
     { id: "invoices", label: "Invoices & Bills", icon: IconFileText },
     { id: "reports", label: "Financial Reports", icon: IconChartBar },

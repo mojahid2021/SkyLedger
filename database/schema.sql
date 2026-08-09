@@ -70,6 +70,58 @@ CREATE TABLE IF NOT EXISTS airports (
   INDEX idx_country (country_code)
 );
 
+-- 6. Bookings Table
+CREATE TABLE IF NOT EXISTS bookings (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  booking_reference VARCHAR(32) UNIQUE NOT NULL,
+  user_id INT NOT NULL,
+  duffel_offer_id VARCHAR(128) NULL,
+  origin_code VARCHAR(10) NOT NULL,
+  destination_code VARCHAR(10) NOT NULL,
+  departure_date VARCHAR(30) NOT NULL,
+  return_date VARCHAR(30) NULL,
+  cabin_class VARCHAR(50) NOT NULL DEFAULT 'economy',
+  total_amount DECIMAL(15, 2) NOT NULL,
+  currency VARCHAR(10) NOT NULL DEFAULT 'USD',
+  status ENUM('confirmed', 'cancelled') NOT NULL DEFAULT 'confirmed',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_user_bookings (user_id),
+  INDEX idx_pnr (booking_reference)
+);
+
+-- 7. Booking Passengers Table
+CREATE TABLE IF NOT EXISTS booking_passengers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  booking_id INT NOT NULL,
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  email VARCHAR(150) NULL,
+  phone VARCHAR(30) NULL,
+  date_of_birth DATE NULL,
+  passport_number VARCHAR(50) NULL,
+  passenger_type ENUM('adult', 'child', 'infant') NOT NULL DEFAULT 'adult',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
+);
+
+-- 8. Booking Tickets Table
+CREATE TABLE IF NOT EXISTS booking_tickets (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  booking_id INT NOT NULL,
+  passenger_id INT NOT NULL,
+  segment_type ENUM('outbound', 'return') NOT NULL DEFAULT 'outbound',
+  flight_number VARCHAR(20) NOT NULL,
+  airline_code VARCHAR(10) NOT NULL,
+  airline_name VARCHAR(100) NOT NULL,
+  seat_designator VARCHAR(10) NULL,
+  seat_price DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
+  ticket_number VARCHAR(64) UNIQUE NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
+  FOREIGN KEY (passenger_id) REFERENCES booking_passengers(id) ON DELETE CASCADE
+);
+
 -- Seed Admin Login (inserted only if not already present)
 INSERT IGNORE INTO users (first_name, last_name, email, phone, date_of_birth, password_hash, role)
 VALUES

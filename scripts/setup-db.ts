@@ -1,46 +1,40 @@
+// Setup & Seed Script for SkyLedger Database
+// Run via: npx tsx scripts/setup-db.ts
+
+import * as dotenv from "dotenv"
+import { resolve } from "path"
 import mysql from "mysql2/promise"
 
-// Read MySQL config from environment variables
+// Load env vars
+dotenv.config({ path: resolve(process.cwd(), ".env.local") })
+
 const dbConfig = {
   host: process.env.MYSQL_HOST || "localhost",
   port: Number(process.env.MYSQL_PORT) || 3306,
   user: process.env.MYSQL_USER || "root",
   password: process.env.MYSQL_PASSWORD || "",
-  database: process.env.MYSQL_DATABASE || "skyledger_db",
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
 }
 
-// Global connection pool instance
-let pool: mysql.Pool | null = null
+// Global connection
+let connection: mysql.Connection | null = null
 
-export function getMySQLPool(): mysql.Pool {
-  if (!pool) {
-    pool = mysql.createPool(dbConfig)
-  }
-  return pool
-}
+async function run() {
+  console.log("✈️  SkyLedger Database Setup & Seeder ✈️\\n")
 
-// Universal query runner helper
-export async function query<T = any>(sql: string, params: any[] = []): Promise<T> {
   try {
-    const connectionPool = getMySQLPool()
-    const [rows] = await connectionPool.execute(sql, params)
-    return rows as T
-  } catch (error) {
-    console.warn("MySQL query execution warning:", (error as Error).message)
-    throw error
-  }
-}
+    console.log(`Connecting to MySQL server at ${dbConfig.host}:${dbConfig.port}...`)
+    connection = await mysql.createConnection(dbConfig)
 
-// Table initialization helper if database tables do not exist
-export async function initMySQLDatabase() {
-  try {
-    const p = getMySQLPool()
-    
-    // Create users table
-    await p.execute(`
+    // Ensure database exists
+    const dbName = process.env.MYSQL_DATABASE || "skyledger_db"
+    console.log(`Creating database '${dbName}' if it doesn't exist...`)
+    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``)
+    await connection.query(`USE \`${dbName}\``)
+
+    console.log("Setting up tables...")
+
+    // 1. Users Table
+    await connection.query(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         first_name VARCHAR(100) NOT NULL,
@@ -51,11 +45,12 @@ export async function initMySQLDatabase() {
         password_hash VARCHAR(255) NOT NULL,
         role ENUM('admin', 'user') NOT NULL DEFAULT 'user',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+      )
     `)
+    console.log("✓ created 'users' table")
 
-    // Create accounts table
-    await p.execute(`
+    // 2. Accounts Table
+    await connection.query(`
       CREATE TABLE IF NOT EXISTS accounts (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT UNIQUE NULL,
@@ -65,17 +60,12 @@ export async function initMySQLDatabase() {
         balance DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-      );
+      )
     `)
+    console.log("✓ created 'accounts' table")
 
-    try {
-      await p.query(`ALTER TABLE accounts ADD COLUMN IF NOT EXISTS user_id INT UNIQUE NULL AFTER id;`)
-    } catch {
-      // Column may already exist
-    }
-
-    // Create transactions table
-    await p.execute(`
+    // 3. Transactions Table
+    await connection.query(`
       CREATE TABLE IF NOT EXISTS transactions (
         id INT AUTO_INCREMENT PRIMARY KEY,
         reference VARCHAR(64) NOT NULL,
@@ -86,12 +76,14 @@ export async function initMySQLDatabase() {
         amount DECIMAL(15, 2) NOT NULL,
         status ENUM('completed', 'pending', 'failed') NOT NULL DEFAULT 'completed',
         transaction_date DATE NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      )
     `)
+    console.log("✓ created 'transactions' table")
 
-    // Create audit logs table
-    await p.execute(`
+    // 4. Audit Logs Table
+    await connection.query(`
       CREATE TABLE IF NOT EXISTS audit_logs (
         id INT AUTO_INCREMENT PRIMARY KEY,
         event VARCHAR(255) NOT NULL,
@@ -99,11 +91,12 @@ export async function initMySQLDatabase() {
         ip_address VARCHAR(45) NOT NULL,
         status VARCHAR(50) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+      )
     `)
+    console.log("✓ created 'audit_logs' table (MySQL fallback)")
 
-    // Create airports table
-    await p.execute(`
+    // 5. Airports & Cities
+    await connection.query(`
       CREATE TABLE IF NOT EXISTS airports (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -117,11 +110,10 @@ export async function initMySQLDatabase() {
         INDEX idx_iata (iata_code),
         INDEX idx_icao (icao_code),
         INDEX idx_country (country_code)
-      );
+      )
     `)
-
-    // Create cities table
-    await p.execute(`
+    
+    await connection.query(`
       CREATE TABLE IF NOT EXISTS cities (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -133,11 +125,12 @@ export async function initMySQLDatabase() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX idx_city_code (city_code),
         INDEX idx_country (country_code)
-      );
+      )
     `)
+    console.log("✓ created 'airports' and 'cities' tables")
 
-    // Create bookings table
-    await p.execute(`
+    // 6. Bookings Tables
+    await connection.query(`
       CREATE TABLE IF NOT EXISTS bookings (
         id INT AUTO_INCREMENT PRIMARY KEY,
         booking_reference VARCHAR(32) UNIQUE NOT NULL,
@@ -155,11 +148,10 @@ export async function initMySQLDatabase() {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
         INDEX idx_user_bookings (user_id),
         INDEX idx_pnr (booking_reference)
-      );
+      )
     `)
 
-    // Create booking_passengers table
-    await p.execute(`
+    await connection.query(`
       CREATE TABLE IF NOT EXISTS booking_passengers (
         id INT AUTO_INCREMENT PRIMARY KEY,
         booking_id INT NOT NULL,
@@ -172,11 +164,10 @@ export async function initMySQLDatabase() {
         passenger_type ENUM('adult', 'child', 'infant') NOT NULL DEFAULT 'adult',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
-      );
+      )
     `)
 
-    // Create booking_tickets table
-    await p.execute(`
+    await connection.query(`
       CREATE TABLE IF NOT EXISTS booking_tickets (
         id INT AUTO_INCREMENT PRIMARY KEY,
         booking_id INT NOT NULL,
@@ -191,46 +182,53 @@ export async function initMySQLDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
         FOREIGN KEY (passenger_id) REFERENCES booking_passengers(id) ON DELETE CASCADE
-      );
+      )
     `)
+    console.log("✓ created 'bookings', 'booking_passengers', and 'booking_tickets' tables")
 
-    // Seed admin login (inserted only if not already present)
-    await p.execute(`
+    console.log("\\nConfiguring Triggers...")
+    // Trigger to auto-create wallets
+    await connection.query("DROP TRIGGER IF EXISTS after_user_insert")
+    await connection.query(`
+      CREATE TRIGGER after_user_insert
+      AFTER INSERT ON users
+      FOR EACH ROW
+      BEGIN
+        INSERT INTO accounts (user_id, code, name, type, balance)
+        VALUES (NEW.id, 1000 + NEW.id, CONCAT(NEW.first_name, ' ', NEW.last_name, ' Wallet'), 'Asset', 0.00);
+      END;
+    `)
+    console.log("✓ created 'after_user_insert' auto-wallet trigger")
+
+
+    console.log("\\nSeeding Initial Data...")
+
+    // Admin seed
+    await connection.query(`
       INSERT IGNORE INTO users (first_name, last_name, email, phone, date_of_birth, password_hash, role)
       VALUES
-      ('Alexander', 'Vance', 'admin@skyledger.io', '+1 (404) 555-0101', '1985-03-14', 'admin123', 'admin');
+      ('Md', 'Mojahid', 'aammojahid@gmail.com', '+8801736345525', '1985-03-14', 'admin123', 'admin')
+    `)
+    console.log("✓ seeded Admin user (aammojahid@gmail.com)")
+
+    // Clean up empty wallets for existing users (in case trigger missed any pre-existing)
+    await connection.query(`
+      INSERT IGNORE INTO accounts (user_id, code, name, type, balance)
+      SELECT id, 1000 + id, CONCAT(first_name, ' ', last_name, ' Wallet'), 'Asset', 0.00
+      FROM users
+      WHERE id NOT IN (SELECT user_id FROM accounts WHERE user_id IS NOT NULL);
     `)
 
-    // Create MariaDB Trigger to automatically create a wallet account upon user registration
-    try {
-      await p.query(`DROP TRIGGER IF EXISTS after_user_insert;`)
-      await p.query(`
-        CREATE TRIGGER after_user_insert
-        AFTER INSERT ON users
-        FOR EACH ROW
-        BEGIN
-          INSERT INTO accounts (user_id, code, name, type, balance)
-          VALUES (NEW.id, 1000 + NEW.id, CONCAT(NEW.first_name, ' ', NEW.last_name, ' Wallet'), 'Asset', 0.00);
-        END;
-      `)
-    } catch (triggerErr) {
-      console.warn("Notice: MariaDB trigger initialization message:", (triggerErr as Error).message)
-    }
-
-    // Ensure all existing users have a wallet account
-    try {
-      await p.query(`
-        INSERT INTO accounts (user_id, code, name, type, balance)
-        SELECT id, 1000 + id, CONCAT(first_name, ' ', last_name, ' Wallet'), 'Asset', 0.00
-        FROM users
-        WHERE id NOT IN (SELECT user_id FROM accounts WHERE user_id IS NOT NULL);
-      `)
-    } catch {
-      // Wallet accounts already exist
-    }
-
-    return { success: true, message: "MySQL database tables initialized successfully" }
+    console.log("\\n✅ Setup completed successfully!")
   } catch (error) {
-    return { success: false, error: (error as Error).message }
+    console.error("\\n❌ Setup failed:")
+    console.error(error)
+    process.exit(1)
+  } finally {
+    if (connection) {
+      await connection.end()
+    }
   }
 }
+
+run()

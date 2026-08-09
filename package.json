@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:setup": "npx tsx scripts/setup-db.ts"
   },
   "dependencies": {
     "@tabler/icons-react": "^3.46.0",
