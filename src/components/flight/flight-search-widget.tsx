@@ -22,11 +22,14 @@ import {
   FileText,
   Tag,
   Award,
+  Armchair,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+import { SeatMapDialog } from "@/components/flight/seat-map-dialog"
+import { SelectedSeatChoice } from "@/types/seat-map"
 
 const AIRLINE_NAMES: Record<string, string> = {
   BG: "Biman Bangladesh Airlines",
@@ -320,6 +323,9 @@ function LocationInput({
 }
 
 function FlightOfferCard({ offer, index }: { offer: DuffelOffer; index: number }) {
+  const [seatMapOpen, setSeatMapOpen] = useState(false)
+  const [selectedSeats, setSelectedSeats] = useState<SelectedSeatChoice[]>([])
+
   const owner = offer.owner || {}
   const ownerName = owner.name || (owner.iata_code ? AIRLINE_NAMES[owner.iata_code] : undefined) || "Airline"
   const ownerLogo = owner.logo_symbol_url || owner.logo_lockup_url || (owner.iata_code ? `https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/${owner.iata_code}.svg` : null)
@@ -332,10 +338,19 @@ function FlightOfferCard({ offer, index }: { offer: DuffelOffer; index: number }
   const carrierCode = firstSeg?.operating_carrier?.iata_code || owner.iata_code || ""
 
   const emissionsKg = offer.total_emissions_kg
-  const totalAmount = offer.total_amount
+  const baseTotalAmount = parseFloat(offer.total_amount || "0")
   const currency = offer.total_currency || "USD"
   const baseAmount = offer.base_amount
   const taxAmount = offer.tax_amount
+
+  // Calculate extra seat fees
+  const totalSeatFee = selectedSeats.reduce(
+    (sum, s) => sum + (s.totalAmount || 0),
+    0
+  )
+  const finalTotalAmount = (baseTotalAmount + totalSeatFee).toFixed(2)
+
+  const selectedSeatList = Object.values(selectedSeats)
 
   const refCond = offer.conditions?.refund_before_departure
   const chgCond = offer.conditions?.change_before_departure
@@ -347,6 +362,14 @@ function FlightOfferCard({ offer, index }: { offer: DuffelOffer; index: number }
   const carriageUrl = owner.conditions_of_carriage_url || firstSeg?.operating_carrier?.conditions_of_carriage_url
   const loyaltyProgs = offer.supported_loyalty_programmes || []
   const docsRequired = offer.passenger_identity_documents_required
+
+  // Format passengers for SeatMapDialog
+  const dialogPassengers = (offer.passengers && offer.passengers.length > 0)
+    ? offer.passengers.map((p: any, idx: number) => ({
+        id: p.id || `pas_00${idx + 1}`,
+        label: `Passenger ${idx + 1} (${p.type || "Adult"})`,
+      }))
+    : [{ id: "pas_001", label: "Passenger 1 (Adult)" }]
 
   return (
     <div className="group rounded-[8px] border border-delta-hairline bg-white shadow-sm hover:border-delta-navy hover:shadow-md transition-all overflow-hidden">
@@ -618,12 +641,27 @@ function FlightOfferCard({ offer, index }: { offer: DuffelOffer; index: number }
         <div className="flex items-center gap-4">
           <div>
             <div className="flex items-baseline gap-1">
-              <span className="text-[22px] font-[800] text-delta-red">${totalAmount}</span>
+              <span className="text-[22px] font-[800] text-delta-red">${finalTotalAmount}</span>
               <span className="text-[12px] font-[700] text-delta-navy">{currency}</span>
             </div>
             <div className="text-[11px] text-delta-ink-muted">
-              Base: ${baseAmount} + Tax: ${taxAmount} · Total per traveler
+              Base: ${baseAmount} + Tax: ${taxAmount}
+              {totalSeatFee > 0 && ` + Seats: $${totalSeatFee.toFixed(2)}`} · Total per traveler
             </div>
+            {selectedSeats.length > 0 && (
+              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                <span className="text-[10px] font-bold text-delta-navy uppercase tracking-wider">Seats:</span>
+                {selectedSeats.map((s, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1 rounded bg-[#003366] text-white px-1.5 py-0.5 font-mono text-[10px] font-bold"
+                  >
+                    Pass {s.passengerIndex + 1}: {s.seatDesignator}
+                    {s.totalAmount > 0 && ` (+$${s.totalAmount.toFixed(2)})`}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {payRequiredBy && (
@@ -647,11 +685,25 @@ function FlightOfferCard({ offer, index }: { offer: DuffelOffer; index: number }
 
           <Button
             size="sm"
+            variant="outline"
+            onClick={() => setSeatMapOpen(true)}
+            className="border-[#003366] text-[#003366] hover:bg-[#003366]/5 font-[700] px-4 h-10 flex items-center gap-2 rounded-[4px]"
+          >
+            <Armchair className="h-4 w-4 text-[#003366]" />
+            <span>
+              {selectedSeats.length > 0
+                ? `${selectedSeats.length} Seat${selectedSeats.length > 1 ? "s" : ""} Selected`
+                : "Select Seats"}
+            </span>
+          </Button>
+
+          <Button
+            size="sm"
             onClick={() => {
               if (carriageUrl) {
                 window.open(carriageUrl, "_blank")
               } else {
-                alert(`Selected Offer ID: ${offer.id}\nTotal: $${totalAmount} ${currency}`)
+                alert(`Selected Offer ID: ${offer.id}\nTotal: $${finalTotalAmount} ${currency}`)
               }
             }}
             className="bg-delta-red hover:bg-delta-red/90 text-white font-[700] px-6 h-10 flex items-center gap-2 rounded-[4px]"
@@ -661,6 +713,15 @@ function FlightOfferCard({ offer, index }: { offer: DuffelOffer; index: number }
           </Button>
         </div>
       </div>
+
+      <SeatMapDialog
+        open={seatMapOpen}
+        onOpenChange={setSeatMapOpen}
+        offerId={offer.id}
+        passengersCount={offer.passengers?.length || 1}
+        initialSelections={selectedSeats}
+        onConfirmSeats={(choices) => setSelectedSeats(choices)}
+      />
     </div>
   )
 }
