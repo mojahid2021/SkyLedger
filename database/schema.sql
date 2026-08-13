@@ -196,6 +196,22 @@ CREATE TABLE IF NOT EXISTS booking_tickets (
   FOREIGN KEY (passenger_id) REFERENCES booking_passengers(id) ON DELETE CASCADE
 );
 
+-- 9. Flights Table (For local management)
+CREATE TABLE IF NOT EXISTS flights (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  flight_number VARCHAR(20) NOT NULL,
+  airline_id INT NOT NULL,
+  origin_airport_id INT NOT NULL,
+  destination_airport_id INT NOT NULL,
+  departure_time DATETIME NOT NULL,
+  arrival_time DATETIME NOT NULL,
+  status ENUM('scheduled', 'delayed', 'cancelled', 'landed') NOT NULL DEFAULT 'scheduled',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (airline_id) REFERENCES airlines(id),
+  FOREIGN KEY (origin_airport_id) REFERENCES airports(id),
+  FOREIGN KEY (destination_airport_id) REFERENCES airports(id)
+);
+
 -- Seed Admin Login (inserted only if not already present)
 INSERT IGNORE INTO users (first_name, last_name, email, phone, date_of_birth, password_hash, role)
 VALUES

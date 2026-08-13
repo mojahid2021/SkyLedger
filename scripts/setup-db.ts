@@ -262,7 +262,24 @@ async function run() {
         FOREIGN KEY (passenger_id) REFERENCES booking_passengers(id) ON DELETE CASCADE
       )
     `)
-    console.log("✓ created 'bookings', 'booking_passengers', and 'booking_tickets' tables")
+
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS flights (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        flight_number VARCHAR(20) NOT NULL,
+        airline_id INT NOT NULL,
+        origin_airport_id INT NOT NULL,
+        destination_airport_id INT NOT NULL,
+        departure_time DATETIME NOT NULL,
+        arrival_time DATETIME NOT NULL,
+        status ENUM('scheduled', 'delayed', 'cancelled', 'landed') NOT NULL DEFAULT 'scheduled',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (airline_id) REFERENCES airlines(id),
+        FOREIGN KEY (origin_airport_id) REFERENCES airports(id),
+        FOREIGN KEY (destination_airport_id) REFERENCES airports(id)
+      )
+    `)
+    console.log("✓ created 'bookings', 'booking_passengers', 'booking_tickets', and 'flights' tables")
 
     console.log("\\nConfiguring Triggers...")
     // Trigger to auto-create wallets
