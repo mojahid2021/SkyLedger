@@ -70,6 +70,39 @@ CREATE TABLE IF NOT EXISTS airports (
   INDEX idx_country (country_code)
 );
 
+-- 5b. Airlines Table (AirLabs Sync Target)
+CREATE TABLE IF NOT EXISTS airlines (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  iata_code VARCHAR(10) NULL,
+  iata_prefix VARCHAR(10) NULL,
+  iata_accounting VARCHAR(10) NULL,
+  icao_code VARCHAR(10) NULL,
+  callsign VARCHAR(50) NULL,
+  country_code VARCHAR(10) NULL,
+  iosa_registered TINYINT(1) NULL DEFAULT 0,
+  is_scheduled TINYINT(1) NULL DEFAULT 0,
+  is_passenger TINYINT(1) NULL DEFAULT 0,
+  is_cargo TINYINT(1) NULL DEFAULT 0,
+  is_international TINYINT(1) NULL DEFAULT 0,
+  total_aircrafts INT NULL DEFAULT 0,
+  average_fleet_age DECIMAL(4, 1) NULL,
+  accidents_last_5y INT NULL DEFAULT 0,
+  crashes_last_5y INT NULL DEFAULT 0,
+  website VARCHAR(255) NULL,
+  facebook VARCHAR(255) NULL,
+  twitter VARCHAR(255) NULL,
+  instagram VARCHAR(255) NULL,
+  linkedin VARCHAR(255) NULL,
+  slug VARCHAR(255) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_iata (iata_code),
+  INDEX idx_icao (icao_code),
+  INDEX idx_country (country_code),
+  INDEX idx_slug (slug)
+);
+
 -- 6. Bookings Table
 CREATE TABLE IF NOT EXISTS bookings (
   id INT AUTO_INCREMENT PRIMARY KEY,

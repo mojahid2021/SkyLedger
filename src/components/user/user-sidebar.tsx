@@ -2,9 +2,6 @@ import React from "react"
 import {
   IconLayoutDashboard,
   IconReceipt,
-  IconFileText,
-  IconChartBar,
-  IconSettings,
   IconPlane,
   IconWallet,
 } from "@tabler/icons-react"
@@ -21,9 +18,6 @@ export function UserSidebar({ activeTab, setActiveTab }: UserSidebarProps) {
     { id: "trips", label: "My Trips & Tickets", icon: IconPlane },
     { id: "wallet", label: "Digital Wallet", icon: IconWallet },
     { id: "transactions", label: "Transactions", icon: IconReceipt },
-    { id: "invoices", label: "Invoices & Bills", icon: IconFileText },
-    { id: "reports", label: "Financial Reports", icon: IconChartBar },
-    { id: "account", label: "Account Settings", icon: IconSettings },
   ]
 
   return (

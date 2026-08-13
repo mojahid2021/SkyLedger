@@ -13,6 +13,7 @@ import { UserDirectoryTable, type AdminUser } from "@/components/admin/user-dire
 import { AuditLogList } from "@/components/admin/audit-log-list"
 import { AirportsDirectoryTable } from "@/components/admin/airports-directory-table"
 import { CitiesDirectoryTable } from "@/components/admin/cities-directory-table"
+import { AirlinesDirectoryTable } from "@/components/admin/airlines-directory-table"
 
 
 function AdminDashboardContent() {
@@ -28,8 +29,7 @@ function AdminDashboardContent() {
   const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
-    if (tabParam && ["overview", "users", "audit", "airports", "settings"].includes(tabParam)) {
-      setActiveSection(tabParam)
+    if (tabParam && ["overview", "users", "audit", "airports", "cities", "airlines", "settings"].includes(tabParam)) {
     }
   }, [tabParam])
 
@@ -189,6 +189,17 @@ function AdminDashboardContent() {
                   description="Global cities database synchronized with AirLabs."
                 />
                 <CitiesDirectoryTable />
+              </div>
+            )}
+
+            {activeSection === "airlines" && (
+              <div className="space-y-4">
+                <SectionHeading
+                  eyebrow="Content Management"
+                  title="Airlines Directory"
+                  description="Global airlines database synchronized with AirLabs."
+                />
+                <AirlinesDirectoryTable />
               </div>
             )}
 

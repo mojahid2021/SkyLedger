@@ -1,9 +1,16 @@
 "use client"
 
 import React from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Plane, Calendar, User, Printer, CheckCircle2, ShieldCheck, ArrowRight } from "lucide-react"
+import { motion, useReducedMotion } from "framer-motion"
+import {
+  AirplaneTilt,
+  User,
+  CheckCircle,
+  XCircle,
+  DownloadSimple,
+  Barcode,
+  ShieldCheck,
+} from "@phosphor-icons/react"
 import { BookingDetail } from "@/components/user/e-ticket-dialog"
 
 interface ETicketInlineProps {
@@ -12,6 +19,8 @@ interface ETicketInlineProps {
 }
 
 export function ETicketInline({ booking, onDone }: ETicketInlineProps) {
+  const reduceMotion = useReducedMotion()
+  
   if (!booking) return null
 
   const handlePrint = () => {
@@ -21,205 +30,148 @@ export function ETicketInline({ booking, onDone }: ETicketInlineProps) {
   const isConfirmed = booking.status === "confirmed"
 
   return (
-    <div className="w-full bg-white border border-delta-hairline rounded-[6px] overflow-hidden shadow-md my-4">
-      {/* Printable Area */}
-      <div id="printable-e-ticket-inline" className="p-0">
-        {/* Delta Navy Header */}
-        <div className="bg-delta-navy p-6 text-white flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-delta-red p-2 rounded-[4px] text-white shrink-0">
-              <Plane className="h-6 w-6" />
-            </div>
-            <div>
-              <span className="text-[11px] font-bold tracking-widest text-delta-red uppercase">
-                SKYLEDGER AIRLINES
-              </span>
-              <h3 className="text-xl font-extrabold text-white tracking-tight uppercase">
-                ELECTRONIC BOARDING PASS & PASSENGER RECEIPT
-              </h3>
-            </div>
+    <motion.div 
+      initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 24, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      className="w-full flex flex-col md:flex-row shadow-[0_40px_80px_-20px_rgba(0,0,0,0.08)] rounded-[2rem] overflow-hidden bg-white print:shadow-none print:border print:border-slate-200"
+    >
+      
+      <div className="flex-1 flex flex-col">
+        {/* Top Half: Flight Route & Status (Dark Airline Aesthetics) */}
+        <div className="bg-slate-900 text-white p-8 md:p-12 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-500/10 blur-[100px] rounded-full pointer-events-none translate-x-1/4 -translate-y-1/4" />
+          
+          <div className="relative z-10 flex justify-between items-start mb-12 border-b border-white/10 pb-8">
+             <div className="flex items-center gap-4">
+               <div className="bg-white/10 p-3 rounded-[14px] backdrop-blur-md border border-white/10 shadow-inner">
+                  <AirplaneTilt weight="fill" className="h-7 w-7 text-white" />
+               </div>
+               <div>
+                  <h2 className="text-2xl font-medium tracking-tight text-white leading-none mb-1">SkyLedger</h2>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Electronic Boarding Pass</p>
+               </div>
+             </div>
+             {isConfirmed ? (
+                <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest backdrop-blur-sm">
+                  <CheckCircle weight="fill" className="h-4 w-4" /> Confirmed
+                </div>
+             ) : (
+                <div className="flex items-center gap-1.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest backdrop-blur-sm">
+                  <XCircle weight="fill" className="h-4 w-4" /> Cancelled
+                </div>
+             )}
           </div>
 
-          <div className="text-right">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-300 block">
-              BOOKING REFERENCE (PNR)
-            </span>
-            <span className="font-mono text-2xl font-black text-white tracking-widest bg-white/10 px-3 py-1 rounded-[4px] border border-white/20 inline-block mt-0.5">
-              {booking.booking_reference}
-            </span>
-          </div>
-        </div>
-
-        {/* Status Bar */}
-        <div className="bg-slate-100 border-b border-delta-hairline px-6 py-2.5 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-delta-navy uppercase tracking-wider">Status:</span>
-            {isConfirmed ? (
-              <Badge className="bg-emerald-600 text-white border-none text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 flex items-center gap-1">
-                <CheckCircle2 className="h-3 w-3" /> Confirmed & Ticketed
-              </Badge>
-            ) : (
-              <Badge className="bg-rose-600 text-white border-none text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
-                Cancelled
-              </Badge>
-            )}
-          </div>
-          <div className="text-delta-ink-muted">
-            Issued: {new Date(booking.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
-          </div>
-        </div>
-
-        {/* Details Container */}
-        <div className="p-6 space-y-6">
-          {/* Route Card */}
-          <div className="bg-slate-50 border border-delta-hairline rounded-[6px] p-5">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-              {/* Departure */}
-              <div className="space-y-1">
-                <span className="text-[11px] font-bold text-delta-navy uppercase tracking-wider block">
-                  Origin Airport
-                </span>
-                <span className="text-3xl font-extrabold text-delta-navy font-mono">
-                  {booking.origin_code}
-                </span>
-                <span className="text-xs text-delta-ink block flex items-center gap-1">
-                  <Calendar className="h-3.5 w-3.5 text-delta-red" />
+          <div className="relative z-10 flex items-center justify-between">
+             <div className="w-[100px]">
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Origin</p>
+                <p className="text-5xl md:text-6xl font-semibold tracking-[-0.04em] text-white">{booking.origin_code}</p>
+             </div>
+             
+             <div className="flex-1 px-4 md:px-12 relative flex items-center justify-center">
+                <div className="w-full border-t-2 border-slate-700/50 border-dashed absolute top-1/2 -translate-y-1/2" />
+                <div className="bg-slate-900 px-4 py-2 relative z-10 border-2 border-slate-800 rounded-full flex flex-col items-center justify-center gap-1 shadow-xl">
+                   <AirplaneTilt weight="fill" className="h-5 w-5 text-slate-300 rotate-90" />
+                </div>
+                {/* Flight date anchored in center */}
+                <div className="absolute -bottom-8 w-full text-center text-xs font-medium text-slate-400">
                   {booking.departure_date}
-                </span>
-              </div>
-
-              {/* Flight Visual */}
-              <div className="flex flex-col items-center justify-center text-center px-4">
-                <span className="text-[11px] font-bold text-delta-navy uppercase tracking-wider mb-1">
-                  {booking.cabin_class} Class
-                </span>
-                <div className="relative w-full my-2 flex items-center justify-center">
-                  <div className="w-full h-[2px] bg-delta-navy" />
-                  <div className="absolute bg-slate-50 px-2 text-delta-navy">
-                    <Plane className="h-5 w-5 rotate-90" />
-                  </div>
                 </div>
-                <span className="text-[11px] text-delta-ink-muted font-mono">
-                  Non-Stop · SkyLedger Express
-                </span>
-              </div>
+             </div>
 
-              {/* Arrival */}
-              <div className="space-y-1 md:text-right">
-                <span className="text-[11px] font-bold text-delta-navy uppercase tracking-wider block">
-                  Destination Airport
-                </span>
-                <span className="text-3xl font-extrabold text-delta-navy font-mono">
-                  {booking.destination_code}
-                </span>
-                {booking.return_date && (
-                  <span className="text-xs text-delta-ink block flex items-center justify-end gap-1">
-                    <Calendar className="h-3.5 w-3.5 text-delta-red" />
-                    Return: {booking.return_date}
-                  </span>
-                )}
-              </div>
-            </div>
+             <div className="text-right w-[100px]">
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Dest</p>
+                <p className="text-5xl md:text-6xl font-semibold tracking-[-0.04em] text-white">{booking.destination_code}</p>
+             </div>
           </div>
+        </div>
 
-          {/* Passenger & Ticket Manifest */}
-          <div className="space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-delta-navy flex items-center gap-1.5 border-b border-delta-hairline pb-2">
-              <User className="h-4 w-4 text-delta-red" />
-              Ticketed Passenger Manifest ({booking.passengers?.length || 1})
-            </span>
-
-            <div className="divide-y divide-delta-hairline border border-delta-hairline rounded-[6px] overflow-hidden">
-              {(booking.passengers || []).map((p, idx) => (
-                <div key={p.id || idx} className="p-4 bg-white hover:bg-slate-50/50 transition-colors">
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                      <span className="text-sm font-bold text-delta-navy uppercase tracking-wide block">
-                        {p.first_name} {p.last_name}
-                      </span>
-                      <div className="text-xs text-delta-ink-muted flex items-center gap-3 mt-0.5">
-                        <span>Type: <strong className="uppercase text-delta-navy">{p.passenger_type}</strong></span>
-                        {p.passport_number && <span>Passport: <strong className="font-mono text-delta-navy">{p.passport_number}</strong></span>}
-                        {p.email && <span>Email: {p.email}</span>}
-                      </div>
+        {/* Bottom Half: Passenger Manifest */}
+        <div className="bg-white p-8 md:p-12 relative flex-1">
+          <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+             <User weight="bold" className="h-4 w-4" /> Official Passenger Manifest
+          </h4>
+          <div className="flex flex-col gap-4">
+             {(booking.passengers || []).map((p, i) => (
+                 <motion.div 
+                   key={p.id || i}
+                   initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ delay: 0.3 + (i * 0.1), duration: 0.5 }}
+                   className="flex flex-col md:flex-row md:items-center justify-between p-5 rounded-2xl bg-slate-50/70 border border-slate-100 hover:bg-slate-50 transition-colors"
+                 >
+                    <div className="mb-4 md:mb-0">
+                      <p className="text-lg font-semibold tracking-tight text-slate-900">{p.first_name} {p.last_name}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1.5 flex items-center gap-2">
+                        <span className="bg-slate-200/60 px-2 py-0.5 rounded-sm">{p.passenger_type}</span>
+                        <span>{p.tickets?.[0]?.airline_name || "SL Express Group"}</span>
+                      </p>
                     </div>
-
-                    <div className="flex items-center gap-3 flex-wrap">
-                      {(p.tickets || []).map((t, tIdx) => (
-                        <div key={tIdx} className="bg-slate-100 border border-delta-hairline px-3 py-1.5 rounded-[4px] text-right">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-delta-ink-muted block">
-                            {t.segment_type === "return" ? "Return Seat" : "Outbound Seat"}
-                          </span>
-                          <span className="font-mono text-xs font-bold text-delta-navy">
-                            {t.seat_designator || "Unassigned"} ({t.flight_number})
-                          </span>
-                          <span className="text-[9px] font-mono text-slate-500 block">
-                            tkt: {t.ticket_number}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Pseudo Barcode & Payment Settlement */}
-          <div className="border border-dashed border-delta-hairline rounded-[6px] p-4 bg-slate-50 flex flex-wrap items-center justify-between gap-4">
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-delta-ink-muted block">
-                TSA Security & Airport Boarding Barcode
-              </span>
-              <div className="bg-white border border-delta-hairline px-3 py-2 rounded flex items-center gap-1 font-mono text-xs tracking-widest select-none">
-                <div className="h-8 flex items-center gap-[2px]">
-                  {[4, 2, 6, 1, 4, 2, 7, 3, 1, 5, 2, 6, 3, 1, 4, 5, 2, 8, 2, 4, 1, 6, 3, 5, 2].map((w, i) => (
-                    <div key={i} className="bg-black h-full" style={{ width: `${w}px` }} />
-                  ))}
-                </div>
-                <span className="ml-3 font-bold text-delta-navy">*{booking.booking_reference}*</span>
-              </div>
-            </div>
-
-            <div className="text-right space-y-0.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-delta-ink-muted block">
-                Ledger Wallet Settlement Total
-              </span>
-              <span className="text-2xl font-black text-delta-red font-mono">
-                ${Number(booking.total_amount).toFixed(2)} {booking.currency}
-              </span>
-              <span className="text-[11px] text-emerald-700 font-bold block flex items-center justify-end gap-1">
-                <ShieldCheck className="h-3.5 w-3.5" /> Fully Settled via SkyLedger Wallet
-              </span>
-            </div>
+                    {p.tickets && p.tickets.length > 0 && (
+                       <div className="flex gap-8 md:gap-12">
+                          <div>
+                             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Flight No.</p>
+                             <p className="text-xl font-mono font-medium tracking-tight text-slate-900">{p.tickets[0].flight_number}</p>
+                          </div>
+                          <div className="text-right">
+                             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Seat Assignment</p>
+                             <p className="text-xl font-mono font-medium tracking-tight text-slate-900">{p.tickets[0].seat_designator || "TBA"}</p>
+                          </div>
+                       </div>
+                    )}
+                 </motion.div>
+             ))}
           </div>
         </div>
       </div>
 
-      {/* Action Footer */}
-      <div className="bg-slate-100 border-t border-delta-hairline p-4 flex items-center justify-between">
-        <div className="text-xs text-delta-ink-muted">
-          Present this boarding pass along with government photo ID at security check-in.
+      {/* Right Ticket Stub (25%) */}
+      <div className="w-full md:w-[320px] bg-[#f8fafc] border-t md:border-t-0 md:border-l border-dashed border-slate-300 p-8 md:p-10 flex flex-col justify-between relative print:break-inside-avoid">
+        
+        <div className="space-y-8">
+           <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Booking Reference</p>
+              <p className="text-3xl font-mono tracking-tight font-semibold text-slate-900">{booking.booking_reference}</p>
+           </div>
+           
+           <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Date Issued</p>
+              <p className="text-sm font-medium text-slate-900">
+                {new Date(booking.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              </p>
+           </div>
+
+           <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Total Settled</p>
+              <p className="text-2xl font-semibold tracking-tight text-slate-900">
+                ${Number(booking.total_amount).toFixed(2)} <span className="text-sm text-slate-400 ml-1">{booking.currency}</span>
+              </p>
+              <div className="flex items-center gap-1.5 text-emerald-600 mt-2 bg-emerald-50 px-2.5 py-1 rounded w-fit">
+                   <ShieldCheck weight="fill" className="h-4 w-4" />
+                   <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-700">Account Paid</span>
+              </div>
+           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={handlePrint}
-            variant="outline"
-            className="h-9 border-delta-navy text-delta-navy hover:bg-delta-navy/5 text-xs font-bold uppercase tracking-wider px-4 rounded-[4px] flex items-center gap-1.5"
-          >
-            <Printer className="h-4 w-4" /> Print / Save PDF
-          </Button>
-          {onDone && (
-            <Button
-              onClick={onDone}
-              className="h-9 bg-delta-navy hover:bg-delta-navy-dark text-white text-xs font-bold uppercase tracking-wider px-5 rounded-[4px] flex items-center gap-1.5"
-            >
-              <span>Go to My Dashboard</span>
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          )}
+        
+        <div className="mt-12 space-y-6">
+           <div className="h-24 w-full flex flex-col items-center justify-center bg-white border border-slate-200 rounded-[14px] overflow-hidden relative shadow-sm">
+               <Barcode weight="thin" className="w-[150%] h-[120px] text-slate-800 opacity-80" />
+           </div>
+           
+           <div className="flex flex-col gap-2.5 print:hidden">
+              <button onClick={handlePrint} className="w-full h-12 rounded-xl bg-slate-900 text-white font-medium text-sm flex items-center justify-center gap-2 transition-transform hover:scale-[0.98] active:scale-[0.95] shadow-md hover:shadow-lg">
+                 <DownloadSimple weight="bold" className="h-[18px] w-[18px]" /> Save PDF
+              </button>
+              {onDone && (
+                <button onClick={onDone} className="w-full h-12 rounded-xl bg-slate-200/50 text-slate-600 font-medium text-sm transition-colors hover:bg-slate-200 hover:text-slate-900">
+                   Back to Center
+                </button>
+              )}
+           </div>
         </div>
       </div>
-    </div>
+
+    </motion.div>
   )
 }
