@@ -14,7 +14,15 @@ export default function AdminFleetsPage() {
 
   const handleSectionChange = (section: AdminSection) => {
     if (section === "fleets") return
-    router.push(`/admin/dashboard?tab=${section}`)
+    if (section === "overview") {
+      router.push("/admin/dashboard")
+    } else if (section === "create-flight") {
+      router.push("/admin/flights/create")
+    } else if (section === "create-user") {
+      router.push("/admin/users/create")
+    } else {
+      router.push(`/admin/${section}`)
+    }
   }
 
   useEffect(() => {

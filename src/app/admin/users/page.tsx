@@ -1,33 +1,26 @@
 "use client"
 
 import React, { useEffect, useState, Suspense } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 
 import { useAuth } from "@/context/auth-context"
 import { AdminNavbar } from "@/components/admin/admin-navbar"
 import { AdminSidebar, AdminMobileNav, type AdminSection } from "@/components/admin/admin-sidebar"
-import { AdminStatsCards } from "@/components/admin/admin-stats-cards"
-import { type AdminUser } from "@/components/admin/user-directory-table"
-import { AuditLogList } from "@/components/admin/audit-log-list"
+import { UserDirectoryTable, type AdminUser } from "@/components/admin/user-directory-table"
 
-
-function AdminDashboardContent() {
+function AdminUsersContent() {
   const { user, role, isLoading } = useAuth()
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const tabParam = searchParams.get("tab") as AdminSection | null
 
   const [usersList, setUsersList] = useState<AdminUser[]>([])
   const [fetchingUsers, setFetchingUsers] = useState(true)
   const [dbStatus, setDbStatus] = useState<"connecting" | "connected" | "error">("connecting")
   const [searchQuery, setSearchQuery] = useState("")
 
-  // Automatically redirect tab parameters to their new standalone paths
-  useEffect(() => {
-    if (tabParam && tabParam !== "overview") {
-      router.replace(`/admin/${tabParam}`)
-    }
-  }, [tabParam, router])
+  const handleSectionChange = (section: AdminSection) => {
+    if (section === "users") return
+    router.push(`/admin/${section}`)
+  }
 
   const fetchUsers = () => {
     setFetchingUsers(true)
@@ -70,54 +63,35 @@ function AdminDashboardContent() {
     )
   }
 
-  const adminCount = usersList.filter((u) => u.role === "admin").length
-  const userCount = usersList.filter((u) => u.role === "user").length
-
-  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-  const newUsersThisMonth = usersList.filter((u) => {
-    const created = u.created_at ? new Date(u.created_at) : null
-    return created !== null && created >= monthStart
-  }).length
-
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-delta-surface-1 font-delta text-delta-ink">
       <AdminNavbar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
       <div className="flex min-h-0 flex-1">
         <AdminSidebar
-          activeSection="overview"
-          onSectionChange={(section) => {
-            if (section !== "overview") router.push(`/admin/${section}`)
-          }}
+          activeSection="users"
+          onSectionChange={handleSectionChange}
           dbStatus={dbStatus}
           records={usersList.length}
         />
 
         <main className="min-w-0 flex-1 overflow-y-auto">
-          <AdminMobileNav
-            activeSection="overview"
-            onSectionChange={(section) => {
-              if (section !== "overview") router.push(`/admin/${section}`)
-            }}
-          />
+          <AdminMobileNav activeSection="users" onSectionChange={handleSectionChange} />
 
           <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-            <div className="space-y-6">
-              <AdminStatsCards
-                usersCount={usersList.length}
-                adminCount={adminCount}
-                userCount={userCount}
-                newUsersThisMonth={newUsersThisMonth}
-              />
-
+            <div className="space-y-4">
               <SectionHeading
-                eyebrow="Security"
-                title="System Audit Logs"
-                description="Most recent authentication and access events."
+                eyebrow="Directory"
+                title="User Access & Roles"
+                description="Manage administrative privileges, role assignments, and status across the organization."
               />
-              <div className="mt-3">
-                <AuditLogList />
-              </div>
+              <UserDirectoryTable
+                users={usersList}
+                loading={fetchingUsers}
+                onRefresh={fetchUsers}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              />
             </div>
           </div>
         </main>
@@ -126,16 +100,16 @@ function AdminDashboardContent() {
   )
 }
 
-export default function AdminDashboardPage() {
+export default function AdminUsersPage() {
   return (
     <Suspense
       fallback={
         <div className="flex h-dvh items-center justify-center bg-delta-canvas text-sm font-delta text-delta-ink-muted">
-          Loading Administrative Control Panel...
+          Loading Users Management...
         </div>
       }
     >
-      <AdminDashboardContent />
+      <AdminUsersContent />
     </Suspense>
   )
 }
@@ -157,4 +131,3 @@ function SectionHeading({
     </div>
   )
 }
-

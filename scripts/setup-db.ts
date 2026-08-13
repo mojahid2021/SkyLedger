@@ -31,6 +31,22 @@ async function run() {
     await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``)
     await connection.query(`USE \`${dbName}\``)
 
+    console.log("Dropping existing tables to ensure clean initialization...")
+    await connection.query("SET FOREIGN_KEY_CHECKS = 0")
+    await connection.query("DROP TABLE IF EXISTS booking_tickets")
+    await connection.query("DROP TABLE IF EXISTS booking_passengers")
+    await connection.query("DROP TABLE IF EXISTS bookings")
+    await connection.query("DROP TABLE IF EXISTS transactions")
+    await connection.query("DROP TABLE IF EXISTS accounts")
+    await connection.query("DROP TABLE IF EXISTS audit_logs")
+    await connection.query("DROP TABLE IF EXISTS flights")
+    await connection.query("DROP TABLE IF EXISTS aircraft")
+    await connection.query("DROP TABLE IF EXISTS airlines")
+    await connection.query("DROP TABLE IF EXISTS cities")
+    await connection.query("DROP TABLE IF EXISTS airports")
+    await connection.query("DROP TABLE IF EXISTS users")
+    await connection.query("SET FOREIGN_KEY_CHECKS = 1")
+
     console.log("Setting up tables...")
 
     // 1. Users Table
@@ -270,13 +286,19 @@ async function run() {
         airline_id INT NOT NULL,
         origin_airport_id INT NOT NULL,
         destination_airport_id INT NOT NULL,
+        aircraft_id INT NULL,
+        is_direct TINYINT(1) DEFAULT 1,
+        flight_type ENUM('direct', 'connecting', 'multi-city') NOT NULL DEFAULT 'direct',
+        layover_cities VARCHAR(255) NULL,
         departure_time DATETIME NOT NULL,
         arrival_time DATETIME NOT NULL,
+        price DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
         status ENUM('scheduled', 'delayed', 'cancelled', 'landed') NOT NULL DEFAULT 'scheduled',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (airline_id) REFERENCES airlines(id),
         FOREIGN KEY (origin_airport_id) REFERENCES airports(id),
-        FOREIGN KEY (destination_airport_id) REFERENCES airports(id)
+        FOREIGN KEY (destination_airport_id) REFERENCES airports(id),
+        FOREIGN KEY (aircraft_id) REFERENCES aircraft(id)
       )
     `)
     console.log("✓ created 'bookings', 'booking_passengers', 'booking_tickets', and 'flights' tables")

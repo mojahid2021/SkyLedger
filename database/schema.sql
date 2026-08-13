@@ -203,13 +203,19 @@ CREATE TABLE IF NOT EXISTS flights (
   airline_id INT NOT NULL,
   origin_airport_id INT NOT NULL,
   destination_airport_id INT NOT NULL,
+  aircraft_id INT NULL,
+  is_direct TINYINT(1) DEFAULT 1,
+  flight_type ENUM('direct', 'connecting', 'multi-city') NOT NULL DEFAULT 'direct',
+  layover_cities VARCHAR(255) NULL,
   departure_time DATETIME NOT NULL,
   arrival_time DATETIME NOT NULL,
+  price DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
   status ENUM('scheduled', 'delayed', 'cancelled', 'landed') NOT NULL DEFAULT 'scheduled',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (airline_id) REFERENCES airlines(id),
   FOREIGN KEY (origin_airport_id) REFERENCES airports(id),
-  FOREIGN KEY (destination_airport_id) REFERENCES airports(id)
+  FOREIGN KEY (destination_airport_id) REFERENCES airports(id),
+  FOREIGN KEY (aircraft_id) REFERENCES aircraft(id)
 );
 
 -- Seed Admin Login (inserted only if not already present)

@@ -76,10 +76,22 @@ export default function CreateUserPage() {
       <AdminNavbar />
 
       <div className="flex min-h-0 flex-1">
-        <AdminSidebar activeSection="users" onSectionChange={() => router.push("/admin/dashboard")} />
+        <AdminSidebar
+          activeSection="create-user"
+          onSectionChange={(section) => {
+            if (section === "overview") router.push("/admin/dashboard")
+            else router.push(`/admin/${section}`)
+          }}
+        />
 
         <main className="min-w-0 flex-1 overflow-y-auto">
-          <AdminMobileNav activeSection="users" onSectionChange={() => router.push("/admin/dashboard")} />
+          <AdminMobileNav
+            activeSection="create-user"
+            onSectionChange={(section) => {
+              if (section === "overview") router.push("/admin/dashboard")
+              else router.push(`/admin/${section}`)
+            }}
+          />
 
           <div className="w-full space-y-6 p-4 sm:p-6 lg:p-8">
             {/* Header with back button */}
