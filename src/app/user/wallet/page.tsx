@@ -1,19 +1,25 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import React, { useEffect, useState, Suspense, useCallback } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/context/auth-context"
 import { UserNavbar } from "@/components/user/user-navbar"
 import { UserSidebar } from "@/components/user/user-sidebar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Wallet, Plus, CreditCard, ShieldCheck, ArrowRight, Loader2, Info, Banknote, ArrowUpRight, MinusCircle } from "lucide-react"
+import { Wallet, Plus, ShieldCheck, Loader2, Info, Banknote, ArrowUpRight, MinusCircle } from "lucide-react"
 
-export default function UserWalletPage() {
+function WalletContent() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
-  const [activeSection, setActiveSection] = useState("wallet")
+  const searchParams = useSearchParams()
+
+  const statusParam = searchParams.get("status")
+  const amountParam = searchParams.get("amount")
+  const refParam = searchParams.get("ref")
+  const errorParam = searchParams.get("error")
+
   const [walletBalance, setWalletBalance] = useState<number | null>(null)
   const [loadingBalance, setLoadingBalance] = useState<boolean>(true)
 
@@ -29,21 +35,13 @@ export default function UserWalletPage() {
   const [withdrawSuccess, setWithdrawSuccess] = useState<string | null>(null)
   const [withdrawError, setWithdrawError] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (isLoading) return
-    if (!user) {
-      router.replace("/login")
-      return
-    }
-    fetchWalletBalance()
-  }, [user, isLoading, router])
-
-  const fetchWalletBalance = async () => {
+  const fetchWalletBalance = useCallback(async () => {
     setLoadingBalance(true)
     try {
       const res = await fetch("/api/accounts")
       const data = await res.json()
       if (data.success && Array.isArray(data.data)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const userWallet = data.data.find((a: any) => a.user_id === user?.id)
         if (userWallet) {
           setWalletBalance(parseFloat(userWallet.balance || "0"))
@@ -56,7 +54,31 @@ export default function UserWalletPage() {
     } finally {
       setLoadingBalance(false)
     }
-  }
+  }, [user?.id])
+
+  useEffect(() => {
+    if (isLoading) return
+    if (!user) {
+      router.replace("/login")
+      return
+    }
+    fetchWalletBalance()
+
+    // Handle payment redirect parameters
+    if (statusParam === "success") {
+      setRechargeSuccess(`Successfully recharged $${Number(amountParam).toFixed(2)} to your wallet! Reference: ${refParam}`)
+      router.replace("/user/wallet")
+    } else if (statusParam === "fail") {
+      setRechargeError(`Wallet recharge failed. Reference: ${refParam || "N/A"}`)
+      router.replace("/user/wallet")
+    } else if (statusParam === "cancel") {
+      setRechargeError("Wallet recharge was cancelled.")
+      router.replace("/user/wallet")
+    } else if (statusParam === "error") {
+      setRechargeError(errorParam || "An error occurred during payment verification.")
+      router.replace("/user/wallet")
+    }
+  }, [user, isLoading, router, statusParam, amountParam, refParam, errorParam, fetchWalletBalance])
 
   const handleAddFunds = async (amount: number) => {
     if (!user?.id) return
@@ -67,23 +89,22 @@ export default function UserWalletPage() {
     setWithdrawError(null)
 
     try {
-      const res = await fetch("/api/wallet/recharge", {
+      const res = await fetch("/api/wallet/recharge/sslcommerz/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, amount, paymentMethod: "Credit Card ending in 4242" }),
+        body: JSON.stringify({ userId: user.id, amount }),
       })
 
       const data = await res.json()
-      if (data.success) {
-        setWalletBalance(data.data.newBalance)
-        setRechargeSuccess(`Successfully recharged $${amount.toFixed(2)} to your wallet!`)
-        setAmountInput("")
+      if (data.success && data.redirectUrl) {
+        window.location.href = data.redirectUrl
       } else {
-        setRechargeError(data.error || "Failed to recharge wallet.")
+        setRechargeError(data.error || "Failed to initiate SSLCommerz payment.")
+        setRecharging(false)
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setRechargeError("An error occurred while recharging: " + err.message)
-    } finally {
       setRecharging(false)
     }
   }
@@ -111,6 +132,7 @@ export default function UserWalletPage() {
       } else {
         setWithdrawError(data.error || "Failed to withdraw from wallet.")
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setWithdrawError("An error occurred while withdrawing: " + err.message)
     } finally {
@@ -118,20 +140,12 @@ export default function UserWalletPage() {
     }
   }
 
-  if (isLoading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground text-sm">
-        Loading Wallet Context...
-      </div>
-    )
-  }
-
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-background font-sans text-foreground">
       <UserNavbar />
 
       <div className="flex min-h-0 flex-1">
-        <UserSidebar activeTab={activeSection} setActiveTab={(t) => {
+        <UserSidebar activeTab="wallet" setActiveTab={(t) => {
           if (t !== "wallet") {
             router.push("/user/dashboard")
           }
@@ -365,7 +379,19 @@ export default function UserWalletPage() {
   )
 
   // Lucide icon helper
-  function CheckCircle2(props: any) {
+  function CheckCircle2(props: React.SVGProps<SVGSVGElement>) {
     return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
   }
+}
+
+export default function UserWalletPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground text-sm">
+        Loading Wallet Context...
+      </div>
+    }>
+      <WalletContent />
+    </Suspense>
+  )
 }
