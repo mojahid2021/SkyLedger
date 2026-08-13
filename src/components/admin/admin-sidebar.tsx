@@ -11,11 +11,12 @@ import {
   FolderKanban,
   MapPin,
   Building2,
+  Plane as PlaneIcon,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-export type AdminSection = "overview" | "users" | "audit" | "airports" | "cities" | "airlines" | "settings"
+export type AdminSection = "overview" | "users" | "audit" | "airports" | "cities" | "airlines" | "fleets" | "settings"
 
 type DbStatus = "connecting" | "connected" | "error"
 
@@ -39,6 +40,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: "airports", label: "Airports Directory", icon: Plane },
       { id: "cities", label: "Cities Directory", icon: MapPin },
       { id: "airlines", label: "Airlines Directory", icon: Building2 },
+      { id: "fleets", label: "Aircraft Fleet Directory", icon: PlaneIcon },
     ],
   },
   {

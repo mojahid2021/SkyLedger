@@ -14,6 +14,7 @@ import { AuditLogList } from "@/components/admin/audit-log-list"
 import { AirportsDirectoryTable } from "@/components/admin/airports-directory-table"
 import { CitiesDirectoryTable } from "@/components/admin/cities-directory-table"
 import { AirlinesDirectoryTable } from "@/components/admin/airlines-directory-table"
+import { AircraftDirectoryTable } from "@/components/admin/aircraft-directory-table"
 
 
 function AdminDashboardContent() {
@@ -29,7 +30,8 @@ function AdminDashboardContent() {
   const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
-    if (tabParam && ["overview", "users", "audit", "airports", "cities", "airlines", "settings"].includes(tabParam)) {
+    if (tabParam && ["overview", "users", "audit", "airports", "cities", "airlines", "fleets", "settings"].includes(tabParam)) {
+      setActiveSection(tabParam)
     }
   }, [tabParam])
 
@@ -180,7 +182,16 @@ function AdminDashboardContent() {
                 <AirportsDirectoryTable />
               </div>
             )}
-
+            {activeSection === "fleets" && (
+              <div className="space-y-4">
+                <SectionHeading
+                  eyebrow="Content Management"
+                  title="Aircraft Fleet Directory"
+                  description="Global aircraft fleet database synchronized with AirLabs."
+                />
+                <AircraftDirectoryTable />
+              </div>
+            )}
             {activeSection === "cities" && (
               <div className="space-y-4">
                 <SectionHeading

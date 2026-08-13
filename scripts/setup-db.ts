@@ -164,6 +164,49 @@ async function run() {
     `)
     console.log("✓ created 'airports', 'cities', and 'airlines' tables")
 
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS aircraft (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        hex VARCHAR(10) NULL,
+        reg_number VARCHAR(20) NULL,
+        flag VARCHAR(10) NULL,
+        airline_icao VARCHAR(10) NULL,
+        airline_iata VARCHAR(10) NULL,
+        seen INT NULL,
+        icao VARCHAR(10) NULL,
+        iata VARCHAR(10) NULL,
+        model VARCHAR(255) NULL,
+        engine VARCHAR(20) NULL,
+        engine_count VARCHAR(10) NULL,
+        manufacturer VARCHAR(100) NULL,
+        type VARCHAR(50) NULL,
+        category VARCHAR(10) NULL,
+        built INT NULL,
+        age INT NULL,
+        msn VARCHAR(50) NULL,
+        line VARCHAR(50) NULL,
+        lat DECIMAL(10, 6) NULL,
+        lng DECIMAL(10, 6) NULL,
+        alt INT NULL,
+        dir INT NULL,
+        speed INT NULL,
+        v_speed INT NULL,
+        squawk VARCHAR(10) NULL,
+        last_seen TIMESTAMP NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_hex (hex),
+        INDEX idx_reg_number (reg_number),
+        INDEX idx_airline_iata (airline_iata),
+        INDEX idx_airline_icao (airline_icao),
+        INDEX idx_icao_type (icao),
+        INDEX idx_manufacturer (manufacturer),
+        INDEX idx_flag (flag),
+        INDEX idx_last_seen (last_seen)
+      )
+    `)
+    console.log("✓ created 'aircraft' table")
+
     // 6. Bookings Tables
     await connection.query(`
       CREATE TABLE IF NOT EXISTS bookings (
