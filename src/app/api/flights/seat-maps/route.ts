@@ -473,6 +473,15 @@ export async function GET(request: Request) {
       )
     }
 
+    if (offerId.startsWith("local_")) {
+      return NextResponse.json({
+        success: true,
+        data: FALLBACK_SEAT_MAPS,
+        isFallback: true,
+        fallbackNotice: "Displaying aircraft seat configuration.",
+      })
+    }
+
     const DUFFEL_API_KEY =
       process.env.DUFFEL_API_KEY ||
       process.env.TRAVELPAYOUTS_API_KEY ||

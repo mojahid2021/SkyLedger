@@ -106,8 +106,6 @@ export async function GET(request: Request) {
     const rawOrigin = searchParams.get("origin")
     const rawDestination = searchParams.get("destination")
     const departure_at = searchParams.get("departure_at") 
-    const return_at = searchParams.get("return_at")
-    const one_way = searchParams.get("one_way") ?? "true"
     const cabin = searchParams.get("cabin") || "economy"
     const passengersCount = parseInt(searchParams.get("passengers") || "1", 10)
 
@@ -125,10 +123,44 @@ export async function GET(request: Request) {
     const origin = o.iata_code || o.icao_code
     const destination = d.iata_code || d.icao_code
 
-    // 1. Fetch matching local flights from the MariaDB database
-    let localOffers: any[] = []
-    try {
-      const localFlights = await query<any[]>(`
+    // Query matching local flights from the MariaDB database
+    let localFlights = await query<any[]>(`
+      SELECT 
+        f.id,
+        f.flight_number,
+        f.airline_id,
+        f.origin_airport_id,
+        f.destination_airport_id,
+        f.aircraft_id,
+        f.is_direct,
+        f.flight_type,
+        f.layover_cities,
+        f.departure_time,
+        f.arrival_time,
+        f.price,
+        f.status,
+        f.created_at,
+        a.name as airline_name,
+        a.iata_code as airline_iata,
+        orig.name as origin_name,
+        orig.iata_code as origin_iata,
+        dest.name as destination_name,
+        dest.iata_code as destination_iata,
+        ac.model as aircraft_model,
+        ac.reg_number as aircraft_reg
+      FROM flights f
+      INNER JOIN airlines a ON f.airline_id = a.id
+      INNER JOIN airports orig ON f.origin_airport_id = orig.id
+      INNER JOIN airports dest ON f.destination_airport_id = dest.id
+      LEFT JOIN aircraft ac ON f.aircraft_id = ac.id
+      WHERE f.origin_airport_id = ? 
+        AND f.destination_airport_id = ?
+        AND DATE(f.departure_time) = ?
+    `, [o.id, d.id, departure_at])
+
+    // Fallback: If no exact date matches, return flights matching the route on any date
+    if (!localFlights || localFlights.length === 0) {
+      localFlights = await query<any[]>(`
         SELECT 
           f.id,
           f.flight_number,
@@ -159,64 +191,15 @@ export async function GET(request: Request) {
         LEFT JOIN aircraft ac ON f.aircraft_id = ac.id
         WHERE f.origin_airport_id = ? 
           AND f.destination_airport_id = ?
-          AND DATE(f.departure_time) = ?
-      `, [o.id, d.id, departure_at])
-
-      if (localFlights && localFlights.length > 0) {
-        localOffers = localFlights.map(lf => mapLocalFlightToDuffelOffer(lf, passengersCount, cabin))
-      }
-    } catch (localDbErr) {
-      console.error("Local flights database query error:", localDbErr)
+        ORDER BY f.departure_time ASC
+      `, [o.id, d.id])
     }
 
-    // 2. Fetch from Duffel API (merged as secondary options)
-    let duffelOffers: any[] = []
-    try {
-      const DUFFEL_API_KEY = process.env.DUFFEL_API_KEY || "duffel_test_key"
-      
-      const slices = [{ origin, destination, departure_date: departure_at }]
-      if (return_at && one_way === "false") {
-        slices.push({ origin: destination, destination: origin, departure_date: return_at })
-      }
-
-      const passengers = Array.from({ length: passengersCount }).map(() => ({ type: "adult" }))
-
-      const bodyPayload = {
-        data: {
-          slices,
-          passengers,
-          cabin_class: cabin
-        }
-      }
-
-      const res = await fetch("https://api.duffel.com/air/offer_requests?return_offers=true", {
-        method: "POST",
-        headers: {
-          "Accept-Encoding": "gzip",
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "Duffel-Version": "v2",
-          "Authorization": `Bearer ${DUFFEL_API_KEY}`
-        },
-        body: JSON.stringify(bodyPayload)
-      })
-
-      const duffelData = await res.json()
-      if (duffelData.data && Array.isArray(duffelData.data.offers)) {
-        duffelOffers = duffelData.data.offers
-      } else {
-        console.warn("Duffel API returned no offers or error:", JSON.stringify(duffelData))
-      }
-    } catch (duffelApiErr) {
-      console.warn("Duffel API fetch ignored/failed (app will use local database results):", duffelApiErr)
-    }
-
-    // Combine local offers (primary) and duffel offers (secondary)
-    const combinedOffers = [...localOffers, ...duffelOffers]
+    const localOffers = (localFlights || []).map(lf => mapLocalFlightToDuffelOffer(lf, passengersCount, cabin))
 
     return NextResponse.json({ 
       success: true, 
-      data: combinedOffers, 
+      data: localOffers, 
       originCode: origin, 
       destinationCode: destination 
     })
