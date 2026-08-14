@@ -38,6 +38,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
+    const actor = request.headers.get("x-actor") || "System Admin"
     const { first_name, last_name, email, phone, date_of_birth, password, role } = body
 
     if (!first_name || !last_name || !email || !password) {
@@ -78,7 +79,7 @@ export async function POST(request: Request) {
     // Audit Log in MongoDB
     await recordAuditLog({
       event: "Admin Created User Account",
-      actor: "admin@skyledger.io",
+      actor: actor,
       status: "success",
       metadata: { newUserId: result.insertId, email: cleanEmail, role: assignedRole },
     })
@@ -101,6 +102,7 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const body = await request.json()
+    const actor = request.headers.get("x-actor") || "System Admin"
     const { userId, first_name, last_name, email, phone, date_of_birth, role } = body
 
     if (!userId) {
@@ -142,7 +144,7 @@ export async function PATCH(request: Request) {
       event: roleChanged
         ? `Role Changed (${currentUser.role.toUpperCase()} → ${assignedRole.toUpperCase()})`
         : "User Profile Updated",
-      actor: "admin@skyledger.io",
+      actor: actor,
       status: "success",
       metadata: {
         userId,
@@ -172,6 +174,7 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get("userId")
+    const actor = request.headers.get("x-actor") || "System Admin"
 
     if (!userId) {
       return NextResponse.json(
@@ -188,7 +191,7 @@ export async function DELETE(request: Request) {
     // Audit Log in MongoDB
     await recordAuditLog({
       event: "User Account Deleted by Admin",
-      actor: "admin@skyledger.io",
+      actor: actor,
       status: "blocked",
       metadata: { deletedUserId: userId, deletedEmail: email },
     })

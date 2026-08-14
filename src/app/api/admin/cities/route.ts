@@ -53,22 +53,23 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("id")
+    const actor = request.headers.get("x-actor") || "System Admin"
     const pool = getMySQLPool()
 
     if (id) {
       await pool.query("DELETE FROM cities WHERE id = ?", [id])
       await recordAuditLog({
         event: "Single City Deleted",
-        actor: "admin@skyledger.io",
+        actor: actor,
         status: "success",
         metadata: { action: "delete_city", city_id: id },
       })
       return NextResponse.json({ success: true, message: "City deleted successfully." })
     } else {
-      await pool.query("TRUNCATE TABLE cities")
+      await pool.query("DELETE FROM cities")
       await recordAuditLog({
         event: "Cities Database Cleared",
-        actor: "admin@skyledger.io",
+        actor: actor,
         status: "success",
         metadata: { action: "truncate_cities" },
       })
@@ -83,6 +84,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     const { name, city_code, country_code, lat, lng } = body
+    const actor = request.headers.get("x-actor") || "System Admin"
 
     if (!name) {
       return NextResponse.json({ success: false, error: "City Name is required" }, { status: 400 })
@@ -97,7 +99,7 @@ export async function POST(request: Request) {
 
     await recordAuditLog({
       event: "Manual City Added",
-      actor: "admin@skyledger.io",
+      actor: actor,
       status: "success",
       metadata: { name, city_code },
     })

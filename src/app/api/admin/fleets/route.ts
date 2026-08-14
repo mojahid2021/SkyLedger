@@ -64,22 +64,23 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("id")
+    const actor = request.headers.get("x-actor") || "System Admin"
     const pool = getMySQLPool()
 
     if (id) {
       await pool.query("DELETE FROM aircraft WHERE id = ?", [id])
       await recordAuditLog({
         event: "Single Aircraft Deleted",
-        actor: "admin@skyledger.io",
+        actor: actor,
         status: "success",
         metadata: { action: "delete_aircraft", aircraft_id: id },
       })
       return NextResponse.json({ success: true, message: "Aircraft deleted successfully." })
     } else {
-      await pool.query("TRUNCATE TABLE aircraft")
+      await pool.query("DELETE FROM aircraft")
       await recordAuditLog({
         event: "Aircraft Fleet Database Cleared",
-        actor: "admin@skyledger.io",
+        actor: actor,
         status: "success",
         metadata: { action: "truncate_aircraft" },
       })
@@ -93,6 +94,7 @@ export async function DELETE(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
+    const actor = request.headers.get("x-actor") || "System Admin"
     const { 
       hex, reg_number, flag, airline_icao, airline_iata, seen, icao, iata, model, engine, engine_count, 
       manufacturer, type, category, built, age, msn, line, lat, lng, alt, dir, speed, v_speed, squawk, last_seen
@@ -129,7 +131,7 @@ export async function POST(request: Request) {
 
     await recordAuditLog({
       event: "Manual Aircraft Added",
-      actor: "admin@skyledger.io",
+      actor: actor,
       status: "success",
       metadata: { model, iata },
     })

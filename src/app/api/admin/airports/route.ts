@@ -70,6 +70,7 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("id")
+    const actor = request.headers.get("x-actor") || "System Admin"
     const { getMySQLPool } = require("@/lib/db")
     const pool = getMySQLPool()
     const { recordAuditLog } = require("@/lib/mongodb")
@@ -78,7 +79,7 @@ export async function DELETE(request: Request) {
       await pool.query("DELETE FROM airports WHERE id = ?", [id])
       await recordAuditLog({
         event: "Single Airport Deleted",
-        actor: "admin@skyledger.io",
+        actor: actor,
         status: "success",
         metadata: { action: "delete_airport", airport_id: id },
       })
@@ -87,10 +88,10 @@ export async function DELETE(request: Request) {
         message: "Airport deleted successfully.",
       })
     } else {
-      await pool.query("TRUNCATE TABLE airports")
+      await pool.query("DELETE FROM airports")
       await recordAuditLog({
         event: "Airports Database Cleared",
-        actor: "admin@skyledger.io",
+        actor: actor,
         status: "success",
         metadata: { action: "truncate_airports" },
       })
@@ -111,6 +112,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     const { name, iata_code, icao_code, country_code, lat, lng } = body
+    const actor = request.headers.get("x-actor") || "System Admin"
 
     if (!name) {
       return NextResponse.json({ success: false, error: "Airport Name is required" }, { status: 400 })
@@ -127,7 +129,7 @@ export async function POST(request: Request) {
     const { recordAuditLog } = require("@/lib/mongodb")
     await recordAuditLog({
       event: "Manual Airport Added",
-      actor: "admin@skyledger.io",
+      actor: actor,
       status: "success",
       metadata: { name, iata_code },
     })

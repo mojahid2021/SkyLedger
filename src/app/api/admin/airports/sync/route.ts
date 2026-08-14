@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { query, getMySQLPool } from "@/lib/db"
 import { recordAuditLog } from "@/lib/mongodb"
 
-export async function POST(_request: Request) {
+export async function POST(request: Request) {
   try {
     const apiKey = process.env.AIRLABS_API_KEY
     if (!apiKey) {
@@ -80,7 +80,7 @@ export async function POST(_request: Request) {
     // Write MongoDB audit log
     await recordAuditLog({
       event: "Airports Synced from AirLabs",
-      actor: "admin@skyledger.io",
+      actor: request.headers.get("x-actor") || "System Admin",
       status: "success",
       metadata: { totalSynced: insertedTotal, apiVersion: "v9" },
     })

@@ -12,6 +12,13 @@ import {
   ShieldCheck,
 } from "@phosphor-icons/react"
 import { BookingDetail } from "@/components/user/e-ticket-dialog"
+import dynamic from "next/dynamic"
+import { TicketPDF } from "./ticket-pdf"
+
+const PDFDownloadLink = dynamic(
+  () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
+  { ssr: false }
+)
 
 interface ETicketInlineProps {
   booking: BookingDetail | null
@@ -101,7 +108,6 @@ export function ETicketInline({ booking, onDone }: ETicketInlineProps) {
 
   if (!booking) return null
 
-  const handlePrint  = () => window.print()
   const isConfirmed  = booking.status === "confirmed"
 
   return (
@@ -277,13 +283,18 @@ export function ETicketInline({ booking, onDone }: ETicketInlineProps) {
             </div>
 
             <div className="flex flex-col gap-2.5 print:hidden">
-              <button
-                onClick={handlePrint}
+              <PDFDownloadLink
+                document={<TicketPDF booking={booking} />}
+                fileName={`SkyLedger_Ticket_${booking.booking_reference}.pdf`}
                 className="w-full h-11 rounded-sm bg-delta-red hover:bg-delta-red-hover text-white font-bold text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
               >
-                <DownloadSimple weight="bold" className="h-[18px] w-[18px]" />
-                Save PDF
-              </button>
+                {({ loading }: any) => (
+                  <>
+                    <DownloadSimple weight="bold" className="h-[18px] w-[18px]" />
+                    {loading ? "Generating PDF..." : "Save PDF"}
+                  </>
+                )}
+              </PDFDownloadLink>
               {onDone && (
                 <button
                   onClick={onDone}

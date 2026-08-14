@@ -57,21 +57,22 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("id")
+    const actor = request.headers.get("x-actor") || "System Admin"
     const pool = getMySQLPool()
 
     if (id) {
       await pool.query("DELETE FROM airlines WHERE id = ?", [id])
       await recordAuditLog({
         event: "Single Airline Deleted",
-        actor: "admin@skyledger.io",
+        actor: actor,
         status: "success",
         metadata: { action: "delete_airline", airline_id: id },
       })
     } else {
-      await pool.query("TRUNCATE TABLE airlines")
+      await pool.query("DELETE FROM airlines")
       await recordAuditLog({
         event: "Airlines Database Cleared",
-        actor: "admin@skyledger.io",
+        actor: actor,
         status: "success",
         metadata: { action: "truncate_airlines" },
       })
@@ -85,6 +86,7 @@ export async function DELETE(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
+    const actor = request.headers.get("x-actor") || "System Admin"
     const { 
       name, iata_code, iata_prefix, iata_accounting, icao_code, callsign, country_code,
       iosa_registered, is_scheduled, is_passenger, is_cargo, is_international,
@@ -117,7 +119,7 @@ export async function POST(request: Request) {
 
     await recordAuditLog({
       event: "Manual Airline Added",
-      actor: "admin@skyledger.io",
+      actor: actor,
       status: "success",
       metadata: { name, iata_code },
     })
