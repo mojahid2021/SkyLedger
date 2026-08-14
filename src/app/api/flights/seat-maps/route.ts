@@ -841,26 +841,51 @@ export async function GET(request: Request) {
     }
 
     const bookedSeats = new Set<string>()
-    if (flightNumber && departureDate) {
-      try {
-        const tickets = await query<any[]>(`
+    try {
+      // Primary: join via flight_id — avoids flight_number format mismatches
+      // (flights table stores "BG 088" but booking_tickets stores "088")
+      const ticketsById = await query<any[]>(`
+        SELECT bt.seat_designator
+        FROM booking_tickets bt
+        INNER JOIN bookings b ON bt.booking_id = b.id
+        WHERE b.flight_id = ?
+          AND b.status = 'confirmed'
+          AND bt.seat_designator IS NOT NULL
+      `, [flightId])
+
+      ticketsById.forEach(ticket => {
+        if (ticket.seat_designator) {
+          bookedSeats.add(ticket.seat_designator.trim().toUpperCase())
+        }
+      })
+
+      // Fallback: also match by bare flight number (e.g. "088") and departure date
+      // in case a booking was created without a resolved flight_id
+      if (flightNumber && departureDate) {
+        const bareFlightNumber = flightNumber.replace(/^[A-Z]{2}\s*/i, "").trim()
+        const ticketsByNumber = await query<any[]>(`
           SELECT bt.seat_designator
           FROM booking_tickets bt
           INNER JOIN bookings b ON bt.booking_id = b.id
-          WHERE bt.flight_number = ?
+          WHERE (
+            bt.flight_number = ?
+            OR bt.flight_number = ?
+            OR bt.flight_number = ?
+          )
             AND b.departure_date = ?
             AND b.status = 'confirmed'
             AND bt.seat_designator IS NOT NULL
-        `, [flightNumber, departureDate])
-        
-        tickets.forEach(ticket => {
+            AND (b.flight_id IS NULL OR b.flight_id != ?)
+        `, [flightNumber, bareFlightNumber, flightNumber.trim(), departureDate, flightId])
+
+        ticketsByNumber.forEach(ticket => {
           if (ticket.seat_designator) {
             bookedSeats.add(ticket.seat_designator.trim().toUpperCase())
           }
         })
-      } catch (ticketError) {
-        console.error("Failed to query booked seats for flight:", ticketError)
       }
+    } catch (ticketError) {
+      console.error("Failed to query booked seats for flight:", ticketError)
     }
     
     const segmentId = flightId

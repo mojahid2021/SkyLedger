@@ -1,11 +1,18 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { User, Mail, Phone, Calendar, Shield, Check, ArrowRight, ArrowLeft } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import {
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  Shield,
+  Check,
+  ChevronRight,
+  ChevronLeft,
+  AlertCircle,
+} from "lucide-react"
 
 export interface PassengerDetail {
   passengerIndex: number
@@ -31,6 +38,36 @@ interface PassengerInfoInlineProps {
   onBack?: () => void
 }
 
+const PAX_COLORS = [
+  { bg: "bg-red-100",    text: "text-red-700",    border: "border-red-300",    dot: "#e31837" },
+  { bg: "bg-sky-100",    text: "text-sky-700",    border: "border-sky-300",    dot: "#005480" },
+  { bg: "bg-green-100",  text: "text-green-700",  border: "border-green-300",  dot: "#2e7d32" },
+  { bg: "bg-orange-100", text: "text-orange-700", border: "border-orange-300", dot: "#e65100" },
+]
+
+
+function getInitials(first: string, last: string) {
+  return ((first?.[0] || "") + (last?.[0] || "")).toUpperCase() || ""
+}
+
+interface FieldDef {
+  key: keyof PassengerDetail
+  label: string
+  placeholder: string
+  type: string
+  icon: React.ElementType
+  required: boolean
+}
+
+const FIELDS: FieldDef[] = [
+  { key: "firstName",      label: "First Name",      placeholder: "Alexander",        type: "text",  icon: User,     required: true  },
+  { key: "lastName",       label: "Last Name",        placeholder: "Vance",            type: "text",  icon: User,     required: true  },
+  { key: "email",          label: "Email Address",    placeholder: "you@email.com",    type: "email", icon: Mail,     required: false },
+  { key: "phone",          label: "Phone Number",     placeholder: "+1 555 000 0000",  type: "tel",   icon: Phone,    required: false },
+  { key: "dateOfBirth",    label: "Date of Birth",    placeholder: "",                 type: "date",  icon: Calendar, required: false },
+  { key: "passportNumber", label: "Passport Number",  placeholder: "A98234102",        type: "text",  icon: Shield,   required: false },
+]
+
 export function PassengerInfoInline({
   passengersCount = 1,
   defaultUserEmail = "",
@@ -41,226 +78,256 @@ export function PassengerInfoInline({
 }: PassengerInfoInlineProps) {
   const [activePassengerIndex, setActivePassengerIndex] = useState<number>(0)
   const [passengers, setPassengers] = useState<PassengerDetail[]>([])
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const [direction, setDirection] = useState<number>(1)
 
   useEffect(() => {
     if (initialData && initialData.length > 0) {
       setPassengers(initialData)
     } else {
       const names = defaultUserName.split(" ")
-      const defaultFirst = names[0] || ""
-      const defaultLast = names.slice(1).join(" ") || ""
-
       const initial: PassengerDetail[] = Array.from({ length: passengersCount }, (_, idx) => ({
-        passengerIndex: idx,
-        firstName: idx === 0 ? defaultFirst : "",
-        lastName: idx === 0 ? defaultLast : "",
-        email: idx === 0 ? defaultUserEmail : "",
-        phone: "",
-        dateOfBirth: "",
-        passportNumber: "",
-        passengerType: "adult",
+        passengerIndex:  idx,
+        firstName:       idx === 0 ? (names[0] || "") : "",
+        lastName:        idx === 0 ? (names.slice(1).join(" ") || "") : "",
+        email:           idx === 0 ? defaultUserEmail : "",
+        phone:           "",
+        dateOfBirth:     "",
+        passportNumber:  "",
+        passengerType:   "adult",
       }))
       setPassengers(initial)
     }
   }, [passengersCount, defaultUserEmail, defaultUserName, initialData])
 
-  const updatePassengerField = (idx: number, field: keyof PassengerDetail, value: any) => {
-    setPassengers((prev) =>
-      prev.map((p) => (p.passengerIndex === idx ? { ...p, [field]: value } : p))
-    )
+  const updateField = (idx: number, field: keyof PassengerDetail, value: any) => {
+    setPassengers((prev) => prev.map((p) => (p.passengerIndex === idx ? { ...p, [field]: value } : p)))
   }
 
-  const isPassengerValid = (p: PassengerDetail) => {
-    return p.firstName.trim().length > 0 && p.lastName.trim().length > 0
+  const isValid = (p: PassengerDetail) => p.firstName.trim().length > 0 && p.lastName.trim().length > 0
+  const allValid = passengers.length > 0 && passengers.every(isValid)
+  const completedCount = passengers.filter(isValid).length
+
+  const goTo = (idx: number) => {
+    setDirection(idx > activePassengerIndex ? 1 : -1)
+    setActivePassengerIndex(idx)
   }
 
-  const allValid = passengers.length > 0 && passengers.every(isPassengerValid)
+  const current = passengers[activePassengerIndex]
 
-  const handleContinue = () => {
-    if (!allValid) return
-    onConfirm(passengers)
+  const slideVariants = {
+    enter:  (d: number) => ({ opacity: 0, x: d * 24 }),
+    center: { opacity: 1, x: 0 },
+    exit:   (d: number) => ({ opacity: 0, x: d * -24 }),
   }
 
   return (
-    <div className="w-full bg-delta-canvas border border-delta-hairline rounded-sm overflow-hidden shadow-none my-4 font-sans">
-      {/* Header Bar */}
-      <div className="bg-delta-navy text-white p-4 flex flex-wrap items-center justify-between gap-3 select-none">
+    <div className="bg-delta-canvas border border-delta-hairline rounded-sm overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
+      {/* Header */}
+      <div className="bg-delta-navy px-5 py-4 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2.5">
-          <div className="bg-delta-red p-1.5 rounded-sm text-white">
-            <User className="h-5 w-5" />
+          <div className="bg-delta-red p-1.5 rounded-sm">
+            <User className="h-4 w-4 text-white" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white tracking-wide uppercase">
-              PASSENGER INFORMATION (STEP 2 OF 3)
-            </h3>
-            <p className="text-xs text-white/70">
-              Enter official passport and contact details for each ticketed traveler.
-            </p>
+            <h3 className="text-sm font-bold text-white uppercase tracking-wide">Passenger Information</h3>
+            <p className="text-xs text-white/60 mt-0.5">Enter details for each traveler</p>
           </div>
         </div>
-        <Badge className="bg-delta-navy-mid text-white border border-delta-navy-mid/60 text-[10px] tracking-wider uppercase font-bold px-3 py-1.5 rounded-sm shadow-none">
-          {passengersCount} {passengersCount === 1 ? "Passenger" : "Passengers"}
-        </Badge>
+        <div className="bg-delta-navy-mid border border-white/15 rounded-sm px-3 py-1.5 text-center">
+          <p className="text-[10px] text-white/50 uppercase tracking-wider font-bold">Progress</p>
+          <p className="text-xs font-bold text-white">{completedCount}/{passengersCount}</p>
+        </div>
       </div>
 
-      {/* Body Content */}
       <div className="p-5 space-y-5">
-        {/* Passenger Tabs */}
+        {/* Progress bar */}
+        <div className="h-1 rounded-sm bg-delta-hairline overflow-hidden">
+          <motion.div
+            className="h-full bg-delta-red rounded-sm"
+            initial={false}
+            animate={{ width: `${(completedCount / passengersCount) * 100}%` }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          />
+        </div>
+
+        {/* Passenger tabs — multiple passengers only */}
         {passengersCount > 1 && (
-          <Tabs
-            value={activePassengerIndex.toString()}
-            onValueChange={(val) => setActivePassengerIndex(parseInt(val, 10))}
-            className="w-full"
-          >
-            <TabsList className="w-full bg-delta-surface-1 p-1 border border-delta-hairline rounded-sm grid grid-cols-2 sm:grid-cols-4 gap-1 select-none">
-              {passengers.map((p, idx) => {
-                const valid = isPassengerValid(p)
-                return (
-                  <TabsTrigger
-                    key={idx}
-                    value={idx.toString()}
-                    className="text-xs font-bold uppercase tracking-wider py-2 flex items-center justify-center gap-1.5 data-[state=active]:bg-delta-navy data-[state=active]:text-white rounded-sm transition-colors cursor-pointer"
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {passengers.map((p, idx) => {
+              const isActive = activePassengerIndex === idx
+              const valid = isValid(p)
+              const initials = getInitials(p.firstName, p.lastName)
+              const colors = PAX_COLORS[idx % PAX_COLORS.length]
+
+              return (
+                <button
+                  key={idx}
+                  onClick={() => goTo(idx)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-sm border text-xs font-bold transition-colors cursor-pointer ${
+                    isActive
+                      ? "bg-delta-navy text-white border-delta-navy"
+                      : valid
+                      ? "bg-delta-success/10 text-delta-success border-delta-success/30"
+                      : "bg-delta-canvas text-delta-ink border-delta-hairline hover:bg-delta-surface-1"
+                  }`}
+                >
+                  <div
+                    className={`w-6 h-6 rounded-sm flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                      isActive ? "bg-white/20 text-white" : valid ? "bg-delta-success/15 text-delta-success" : `${colors.bg} ${colors.text}`
+                    }`}
                   >
-                    <User className="h-3.5 w-3.5" />
-                    <span>Pax {idx + 1}</span>
-                    {valid && <Check className="h-3.5 w-3.5 text-delta-success font-black" />}
-                  </TabsTrigger>
-                )
-              })}
-            </TabsList>
-          </Tabs>
-        )}
-
-        {passengers[activePassengerIndex] && (
-          <div className="space-y-4 bg-delta-surface-1/40 p-4 border border-delta-hairline rounded-sm">
-            <div className="flex items-center justify-between border-b border-delta-hairline pb-2 select-none">
-              <span className="text-xs font-bold uppercase tracking-wider text-delta-navy flex items-center gap-2">
-                <User className="h-4 w-4 text-delta-red" />
-                Passenger {activePassengerIndex + 1} Details
-              </span>
-              <span className="text-[11px] font-bold text-delta-ink-muted uppercase">
-                Required for TSA Airport Check-In
-              </span>
-            </div>
-
-            {/* Name Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-delta-navy select-none">
-                  First Name *
-                </label>
-                <Input
-                  placeholder="e.g. Alexander"
-                  value={passengers[activePassengerIndex].firstName}
-                  onChange={(e) =>
-                    updatePassengerField(activePassengerIndex, "firstName", e.target.value)
-                  }
-                  className="h-11 border border-delta-hairline text-sm rounded-sm bg-delta-canvas focus-visible:ring-1 focus-visible:ring-delta-navy focus-visible:border-delta-navy shadow-none font-medium text-delta-ink"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-delta-navy select-none">
-                  Last Name *
-                </label>
-                <Input
-                  placeholder="e.g. Vance"
-                  value={passengers[activePassengerIndex].lastName}
-                  onChange={(e) =>
-                    updatePassengerField(activePassengerIndex, "lastName", e.target.value)
-                  }
-                  className="h-11 border border-delta-hairline text-sm rounded-sm bg-delta-canvas focus-visible:ring-1 focus-visible:ring-delta-navy focus-visible:border-delta-navy shadow-none font-medium text-delta-ink"
-                />
-              </div>
-            </div>
-
-            {/* Contact Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-delta-navy flex items-center gap-1 select-none">
-                  <Mail className="h-3.5 w-3.5 text-delta-ink-muted" /> Email Address
-                </label>
-                <Input
-                  type="email"
-                  placeholder="passengers@skyledger.io"
-                  value={passengers[activePassengerIndex].email}
-                  onChange={(e) =>
-                    updatePassengerField(activePassengerIndex, "email", e.target.value)
-                  }
-                  className="h-11 border border-delta-hairline text-sm rounded-sm bg-delta-canvas focus-visible:ring-1 focus-visible:ring-delta-navy focus-visible:border-delta-navy shadow-none font-medium text-delta-ink"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-delta-navy flex items-center gap-1 select-none">
-                  <Phone className="h-3.5 w-3.5 text-delta-ink-muted" /> Phone Number
-                </label>
-                <Input
-                  type="tel"
-                  placeholder="+1 (555) 000-0000"
-                  value={passengers[activePassengerIndex].phone}
-                  onChange={(e) =>
-                    updatePassengerField(activePassengerIndex, "phone", e.target.value)
-                  }
-                  className="h-11 border border-delta-hairline text-sm rounded-sm bg-delta-canvas focus-visible:ring-1 focus-visible:ring-delta-navy focus-visible:border-delta-navy shadow-none font-medium text-delta-ink"
-                />
-              </div>
-            </div>
-
-            {/* Identification Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-delta-navy flex items-center gap-1 select-none">
-                  <Calendar className="h-3.5 w-3.5 text-delta-ink-muted" /> Date of Birth
-                </label>
-                <Input
-                  type="date"
-                  value={passengers[activePassengerIndex].dateOfBirth}
-                  onChange={(e) =>
-                    updatePassengerField(activePassengerIndex, "dateOfBirth", e.target.value)
-                  }
-                  className="h-11 border border-delta-hairline text-sm rounded-sm bg-delta-canvas focus-visible:ring-1 focus-visible:ring-delta-navy focus-visible:border-delta-navy shadow-none font-medium text-delta-ink"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-delta-navy flex items-center gap-1 select-none">
-                  <Shield className="h-3.5 w-3.5 text-delta-ink-muted" /> Passport Number
-                </label>
-                <Input
-                  placeholder="e.g. A98234102"
-                  value={passengers[activePassengerIndex].passportNumber}
-                  onChange={(e) =>
-                    updatePassengerField(activePassengerIndex, "passportNumber", e.target.value)
-                  }
-                  className="h-11 border border-delta-hairline text-sm rounded-sm bg-delta-canvas focus-visible:ring-1 focus-visible:ring-delta-navy focus-visible:border-delta-navy shadow-none font-medium text-delta-ink"
-                />
-              </div>
-            </div>
+                    {initials || (idx + 1)}
+                  </div>
+                  <span className="truncate">
+                    {p.firstName ? p.firstName : `Pax ${idx + 1}`}
+                  </span>
+                  {valid && !isActive && <Check className="h-3 w-3 text-delta-success shrink-0" />}
+                </button>
+              )
+            })}
           </div>
         )}
 
-        {/* Footer Actions */}
+        {/* Form */}
+        <AnimatePresence mode="wait" custom={direction}>
+          {current && (
+            <motion.div
+              key={activePassengerIndex}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.22, ease: "easeInOut" }}
+            >
+              <div className="bg-delta-surface-1/50 border border-delta-hairline rounded-sm p-4 space-y-4">
+                {/* Passenger label */}
+                <div className="flex items-center justify-between border-b border-delta-hairline pb-3 select-none">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-delta-red" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-delta-navy">
+                      Passenger {activePassengerIndex + 1} Details
+                    </span>
+                  </div>
+                  {isValid(current) && (
+                    <div className="flex items-center gap-1 bg-delta-success/10 border border-delta-success/25 text-delta-success px-2 py-0.5 rounded-sm">
+                      <Check className="h-3 w-3" />
+                      <span className="text-[10px] font-bold uppercase tracking-wider">Complete</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Field grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {FIELDS.map((field) => {
+                    const Icon = field.icon
+                    const value = (current[field.key] as string) || ""
+                    const touchedKey = `${activePassengerIndex}_${field.key}`
+                    const hasError = field.required && touched[touchedKey] && !value.trim()
+
+                    return (
+                      <div key={field.key} className="space-y-1.5">
+                        <label className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-delta-navy select-none">
+                          <Icon className="h-3 w-3 text-delta-ink-muted" />
+                          {field.label}
+                          {field.required && <span className="text-delta-red">*</span>}
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={field.type}
+                            placeholder={field.placeholder}
+                            value={value}
+                            onChange={(e) => updateField(activePassengerIndex, field.key, e.target.value)}
+                            onBlur={() => setTouched((prev) => ({ ...prev, [touchedKey]: true }))}
+                            className={`w-full h-11 rounded-sm border px-3 text-sm font-medium bg-delta-canvas text-delta-ink placeholder:text-delta-ink-muted/50 outline-none transition-colors ${
+                              hasError
+                                ? "border-delta-error focus:border-delta-error ring-1 ring-delta-error/30"
+                                : "border-delta-hairline hover:border-delta-navy-mid focus:border-delta-navy focus:ring-1 focus:ring-delta-navy/20"
+                            }`}
+                          />
+                          {hasError && (
+                            <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-delta-error" />
+                          )}
+                        </div>
+                        {hasError && (
+                          <p className="text-[10px] text-delta-error font-medium">This field is required</p>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Passenger type */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-delta-navy select-none">
+                    Passenger Type
+                  </label>
+                  <div className="flex gap-2">
+                    {(["adult", "child", "infant"] as const).map((type) => (
+                      <button
+                        key={type}
+                        onClick={() => updateField(activePassengerIndex, "passengerType", type)}
+                        className={`flex-1 h-9 rounded-sm border text-xs font-bold capitalize transition-colors cursor-pointer ${
+                          current.passengerType === type
+                            ? "bg-delta-navy text-white border-delta-navy"
+                            : "bg-delta-canvas text-delta-ink border-delta-hairline hover:bg-delta-surface-1 hover:border-delta-navy-mid"
+                        }`}
+                      >
+                        {type}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Prev/Next within passengers */}
+                {passengersCount > 1 && (
+                  <div className="flex items-center justify-between pt-2 border-t border-delta-hairline">
+                    <button
+                      onClick={() => goTo(Math.max(0, activePassengerIndex - 1))}
+                      disabled={activePassengerIndex === 0}
+                      className="flex items-center gap-1.5 text-xs text-delta-navy hover:text-delta-red disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer font-bold"
+                    >
+                      <ChevronLeft className="h-3.5 w-3.5" /> Previous
+                    </button>
+                    <span className="text-[10px] text-delta-ink-muted font-mono">
+                      {activePassengerIndex + 1} / {passengersCount}
+                    </span>
+                    <button
+                      onClick={() => goTo(Math.min(passengersCount - 1, activePassengerIndex + 1))}
+                      disabled={activePassengerIndex === passengersCount - 1}
+                      className="flex items-center gap-1.5 text-xs text-delta-navy hover:text-delta-red disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer font-bold"
+                    >
+                      Next <ChevronRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Footer */}
         <div className="flex items-center justify-between pt-4 border-t border-delta-hairline">
-          <div className="text-xs font-bold text-delta-ink-muted select-none">
-            {passengers.filter(isPassengerValid).length} of {passengersCount} traveler details completed
-          </div>
+          <span className="text-xs text-delta-ink-muted">
+            {completedCount} of {passengersCount} completed
+          </span>
           <div className="flex items-center gap-2">
             {onBack && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={onBack} 
-                className="border border-delta-navy text-delta-navy bg-delta-canvas hover:bg-delta-surface-1 rounded-sm text-xs font-bold px-4 py-2 cursor-pointer select-none"
+              <button
+                onClick={onBack}
+                className="h-10 px-4 rounded-sm border border-delta-navy text-delta-navy bg-delta-canvas hover:bg-delta-surface-1 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
               >
-                <ArrowLeft className="h-4 w-4" /> Back to Seats
-              </Button>
+                <ChevronLeft className="h-4 w-4" /> Back
+              </button>
             )}
-            <Button
-              onClick={handleContinue}
+            <button
+              onClick={() => allValid && onConfirm(passengers)}
               disabled={!allValid}
-              className="bg-delta-red hover:bg-delta-red-hover text-white text-xs font-bold uppercase tracking-wider px-6 h-10 rounded-sm flex items-center gap-1.5 cursor-pointer shadow-none select-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-10 px-6 rounded-sm bg-delta-red hover:bg-delta-red-hover text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer shadow-none disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <span>Proceed to Checkout</span>
-              <ArrowRight className="h-4 w-4" />
-            </Button>
+              Proceed to Checkout <ChevronRight className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </div>
