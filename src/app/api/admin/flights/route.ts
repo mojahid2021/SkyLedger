@@ -136,3 +136,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: "Failed to create flight: " + (error as Error).message }, { status: 500 })
   }
 }
+
+// DELETE /api/admin/flights — Delete a scheduled flight
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("id")
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: "Flight ID is required" },
+        { status: 400 }
+      )
+    }
+
+    await query("DELETE FROM flights WHERE id = ?", [id])
+
+    return NextResponse.json({
+      success: true,
+      message: `Flight #${id} deleted successfully`,
+    })
+  } catch (error) {
+    console.error("DELETE /api/admin/flights error:", error)
+    return NextResponse.json(
+      { success: false, error: "Failed to delete flight: " + (error as Error).message },
+      { status: 500 }
+    )
+  }
+}

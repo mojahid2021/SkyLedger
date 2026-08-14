@@ -11,6 +11,7 @@ import {
   MapPin,
   ChevronLeft,
   ChevronRight,
+  Trash2,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -88,6 +89,21 @@ export function CitiesDirectoryTable() {
       }
     } finally {
       setClearing(false)
+    }
+  }
+
+  const handleDeleteCity = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this city?")) return
+    try {
+      const res = await fetch(`/api/admin/cities?id=${id}`, { method: "DELETE" })
+      const data = await res.json()
+      if (data.success) {
+        fetchCities(page, search)
+      } else {
+        alert("Failed to delete city: " + (data.error || "Unknown error"))
+      }
+    } catch (err) {
+      alert("Error deleting city: " + (err as Error).message)
     }
   }
 
@@ -296,6 +312,7 @@ export function CitiesDirectoryTable() {
                 <TableHead className="text-[11px] font-[700] uppercase text-delta-navy">City Code</TableHead>
                 <TableHead className="text-[11px] font-[700] uppercase text-delta-navy">Country</TableHead>
                 <TableHead className="text-[11px] font-[700] uppercase text-delta-navy text-right">Coordinates</TableHead>
+                <TableHead className="text-[11px] font-[700] uppercase text-delta-navy text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -345,6 +362,17 @@ export function CitiesDirectoryTable() {
                       ) : (
                         <span>N/A</span>
                       )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-delta-red hover:bg-delta-red/10"
+                        onClick={() => handleDeleteCity(city.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span className="sr-only">Delete</span>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))

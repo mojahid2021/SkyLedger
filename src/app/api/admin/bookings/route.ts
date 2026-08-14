@@ -44,3 +44,30 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams
+    const id = searchParams.get("id")
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: "Booking ID is required" },
+        { status: 400 }
+      )
+    }
+
+    await query("DELETE FROM bookings WHERE id = ?", [id])
+
+    return NextResponse.json({
+      success: true,
+      message: `Booking #${id} deleted successfully`,
+    })
+  } catch (error: any) {
+    console.error("DELETE /api/admin/bookings error:", error)
+    return NextResponse.json(
+      { success: false, error: "Failed to delete booking: " + error.message },
+      { status: 500 }
+    )
+  }
+}

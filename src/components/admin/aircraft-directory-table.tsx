@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Wrench,
   Factory,
+  Trash2,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -100,6 +101,21 @@ export function AircraftDirectoryTable() {
       }
     } finally {
       setClearing(false)
+    }
+  }
+
+  const handleDeleteAircraft = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this aircraft?")) return
+    try {
+      const res = await fetch(`/api/admin/fleets?id=${id}`, { method: "DELETE" })
+      const data = await res.json()
+      if (data.success) {
+        fetchAircraft(page, search)
+      } else {
+        alert("Failed to delete aircraft: " + (data.error || "Unknown error"))
+      }
+    } catch (err) {
+      alert("Error deleting aircraft: " + (err as Error).message)
     }
   }
 
@@ -530,6 +546,7 @@ export function AircraftDirectoryTable() {
                 <TableHead className="text-[11px] font-[700] uppercase text-delta-navy text-right">Built</TableHead>
                 <TableHead className="text-[11px] font-[700] uppercase text-delta-navy text-right">Age</TableHead>
                 <TableHead className="text-[11px] font-[700] uppercase text-delta-navy">Flag</TableHead>
+                <TableHead className="text-[11px] font-[700] uppercase text-delta-navy text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -645,6 +662,17 @@ export function AircraftDirectoryTable() {
                       ) : (
                         <span className="text-[11px] text-delta-ink-muted">—</span>
                       )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-delta-red hover:bg-delta-red/10"
+                        onClick={() => handleDeleteAircraft(ac.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span className="sr-only">Delete</span>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))

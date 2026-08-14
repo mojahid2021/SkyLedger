@@ -342,77 +342,11 @@ async function run() {
     `)
     console.log("✓ seeded Admin user (aammojahid@gmail.com)")
 
-    // Seed airports
-    await connection.query(`
-      INSERT IGNORE INTO airports (id, name, iata_code, icao_code, lat, lng, country_code) VALUES
-      (1, 'Hartsfield-Jackson Atlanta International Airport', 'ATL', 'KATL', 33.6407, -84.4277, 'US'),
-      (2, 'John F Kennedy International Airport', 'JFK', 'KJFK', 40.6398, -73.7789, 'US'),
-      (3, 'Los Angeles International Airport', 'LAX', 'KLAX', 33.9416, -118.4085, 'US'),
-      (4, 'London Heathrow Airport', 'LHR', 'EGLL', 51.4700, -0.4543, 'GB'),
-      (5, 'Hazrat Shahjalal International Airport', 'DAC', 'VGHS', 23.8433, 90.3978, 'BD')
-    `)
-    console.log("✓ seeded initial airports (ATL, JFK, LAX, LHR, DAC)")
-
-    // Seed airlines
-    await connection.query(`
-      INSERT IGNORE INTO airlines (id, name, iata_code, icao_code, country_code) VALUES
-      (1, 'Delta Air Lines', 'DL', 'DAL', 'US'),
-      (2, 'Biman Bangladesh Airlines', 'BG', 'BBC', 'BD'),
-      (3, 'US-Bangla Airlines', 'BS', 'UBG', 'BD')
-    `)
-    console.log("✓ seeded initial airlines (Delta, Biman, US-Bangla)")
-
-    // Seed aircraft
-    await connection.query(`
-      INSERT IGNORE INTO aircraft (id, model, iata, icao, reg_number, flag, airline_iata) VALUES
-      (1, 'Boeing 737-800', '73H', 'B738', 'S2-AHV', 'BD', 'BG')
-    `)
-    console.log("✓ seeded initial aircraft (Boeing 737-800)")
-
-    // Seed flights (departure 2, 3, 4 days from now + today's date)
-    const formatMySQLDate = (d: Date) => d.toISOString().slice(0, 19).replace('T', ' ')
-    const now = new Date()
-
-    const dep1 = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000)
-    const arr1 = new Date(dep1.getTime() + 2.5 * 60 * 60 * 1000)
-
-    const dep2 = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000)
-    const arr2 = new Date(dep2.getTime() + 4 * 60 * 60 * 1000)
-
-    const dep3 = new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000)
-    const arr3 = new Date(dep3.getTime() + 7 * 60 * 60 * 1000)
-
-    // Today's flights
-    const depToday1 = new Date(now.getTime() + 3 * 60 * 60 * 1000)
-    const arrToday1 = new Date(depToday1.getTime() + 1.5 * 60 * 60 * 1000)
-
-    const depToday2 = new Date(now.getTime() + 6 * 60 * 60 * 1000)
-    const arrToday2 = new Date(depToday2.getTime() + 2.5 * 60 * 60 * 1000)
-
-    await connection.query(`
-      INSERT IGNORE INTO flights (id, flight_number, airline_id, origin_airport_id, destination_airport_id, aircraft_id, is_direct, flight_type, departure_time, arrival_time, price, total_seats, status) VALUES
-      (1, 'DL 101', 1, 1, 2, 1, 1, 'direct', ?, ?, 9800.00, 180, 'scheduled'),
-      (2, 'DL 202', 1, 1, 3, 1, 1, 'direct', ?, ?, 14900.00, 220, 'scheduled'),
-      (3, 'DL 303', 1, 2, 4, 1, 1, 'direct', ?, ?, 41200.00, 300, 'scheduled'),
-      (4, 'BG 088', 1, 1, 3, 1, 1, 'direct', ?, ?, 6500.00, 160, 'scheduled'),
-      (5, 'BG 202', 1, 1, 2, 1, 1, 'direct', ?, ?, 5800.00, 150, 'scheduled')
-    `, [
-      formatMySQLDate(dep1), formatMySQLDate(arr1),
-      formatMySQLDate(dep2), formatMySQLDate(arr2),
-      formatMySQLDate(dep3), formatMySQLDate(arr3),
-      formatMySQLDate(depToday1), formatMySQLDate(arrToday1),
-      formatMySQLDate(depToday2), formatMySQLDate(arrToday2)
-    ])
-    console.log("✓ seeded initial flights")
-
-    // Seed flight deals
-    await connection.query(`
-      INSERT IGNORE INTO flight_deals (flight_id, tag) VALUES
-      (1, 'Low fare'),
-      (2, 'Popular'),
-      (3, 'Best deal')
-    `)
-    console.log("✓ seeded initial flight deals")
+    // Seed airports (Removed demo data)
+    // Seed airlines (Removed demo data)
+    // Seed aircraft (Removed demo data)
+    // Seed flights (Removed demo data)
+    // Seed flight deals (Removed demo data)
 
     // Clean up empty wallets for existing users (in case trigger missed any pre-existing)
     await connection.query(`

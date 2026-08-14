@@ -49,17 +49,31 @@ export async function GET(request: Request) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("id")
     const pool = getMySQLPool()
-    await pool.query("TRUNCATE TABLE cities")
-    await recordAuditLog({
-      event: "Cities Database Cleared",
-      actor: "admin@skyledger.io",
-      status: "success",
-      metadata: { action: "truncate_cities" },
-    })
-    return NextResponse.json({ success: true, message: "Cities directory cleared successfully." })
+
+    if (id) {
+      await pool.query("DELETE FROM cities WHERE id = ?", [id])
+      await recordAuditLog({
+        event: "Single City Deleted",
+        actor: "admin@skyledger.io",
+        status: "success",
+        metadata: { action: "delete_city", city_id: id },
+      })
+      return NextResponse.json({ success: true, message: "City deleted successfully." })
+    } else {
+      await pool.query("TRUNCATE TABLE cities")
+      await recordAuditLog({
+        event: "Cities Database Cleared",
+        actor: "admin@skyledger.io",
+        status: "success",
+        metadata: { action: "truncate_cities" },
+      })
+      return NextResponse.json({ success: true, message: "Cities directory cleared successfully." })
+    }
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 })
   }

@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Database,
+  Trash2,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -64,6 +65,22 @@ export function AirportsDirectoryTable() {
       setClearing(false)
     }
   }
+
+  const handleDeleteAirport = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this airport?")) return
+    try {
+      const res = await fetch(`/api/admin/airports?id=${id}`, { method: "DELETE" })
+      const data = await res.json()
+      if (data.success) {
+        fetchAirports(page, search)
+      } else {
+        alert("Failed to delete airport: " + (data.error || "Unknown error"))
+      }
+    } catch (err) {
+      alert("Error deleting airport: " + (err as Error).message)
+    }
+  }
+  
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
@@ -372,6 +389,7 @@ export function AirportsDirectoryTable() {
                 <TableHead className="text-[11px] font-[700] uppercase text-delta-navy">ICAO Code</TableHead>
                 <TableHead className="text-[11px] font-[700] uppercase text-delta-navy">Country</TableHead>
                 <TableHead className="text-[11px] font-[700] uppercase text-delta-navy text-right">Coordinates</TableHead>
+                <TableHead className="text-[11px] font-[700] uppercase text-delta-navy text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -434,6 +452,17 @@ export function AirportsDirectoryTable() {
                       ) : (
                         <span>N/A</span>
                       )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-delta-red hover:bg-delta-red/10"
+                        onClick={() => handleDeleteAirport(airport.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span className="sr-only">Delete</span>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))

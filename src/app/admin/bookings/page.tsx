@@ -2,12 +2,13 @@
 
 import React, { useEffect, useState, Suspense } from "react"
 import { useRouter } from "next/navigation"
-import { FolderKanban, Search, Loader2, CreditCard, Ticket } from "lucide-react"
+import { FolderKanban, Search, Loader2, CreditCard, Ticket, Trash2 } from "lucide-react"
 
 import { useAuth } from "@/context/auth-context"
 import { AdminNavbar } from "@/components/admin/admin-navbar"
 import { AdminSidebar, AdminMobileNav } from "@/components/admin/admin-sidebar"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 
 interface Booking {
   id: number
@@ -55,6 +56,21 @@ function AdminBookingsContent() {
       .catch((err) => console.error("Failed to fetch bookings", err))
       .finally(() => setLoading(false))
   }, [user, role, authLoading, debouncedSearch])
+
+  const handleDeleteBooking = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this booking?")) return
+    try {
+      const res = await fetch(`/api/admin/bookings?id=${id}`, { method: "DELETE" })
+      const data = await res.json()
+      if (data.success) {
+        setBookings(bookings.filter((b) => b.id !== id))
+      } else {
+        alert("Failed to delete booking: " + (data.error || "Unknown error"))
+      }
+    } catch (err) {
+      alert("Error deleting booking: " + (err as Error).message)
+    }
+  }
 
   if (authLoading || !user || role !== "admin") {
     return (
@@ -109,6 +125,7 @@ function AdminBookingsContent() {
                       <th className="px-4 py-3">Class</th>
                       <th className="px-4 py-3">Amount</th>
                       <th className="px-4 py-3">Status</th>
+                      <th className="px-4 py-3 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-delta-hairline">
@@ -175,6 +192,17 @@ function AdminBookingsContent() {
                             >
                               {booking.status}
                             </span>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-delta-red hover:bg-delta-red/10"
+                              onClick={() => handleDeleteBooking(booking.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
                           </td>
                         </tr>
                       ))

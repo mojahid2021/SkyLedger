@@ -53,16 +53,29 @@ export async function GET(request: Request) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("id")
     const pool = getMySQLPool()
-    await pool.query("TRUNCATE TABLE airlines")
-    await recordAuditLog({
-      event: "Airlines Database Cleared",
-      actor: "admin@skyledger.io",
-      status: "success",
-      metadata: { action: "truncate_airlines" },
-    })
+
+    if (id) {
+      await pool.query("DELETE FROM airlines WHERE id = ?", [id])
+      await recordAuditLog({
+        event: "Single Airline Deleted",
+        actor: "admin@skyledger.io",
+        status: "success",
+        metadata: { action: "delete_airline", airline_id: id },
+      })
+    } else {
+      await pool.query("TRUNCATE TABLE airlines")
+      await recordAuditLog({
+        event: "Airlines Database Cleared",
+        actor: "admin@skyledger.io",
+        status: "success",
+        metadata: { action: "truncate_airlines" },
+      })
+    }
     return NextResponse.json({ success: true })
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 })

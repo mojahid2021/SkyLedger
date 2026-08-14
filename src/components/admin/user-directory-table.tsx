@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Search, RefreshCw, Shield, User as UserIcon, UserCog, ChevronLeft, ChevronRight, Plus } from "lucide-react"
+import { Search, RefreshCw, Shield, User as UserIcon, UserCog, ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -54,6 +54,21 @@ export function UserDirectoryTable({
     setCurrentPage(1)
     if (externalOnSearchChange) externalOnSearchChange(q)
     else setInternalQuery(q)
+  }
+
+  const handleDeleteUser = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this user?")) return
+    try {
+      const res = await fetch(`/api/admin/users?userId=${id}`, { method: "DELETE" })
+      const data = await res.json()
+      if (data.success) {
+        onRefresh()
+      } else {
+        alert("Failed to delete user: " + (data.error || "Unknown error"))
+      }
+    } catch (err) {
+      alert("Error deleting user: " + (err as Error).message)
+    }
   }
 
   const filtered = users.filter((u) =>
@@ -173,15 +188,26 @@ export function UserDirectoryTable({
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => router.push(`/admin/users/${u.id}`)}
-                        className="h-8 gap-1.5 rounded-[4px] px-2.5 text-xs font-[600] text-delta-red hover:bg-delta-red/5 hover:text-delta-red-hover"
-                      >
-                        <UserCog className="h-3.5 w-3.5" />
-                        Manage / Edit
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => router.push(`/admin/users/${u.id}`)}
+                          className="h-8 gap-1.5 rounded-[4px] px-2.5 text-xs font-[600] text-delta-red hover:bg-delta-red/5 hover:text-delta-red-hover"
+                        >
+                          <UserCog className="h-3.5 w-3.5" />
+                          Manage / Edit
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDeleteUser(u.id)}
+                          className="h-8 w-8 rounded-[4px] text-delta-red hover:bg-delta-red/5 hover:text-delta-red-hover"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span className="sr-only">Delete</span>
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 )

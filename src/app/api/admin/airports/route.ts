@@ -66,27 +66,42 @@ export async function GET(request: Request) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("id")
     const { getMySQLPool } = require("@/lib/db")
     const pool = getMySQLPool()
-    await pool.query("TRUNCATE TABLE airports")
-
     const { recordAuditLog } = require("@/lib/mongodb")
-    await recordAuditLog({
-      event: "Airports Database Cleared",
-      actor: "admin@skyledger.io",
-      status: "success",
-      metadata: { action: "truncate_airports" },
-    })
 
-    return NextResponse.json({
-      success: true,
-      message: "Airports directory cleared successfully.",
-    })
+    if (id) {
+      await pool.query("DELETE FROM airports WHERE id = ?", [id])
+      await recordAuditLog({
+        event: "Single Airport Deleted",
+        actor: "admin@skyledger.io",
+        status: "success",
+        metadata: { action: "delete_airport", airport_id: id },
+      })
+      return NextResponse.json({
+        success: true,
+        message: "Airport deleted successfully.",
+      })
+    } else {
+      await pool.query("TRUNCATE TABLE airports")
+      await recordAuditLog({
+        event: "Airports Database Cleared",
+        actor: "admin@skyledger.io",
+        status: "success",
+        metadata: { action: "truncate_airports" },
+      })
+      return NextResponse.json({
+        success: true,
+        message: "Airports directory cleared successfully.",
+      })
+    }
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: "Failed to clear airports: " + (error as Error).message },
+      { success: false, error: "Failed to clear/delete airports: " + (error as Error).message },
       { status: 500 }
     )
   }

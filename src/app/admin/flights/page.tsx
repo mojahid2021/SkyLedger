@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, Suspense } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Plane, Search, RefreshCw } from "lucide-react"
+import { Plus, Plane, Search, RefreshCw, Trash2 } from "lucide-react"
 
 import { useAuth } from "@/context/auth-context"
 import { Button } from "@/components/ui/button"
@@ -67,6 +67,21 @@ function AdminFlightsContent() {
         }
       })
       .catch((err) => console.error("Error removing deal:", err))
+  }
+
+  const handleDeleteFlight = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this flight?")) return
+    try {
+      const res = await fetch(`/api/admin/flights?id=${id}`, { method: "DELETE" })
+      const data = await res.json()
+      if (data.success) {
+        fetchFlights(search)
+      } else {
+        alert("Failed to delete flight: " + (data.error || "Unknown error"))
+      }
+    } catch (err) {
+      alert("Error deleting flight: " + (err as Error).message)
+    }
   }
 
   useEffect(() => {
@@ -191,6 +206,7 @@ function AdminFlightsContent() {
                         <th className="px-4 py-3">Bookings</th>
                         <th className="px-4 py-3 text-center">Today's Deal</th>
                         <th className="px-4 py-3 text-right">Base Fare</th>
+                        <th className="px-4 py-3 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-delta-hairline">
@@ -312,6 +328,17 @@ function AdminFlightsContent() {
                           </td>
                           <td className="px-4 py-3 text-right font-mono text-xs font-[700] text-delta-navy">
                             ৳{Number(flight.price).toFixed(2)}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-delta-red hover:bg-delta-red/10"
+                              onClick={() => handleDeleteFlight(flight.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
                           </td>
                         </tr>
                       ))}

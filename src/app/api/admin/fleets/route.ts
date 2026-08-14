@@ -60,17 +60,31 @@ export async function GET(request: Request) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("id")
     const pool = getMySQLPool()
-    await pool.query("TRUNCATE TABLE aircraft")
-    await recordAuditLog({
-      event: "Aircraft Fleet Database Cleared",
-      actor: "admin@skyledger.io",
-      status: "success",
-      metadata: { action: "truncate_aircraft" },
-    })
-    return NextResponse.json({ success: true, message: "Aircraft fleet directory cleared successfully." })
+
+    if (id) {
+      await pool.query("DELETE FROM aircraft WHERE id = ?", [id])
+      await recordAuditLog({
+        event: "Single Aircraft Deleted",
+        actor: "admin@skyledger.io",
+        status: "success",
+        metadata: { action: "delete_aircraft", aircraft_id: id },
+      })
+      return NextResponse.json({ success: true, message: "Aircraft deleted successfully." })
+    } else {
+      await pool.query("TRUNCATE TABLE aircraft")
+      await recordAuditLog({
+        event: "Aircraft Fleet Database Cleared",
+        actor: "admin@skyledger.io",
+        status: "success",
+        metadata: { action: "truncate_aircraft" },
+      })
+      return NextResponse.json({ success: true, message: "Aircraft fleet directory cleared successfully." })
+    }
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 })
   }
