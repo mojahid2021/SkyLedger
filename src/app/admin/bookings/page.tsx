@@ -23,6 +23,7 @@ interface Booking {
   first_name: string | null
   last_name: string | null
   email: string | null
+  flight_number?: string
 }
 
 function AdminBookingsContent() {
@@ -103,6 +104,7 @@ function AdminBookingsContent() {
                     <tr>
                       <th className="px-4 py-3">PNR</th>
                       <th className="px-4 py-3">Passenger</th>
+                      <th className="px-4 py-3">Flight</th>
                       <th className="px-4 py-3">Route & Date</th>
                       <th className="px-4 py-3">Class</th>
                       <th className="px-4 py-3">Amount</th>
@@ -140,6 +142,11 @@ function AdminBookingsContent() {
                               {booking.first_name} {booking.last_name}
                             </div>
                             <div className="text-xs text-delta-ink-muted">{booking.email || "Guest"}</div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="font-bold text-delta-navy uppercase tracking-wide">
+                              {booking.flight_number || "N/A"}
+                            </div>
                           </td>
                           <td className="px-4 py-3">
                             <div className="font-bold text-delta-navy uppercase tracking-wide flex items-center gap-1.5">

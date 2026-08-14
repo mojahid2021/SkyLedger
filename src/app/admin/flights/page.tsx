@@ -188,6 +188,7 @@ function AdminFlightsContent() {
                         <th className="px-4 py-3">Routing</th>
                         <th className="px-4 py-3">Schedule</th>
                         <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3">Bookings</th>
                         <th className="px-4 py-3 text-center">Today's Deal</th>
                         <th className="px-4 py-3 text-right">Base Fare</th>
                       </tr>
@@ -267,6 +268,12 @@ function AdminFlightsContent() {
                             >
                               {flight.status}
                             </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-col">
+                              <span className="text-xs font-[700] text-delta-navy">{flight.booked_seats || 0} / {flight.total_seats || 0}</span>
+                              <span className="text-[10px] text-delta-ink-muted">Seats Booked</span>
+                            </div>
                           </td>
                           <td className="px-4 py-3 text-center">
                             {flight.is_deal ? (

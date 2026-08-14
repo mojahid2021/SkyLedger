@@ -123,9 +123,6 @@ export function CitiesDirectoryTable() {
           </span>
           <h1 className="text-xl font-[700] tracking-tight text-delta-navy sm:text-2xl flex items-center gap-2">
             Cities Directory & Sync
-            <Badge className="bg-delta-navy-mid text-white text-[10px] font-[600]">
-              MariaDB Engine
-            </Badge>
           </h1>
           <p className="text-xs text-delta-ink-muted">
             Manage global cities database and synchronize data from AirLabs API into MariaDB.

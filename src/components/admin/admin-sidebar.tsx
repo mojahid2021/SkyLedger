@@ -147,12 +147,6 @@ const NAV_GROUPS: NavGroup[] = [
             icon: PlaneIcon,
             href: "/admin/flights",
           },
-          {
-            id: "create-flight",
-            label: "Create Flight",
-            icon: Plus,
-            href: "/admin/flights/create",
-          },
         ],
       },
     ],

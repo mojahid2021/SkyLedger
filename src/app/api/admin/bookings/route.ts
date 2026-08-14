@@ -20,9 +20,11 @@ export async function GET(req: NextRequest) {
         b.created_at,
         u.first_name,
         u.last_name,
-        u.email
+        u.email,
+        f.flight_number
       FROM bookings b
       LEFT JOIN users u ON b.user_id = u.id
+      LEFT JOIN flights f ON b.flight_id = f.id
     `
     const params: any[] = []
 
