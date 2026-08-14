@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { recordAuditLog } from "@/lib/mongodb"
+import bcrypt from "bcryptjs"
 
 export async function GET(request: Request) {
   try {
@@ -60,7 +61,11 @@ export async function PUT(request: Request) {
       if (!current_password) {
         return NextResponse.json({ success: false, error: "Current password is required to set a new password." }, { status: 400 })
       }
-      if (current_password !== user.password_hash) {
+      
+      const isMatch = await bcrypt.compare(current_password, user.password_hash).catch(() => false);
+      const isLegacyPlain = user.password_hash === current_password;
+
+      if (!isMatch && !isLegacyPlain) {
         await recordAuditLog({
           event: "User Password Change Failed (Invalid Current Password)",
           actor: user.email,
@@ -68,8 +73,9 @@ export async function PUT(request: Request) {
         })
         return NextResponse.json({ success: false, error: "Incorrect current password." }, { status: 401 })
       }
-      // Since passwords are plain text in this system as seen in auth routes
-      passwordHashToSave = new_password
+      
+      const salt = await bcrypt.genSalt(10)
+      passwordHashToSave = await bcrypt.hash(new_password, salt)
     }
 
     // Check for email collision

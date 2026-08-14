@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { recordAuditLog } from "@/lib/mongodb"
+import bcrypt from "bcryptjs"
 
 interface UserRow {
   id: number
@@ -58,6 +59,9 @@ export async function POST(request: Request) {
       )
     }
 
+    const salt = await bcrypt.genSalt(10)
+    const passwordHash = await bcrypt.hash(password, salt)
+
     const result = await query<ResultSetHeader>(
       "INSERT INTO users (first_name, last_name, email, phone, date_of_birth, password_hash, role) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
@@ -66,7 +70,7 @@ export async function POST(request: Request) {
         cleanEmail,
         phone || null,
         date_of_birth || null,
-        password,
+        passwordHash,
         assignedRole,
       ]
     )
