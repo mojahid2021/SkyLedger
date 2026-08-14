@@ -64,3 +64,32 @@ export async function DELETE() {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 })
   }
 }
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    const { name, city_code, country_code, lat, lng } = body
+
+    if (!name) {
+      return NextResponse.json({ success: false, error: "City Name is required" }, { status: 400 })
+    }
+
+    const pool = getMySQLPool()
+    const [result] = await pool.query(
+      `INSERT INTO cities (name, city_code, country_code, lat, lng, updated_at) 
+       VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+      [name, city_code || null, country_code || null, lat || null, lng || null]
+    )
+
+    await recordAuditLog({
+      event: "Manual City Added",
+      actor: "admin@skyledger.io",
+      status: "success",
+      metadata: { name, city_code },
+    })
+
+    return NextResponse.json({ success: true, message: "City added successfully" })
+  } catch (error) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 })
+  }
+}

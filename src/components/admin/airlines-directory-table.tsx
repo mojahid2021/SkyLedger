@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 export interface AirlineRecord {
   id: number
@@ -72,6 +73,15 @@ export function AirlinesDirectoryTable() {
   const [totalPages, setTotalPages] = useState(1)
   const [totalRecords, setTotalRecords] = useState(0)
   const [syncStatus, setSyncStatus] = useState<{ type: "success" | "error"; message: string } | null>(null)
+  const [isManualAddOpen, setIsManualAddOpen] = useState(false)
+  const initialManualData = {
+    name: "", iata_code: "", iata_prefix: "", iata_accounting: "", icao_code: "", callsign: "", country_code: "",
+    iosa_registered: false, is_scheduled: false, is_passenger: false, is_cargo: false, is_international: false,
+    total_aircrafts: "", average_fleet_age: "", accidents_last_5y: "", crashes_last_5y: "",
+    website: "", facebook: "", twitter: "", instagram: "", linkedin: "", slug: ""
+  }
+  const [manualData, setManualData] = useState(initialManualData)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleClearAirlines = async () => {
     if (!confirm("Are you sure you want to clear all airline records?")) return
@@ -152,6 +162,29 @@ export function AirlinesDirectoryTable() {
     }
   }
 
+  const handleManualAddSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    try {
+      const res = await fetch("/api/admin/airlines", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(manualData)
+      })
+      if (res.ok) {
+        setIsManualAddOpen(false)
+        setManualData(initialManualData)
+        fetchAirlines(1, search)
+      } else {
+        alert("Failed to add airline")
+      }
+    } catch (err) {
+      alert("An error occurred")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Top Banner / Sync Header */}
@@ -174,6 +207,141 @@ export function AirlinesDirectoryTable() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          <Dialog open={isManualAddOpen} onOpenChange={setIsManualAddOpen}>
+            <DialogTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-delta-navy/20 text-delta-navy hover:bg-delta-navy/5 font-[700] text-xs h-9 shadow-xs"
+              >
+                <Database className="mr-2 h-3.5 w-3.5" />
+                Add Manually
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <form onSubmit={handleManualAddSubmit}>
+                <DialogHeader>
+                  <DialogTitle>Add Airline Manually</DialogTitle>
+                  <DialogDescription>
+                    Enter the details of the new airline.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto px-1">
+                  <div className="grid gap-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">Name *</label>
+                    <input required type="text" value={manualData.name} onChange={e => setManualData({...manualData, name: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">IATA Code</label>
+                      <input type="text" value={manualData.iata_code} onChange={e => setManualData({...manualData, iata_code: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">ICAO Code</label>
+                      <input type="text" value={manualData.icao_code} onChange={e => setManualData({...manualData, icao_code: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">IATA Prefix</label>
+                      <input type="text" value={manualData.iata_prefix} onChange={e => setManualData({...manualData, iata_prefix: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">IATA Accounting</label>
+                      <input type="text" value={manualData.iata_accounting} onChange={e => setManualData({...manualData, iata_accounting: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">Callsign</label>
+                      <input type="text" value={manualData.callsign} onChange={e => setManualData({...manualData, callsign: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">Country Code</label>
+                      <input type="text" value={manualData.country_code} onChange={e => setManualData({...manualData, country_code: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" id="iosa" checked={manualData.iosa_registered} onChange={e => setManualData({...manualData, iosa_registered: e.target.checked})} className="h-4 w-4 rounded border-gray-300" />
+                      <label htmlFor="iosa" className="text-xs font-bold uppercase tracking-wider text-delta-navy">IOSA Registered</label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" id="sched" checked={manualData.is_scheduled} onChange={e => setManualData({...manualData, is_scheduled: e.target.checked})} className="h-4 w-4 rounded border-gray-300" />
+                      <label htmlFor="sched" className="text-xs font-bold uppercase tracking-wider text-delta-navy">Scheduled</label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" id="pass" checked={manualData.is_passenger} onChange={e => setManualData({...manualData, is_passenger: e.target.checked})} className="h-4 w-4 rounded border-gray-300" />
+                      <label htmlFor="pass" className="text-xs font-bold uppercase tracking-wider text-delta-navy">Passenger</label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" id="cargo" checked={manualData.is_cargo} onChange={e => setManualData({...manualData, is_cargo: e.target.checked})} className="h-4 w-4 rounded border-gray-300" />
+                      <label htmlFor="cargo" className="text-xs font-bold uppercase tracking-wider text-delta-navy">Cargo</label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" id="intl" checked={manualData.is_international} onChange={e => setManualData({...manualData, is_international: e.target.checked})} className="h-4 w-4 rounded border-gray-300" />
+                      <label htmlFor="intl" className="text-xs font-bold uppercase tracking-wider text-delta-navy">International</label>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">Total Aircrafts</label>
+                      <input type="number" value={manualData.total_aircrafts} onChange={e => setManualData({...manualData, total_aircrafts: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">Avg Fleet Age</label>
+                      <input type="number" step="0.1" value={manualData.average_fleet_age} onChange={e => setManualData({...manualData, average_fleet_age: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">Accidents (5y)</label>
+                      <input type="number" value={manualData.accidents_last_5y} onChange={e => setManualData({...manualData, accidents_last_5y: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">Crashes (5y)</label>
+                      <input type="number" value={manualData.crashes_last_5y} onChange={e => setManualData({...manualData, crashes_last_5y: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">Slug</label>
+                    <input type="text" value={manualData.slug} onChange={e => setManualData({...manualData, slug: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                  </div>
+                  <div className="grid gap-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">Website</label>
+                    <input type="text" value={manualData.website} onChange={e => setManualData({...manualData, website: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">Facebook</label>
+                      <input type="text" value={manualData.facebook} onChange={e => setManualData({...manualData, facebook: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">Twitter</label>
+                      <input type="text" value={manualData.twitter} onChange={e => setManualData({...manualData, twitter: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">Instagram</label>
+                      <input type="text" value={manualData.instagram} onChange={e => setManualData({...manualData, instagram: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">LinkedIn</label>
+                      <input type="text" value={manualData.linkedin} onChange={e => setManualData({...manualData, linkedin: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="ghost" onClick={() => setIsManualAddOpen(false)}>Cancel</Button>
+                  <Button type="submit" disabled={isSubmitting} className="bg-delta-navy text-white hover:bg-delta-navy/90">
+                    {isSubmitting ? "Adding..." : "Add Airline"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+
           <Button
             size="sm"
             variant="outline"

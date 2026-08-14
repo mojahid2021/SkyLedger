@@ -75,3 +75,53 @@ export async function DELETE() {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 })
   }
 }
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    const { 
+      hex, reg_number, flag, airline_icao, airline_iata, seen, icao, iata, model, engine, engine_count, 
+      manufacturer, type, category, built, age, msn, line, lat, lng, alt, dir, speed, v_speed, squawk, last_seen
+    } = body
+
+    if (!model) {
+      return NextResponse.json({ success: false, error: "Model is required" }, { status: 400 })
+    }
+
+    const pool = getMySQLPool()
+    const [result] = await pool.query(
+      `INSERT INTO aircraft (
+        hex, reg_number, flag, airline_icao, airline_iata, seen, icao, iata, model, engine, engine_count, 
+        manufacturer, type, category, built, age, msn, line, lat, lng, alt, dir, speed, v_speed, squawk, last_seen, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+      [
+        hex || null, reg_number || null, flag || null, airline_icao || null, airline_iata || null,
+        seen ? parseInt(seen, 10) : null,
+        icao || null, iata || null, model, engine || null, engine_count || null, manufacturer || null,
+        type || null, category || null,
+        built ? parseInt(built, 10) : null,
+        age ? parseFloat(age) : null,
+        msn || null, line || null,
+        lat ? parseFloat(lat) : null,
+        lng ? parseFloat(lng) : null,
+        alt ? parseInt(alt, 10) : null,
+        dir ? parseInt(dir, 10) : null,
+        speed ? parseInt(speed, 10) : null,
+        v_speed ? parseInt(v_speed, 10) : null,
+        squawk || null,
+        last_seen || null
+      ]
+    )
+
+    await recordAuditLog({
+      event: "Manual Aircraft Added",
+      actor: "admin@skyledger.io",
+      status: "success",
+      metadata: { model, iata },
+    })
+
+    return NextResponse.json({ success: true, message: "Aircraft added successfully" })
+  } catch (error) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 })
+  }
+}
