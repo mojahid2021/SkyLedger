@@ -128,7 +128,7 @@ async function run() {
         INDEX idx_country (country_code)
       )
     `)
-    
+
     await connection.query(`
       CREATE TABLE IF NOT EXISTS cities (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -293,6 +293,9 @@ async function run() {
         departure_time DATETIME NOT NULL,
         arrival_time DATETIME NOT NULL,
         price DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
+        tax_percentage DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+        seat_selection_fee DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+        total_seats INT NOT NULL DEFAULT 0,
         status ENUM('scheduled', 'delayed', 'cancelled', 'landed') NOT NULL DEFAULT 'scheduled',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (airline_id) REFERENCES airlines(id),
@@ -368,10 +371,10 @@ async function run() {
     // Seed flights (departure 2, 3, 4 days from now + today's date)
     const formatMySQLDate = (d: Date) => d.toISOString().slice(0, 19).replace('T', ' ')
     const now = new Date()
-    
+
     const dep1 = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000)
     const arr1 = new Date(dep1.getTime() + 2.5 * 60 * 60 * 1000)
-    
+
     const dep2 = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000)
     const arr2 = new Date(dep2.getTime() + 4 * 60 * 60 * 1000)
 
@@ -386,12 +389,12 @@ async function run() {
     const arrToday2 = new Date(depToday2.getTime() + 2.5 * 60 * 60 * 1000)
 
     await connection.query(`
-      INSERT IGNORE INTO flights (id, flight_number, airline_id, origin_airport_id, destination_airport_id, aircraft_id, is_direct, flight_type, departure_time, arrival_time, price, status) VALUES
-      (1, 'DL 101', 1, 1, 2, 1, 1, 'direct', ?, ?, 9800.00, 'scheduled'),
-      (2, 'DL 202', 1, 1, 3, 1, 1, 'direct', ?, ?, 14900.00, 'scheduled'),
-      (3, 'DL 303', 1, 2, 4, 1, 1, 'direct', ?, ?, 41200.00, 'scheduled'),
-      (4, 'BG 088', 1, 1, 3, 1, 1, 'direct', ?, ?, 6500.00, 'scheduled'),
-      (5, 'BG 202', 1, 1, 2, 1, 1, 'direct', ?, ?, 5800.00, 'scheduled')
+      INSERT IGNORE INTO flights (id, flight_number, airline_id, origin_airport_id, destination_airport_id, aircraft_id, is_direct, flight_type, departure_time, arrival_time, price, total_seats, status) VALUES
+      (1, 'DL 101', 1, 1, 2, 1, 1, 'direct', ?, ?, 9800.00, 180, 'scheduled'),
+      (2, 'DL 202', 1, 1, 3, 1, 1, 'direct', ?, ?, 14900.00, 220, 'scheduled'),
+      (3, 'DL 303', 1, 2, 4, 1, 1, 'direct', ?, ?, 41200.00, 300, 'scheduled'),
+      (4, 'BG 088', 1, 1, 3, 1, 1, 'direct', ?, ?, 6500.00, 160, 'scheduled'),
+      (5, 'BG 202', 1, 1, 2, 1, 1, 'direct', ?, ?, 5800.00, 150, 'scheduled')
     `, [
       formatMySQLDate(dep1), formatMySQLDate(arr1),
       formatMySQLDate(dep2), formatMySQLDate(arr2),
