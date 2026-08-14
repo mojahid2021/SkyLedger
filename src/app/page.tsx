@@ -1,24 +1,33 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import {
   Plane,
   Globe,
-  ChevronDown,
   MapPin,
-  Clock,
-  ShieldCheck,
-  CreditCard,
-  Wifi,
-  CheckCircle2,
   ArrowRight,
+  Sparkles,
+  Luggage,
+  Headphones,
+  User,
+  LogOut,
 } from "lucide-react"
 import { FlightSearchWidget } from "@/components/flight/flight-search-widget"
+import { useAuth } from "@/context/auth-context"
 import { cn } from "@/lib/utils"
 
-const NAV_LINKS = ["Book", "Check-in", "My Trips", "Travel Info", "Loyalty"]
+/**
+ * Navigation links with anchors/routes for easy discovery
+ */
+const NAV_LINKS = [
+  { label: "Book Flights", href: "#search-section" },
+  { label: "Curated Deals", href: "#deals-section" },
+]
 
+/**
+ * City name resolver helper for clean UI presentation
+ */
 function getCityFromAirport(name: string, iata: string): string {
   const mappings: Record<string, string> = {
     JFK: "New York",
@@ -32,6 +41,8 @@ function getCityFromAirport(name: string, iata: string): string {
     BKK: "Bangkok",
     KUL: "Kuala Lumpur",
     ATL: "Atlanta",
+    DOH: "Doha",
+    IST: "Istanbul",
   }
   if (mappings[iata]) return mappings[iata]
   let clean = name.replace(/(International|Airport|Regional|Intercontinental|Municipal|Field|Aero)/gi, "").trim()
@@ -41,46 +52,42 @@ function getCityFromAirport(name: string, iata: string): string {
   return clean || name
 }
 
-const BENEFITS = [
-  {
-    icon: ShieldCheck,
-    title: "Book with confidence",
-    body: "Flexible change policies and free cancellation on most Main Cabin fares.",
-  },
-  {
-    icon: Clock,
-    title: "On-time, every time",
-    body: "Industry-leading operational reliability backed by a global route network.",
-  },
-  {
-    icon: Wifi,
-    title: "Connected in the sky",
-    body: "Complimentary in-flight messaging and fast Wi-Fi on select aircraft.",
-  },
-  {
-    icon: CreditCard,
-    title: "Earn every mile",
-    body: "SkyMiles members earn on every dollar, every trip, with no blackout dates.",
-  },
-]
-
-const MEDALLION_TIERS = [
-  { tier: "Silver", miles: "25,000 MQMs", fill: "bg-delta-surface-2", text: "text-delta-navy", border: "border-delta-hairline" },
-  { tier: "Gold", miles: "50,000 MQMs", fill: "bg-amber-600", text: "text-white", border: "border-amber-700" },
-  { tier: "Platinum", miles: "75,000 MQMs", fill: "bg-delta-navy-mid", text: "text-white", border: "border-delta-navy" },
-  { tier: "Diamond", miles: "125,000 MQMs", fill: "bg-delta-navy-dark", text: "text-white", border: "border-delta-navy-dark" },
-]
-
+/**
+ * Footer Column Directory
+ */
 const FOOTER_COLUMNS = [
-  { title: "Book", links: ["Search flights", "Round trip", "One way", "Vacation packages", "Hotels & cars"] },
-  { title: "SkyMiles", links: ["Join SkyMiles", "Medallion status", "Mileage calculator", "SkyMiles credit cards", "Shop with miles"] },
-  { title: "Help & Support", links: ["Customer service", "Manage booking", "Baggage info", "Travel alerts", "Contact us"] },
-  { title: "About", links: ["Our story", "Newsroom", "Investor relations", "Careers", "Sustainability"] },
+  {
+    title: "Flight Services",
+    links: [
+      { name: "Search Flights", href: "#search-section" },
+      { name: "Curated Deals", href: "#deals-section" },
+      { name: "SkyLedger Wallet", href: "/user/wallet" },
+    ],
+  },
+  {
+    title: "Member Accounts",
+    links: [
+      { name: "Sign In", href: "/login" },
+      { name: "Register", href: "/register" },
+      { name: "Dashboard", href: "/user/dashboard" },
+    ],
+  },
 ]
 
 export default function RootPage() {
+  const { user, logout } = useAuth()
   const [dbDeals, setDbDeals] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loadingDeals, setLoadingDeals] = useState(true)
+
+  // Quick-booking prefill state for search widget
+  const [prefilledSearch, setPrefilledSearch] = useState<{
+    origin?: string
+    originCode?: string
+    destination?: string
+    destinationCode?: string
+  }>({})
+
+  const searchWidgetRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetch("/api/flights/deals")
@@ -91,95 +98,201 @@ export default function RootPage() {
         }
       })
       .catch((err) => console.error("Error loading deals:", err))
-      .finally(() => setLoading(false))
+      .finally(() => setLoadingDeals(false))
   }, [])
 
-  const categories = Array.from(new Set(dbDeals.map((d: any) => d.tag)))
-  return (
-    <div className="min-h-screen bg-delta-canvas text-delta-ink font-delta">
-      {/* ===== Top Nav — navy #003366, 56px, no radius ===== */}
-      <header className="bg-delta-navy text-white">
-        <div className="mx-auto flex h-14 max-w-[1280px] items-center justify-between px-4 sm:px-8">
-          {/* Left: wordmark + globe */}
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-delta-navy">
-              <Plane className="h-4 w-4" />
-            </div>
-            <span className="text-[20px] font-[700] tracking-tight">SkyLedger</span>
-          </div>
+  const handleSelectDeal = (deal: any) => {
+    setPrefilledSearch({
+      origin: `${deal.origin_name} (${deal.origin_iata})`,
+      originCode: deal.origin_iata,
+      destination: `${deal.destination_name} (${deal.destination_iata})`,
+      destinationCode: deal.destination_iata,
+    })
 
-          {/* Center: nav links */}
-          <nav className="hidden md:flex items-center gap-1">
+    if (searchWidgetRef.current) {
+      searchWidgetRef.current.scrollIntoView({ behavior: "smooth", block: "center" })
+    }
+  }
+
+  const categories = Array.from(new Set(dbDeals.map((d: any) => d.tag)))
+
+  return (
+    <div className="min-h-screen bg-delta-canvas text-delta-ink font-delta flex flex-col selection:bg-delta-red/20 selection:text-delta-red">
+      {/* ========================================================================= */}
+      {/* 1. TOP HEADER & NAVIGATION                                                */}
+      {/* ========================================================================= */}
+      <header className="sticky top-0 z-50 bg-delta-navy text-white shadow-md">
+        <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 sm:px-8">
+          {/* Logo & Brand Identity */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="flex h-9 w-9 items-center justify-center rounded-[6px] bg-white text-delta-navy transition-transform duration-200 group-hover:scale-105 shadow-sm">
+              <Plane className="h-5 w-5 fill-delta-navy" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[20px] font-[800] tracking-tight leading-none text-white">SkyLedger</span>
+              <span className="text-[10px] text-white/70 tracking-wider font-semibold uppercase">Airlines & Booking</span>
+            </div>
+          </Link>
+
+          {/* Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-1">
             {NAV_LINKS.map((link) => (
               <a
-                key={link}
-                href="#"
-                className="rounded-[4px] px-3 py-2 text-[14px] text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                key={link.label}
+                href={link.href}
+                className="rounded-[4px] px-3.5 py-2 text-[14px] font-[500] text-white/90 hover:bg-white/10 hover:text-white transition-colors"
               >
-                {link}
+                {link.label}
               </a>
             ))}
           </nav>
 
-          {/* Right: language + sign in */}
+          {/* User Authentication & Language Actions */}
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className="flex items-center gap-1.5 rounded-[4px] px-2 py-2 text-[14px] text-white/90 hover:bg-white/10 hover:text-white transition-colors"
-            >
+            <div className="hidden sm:flex items-center gap-1.5 rounded-[4px] px-2 py-1.5 text-[13px] text-white/80 border border-white/20">
               <Globe className="h-4 w-4" />
-              <span className="hidden sm:inline">EN</span>
-              <ChevronDown className="h-3.5 w-3.5" />
-            </button>
-            <Link
-              href="/login"
-              className="rounded-[4px] border border-white/70 px-4 py-2 text-[14px] font-[500] text-white hover:bg-white hover:text-delta-navy transition-colors"
-            >
-              Sign in
-            </Link>
+              <span>BDT (৳)</span>
+            </div>
+
+            {user ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  href={user.role === "admin" ? "/admin/dashboard" : "/user/dashboard"}
+                  className="flex items-center gap-2 rounded-[4px] bg-white/15 px-3 py-1.5 text-[14px] font-[600] text-white hover:bg-white/25 transition-colors border border-white/30"
+                >
+                  <User className="h-4 w-4 text-white" />
+                  <span className="hidden sm:inline">
+                    {user.first_name} ({user.role === "admin" ? "Admin" : "Dashboard"})
+                  </span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={logout}
+                  title="Log out"
+                  className="rounded-[4px] p-2 text-white/80 hover:bg-delta-red hover:text-white transition-colors"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/login"
+                  className="rounded-[4px] border border-white/70 px-4 py-1.5 text-[14px] font-[600] text-white hover:bg-white hover:text-delta-navy transition-all duration-150"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/register"
+                  className="hidden sm:inline-flex rounded-[4px] bg-delta-red px-4 py-1.5 text-[14px] font-[700] text-white hover:bg-delta-red-hover transition-colors shadow-sm"
+                >
+                  Join Free
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
-      {/* ===== Hero — white canvas, navy headline, search widget ===== */}
-      <section className="bg-delta-surface-1">
-        <div className="mx-auto max-w-[1280px] px-4 sm:px-8 py-14 sm:py-20">
-          <div className="max-w-[720px]">
-            <h1 className="text-[36px] sm:text-[48px] font-[700] leading-[44px] sm:leading-[56px] tracking-[-0.5px] text-delta-navy">
-              Find your next flight
+      {/* ========================================================================= */}
+      {/* 2. HERO SECTION & FLIGHT SEARCH WIDGET                                    */}
+      {/* ========================================================================= */}
+      <section id="search-section" className="relative bg-gradient-to-b from-delta-surface-1 to-delta-canvas pt-12 pb-16 sm:pt-16 sm:pb-24 border-b border-delta-hairline-light">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-8">
+          {/* Headline and quick highlights */}
+          <div className="max-w-[780px]">
+            <div className="inline-flex items-center gap-2 rounded-full bg-delta-navy/10 px-3.5 py-1 text-[12px] font-[700] text-delta-navy uppercase tracking-wider mb-4 border border-delta-navy/20">
+              <Sparkles className="h-3.5 w-3.5 text-delta-red" />
+              <span>Next-Gen Flight Booking Experience</span>
+            </div>
+            <h1 className="text-[34px] sm:text-[48px] lg:text-[54px] font-[800] leading-[40px] sm:leading-[54px] lg:leading-[60px] tracking-[-0.02em] text-delta-navy">
+              Fly wherever you desire with effortless ease.
             </h1>
-            <p className="mt-4 text-[18px] leading-[28px] text-delta-ink-muted">
-              Search hundreds of destinations across our global network. Transparent
-              fares, no blackout dates, and flexibility built into every booking.
+            <p className="mt-4 text-[16px] sm:text-[18px] leading-[26px] sm:leading-[28px] text-delta-ink-muted font-[450]">
+              Explore hundreds of direct and connected routes across our global fleet. Real-time seat layouts,
+              transparent fares in Bangladeshi Taka (৳), and zero booking blackout dates.
             </p>
           </div>
 
-          {/* Search widget — the page's primary interactive surface */}
-          <div className="mt-8">
-            <FlightSearchWidget />
+          {/* Search widget wrapper */}
+          <div ref={searchWidgetRef} className="mt-8 sm:mt-10">
+            <FlightSearchWidget
+              initialOrigin={prefilledSearch.origin}
+              initialOriginCode={prefilledSearch.originCode}
+              initialDestination={prefilledSearch.destination}
+              initialDestinationCode={prefilledSearch.destinationCode}
+            />
+          </div>
+
+          {/* Quick trust metrics */}
+          <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-delta-hairline-light">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] bg-delta-surface-2 text-delta-navy font-bold">
+                ✓
+              </div>
+              <div>
+                <p className="text-[13px] font-[700] text-delta-navy">Instant E-Ticket</p>
+                <p className="text-[11px] text-delta-ink-muted">Confirmed on checkout</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] bg-delta-surface-2 text-delta-navy font-bold">
+                ৳
+              </div>
+              <div>
+                <p className="text-[13px] font-[700] text-delta-navy">Transparent Pricing</p>
+                <p className="text-[11px] text-delta-ink-muted">No surprise hidden fees</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] bg-delta-surface-2 text-delta-navy font-bold">
+                <Luggage className="h-5 w-5 text-delta-navy" />
+              </div>
+              <div>
+                <p className="text-[13px] font-[700] text-delta-navy">Baggage Transparency</p>
+                <p className="text-[11px] text-delta-ink-muted">Clear carry-on & check-in</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] bg-delta-surface-2 text-delta-navy font-bold">
+                <Headphones className="h-5 w-5 text-delta-navy" />
+              </div>
+              <div>
+                <p className="text-[13px] font-[700] text-delta-navy">24/7 Member Support</p>
+                <p className="text-[11px] text-delta-ink-muted">Live booking assistance</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ===== Deals — deal cards, hairline borders, red price tags ===== */}
-      <section className="bg-delta-canvas">
-        <div className="mx-auto max-w-[1280px] px-4 sm:px-8 py-14 sm:py-20">
-          <div className="border-b border-delta-hairline pb-4">
-            <p className="text-[11px] font-[600] uppercase tracking-wider text-delta-red">
-              Flight Offers
+      {/* ========================================================================= */}
+      {/* 3. FEATURED DEALS & FLIGHT OFFERS                                         */}
+      {/* ========================================================================= */}
+      <section id="deals-section" className="bg-delta-canvas py-16 sm:py-20 border-b border-delta-hairline-light">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-delta-hairline pb-4 gap-4">
+            <div>
+              <p className="text-[12px] font-[700] uppercase tracking-wider text-delta-red flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5" />
+                Featured Travel Offers
+              </p>
+              <h2 className="text-[26px] sm:text-[32px] font-[800] leading-tight text-delta-navy mt-1">
+                Today&apos;s Curated Deals
+              </h2>
+            </div>
+            <p className="text-[13px] text-delta-ink-muted max-w-[420px]">
+              Special promotional airfares for popular domestic and international flight routes.
             </p>
-            <h2 className="text-[24px] font-[700] leading-[32px] text-delta-navy">
-              Today&apos;s deals
-            </h2>
           </div>
 
-          {loading ? (
-            <div className="flex h-48 items-center justify-center text-xs text-delta-ink-muted">
-              Loading featured deals...
+          {loadingDeals ? (
+            <div className="flex h-48 items-center justify-center text-sm font-semibold text-delta-ink-muted animate-pulse">
+              Fetching available promotional deals...
             </div>
           ) : dbDeals.length === 0 ? (
-            <div className="mt-6 rounded-[4px] border border-delta-hairline bg-delta-surface-1 p-8 text-center text-delta-ink-muted text-xs font-bold uppercase tracking-wider">
-              No deals currently featured.
+            <div className="mt-8 rounded-[6px] border border-delta-hairline bg-delta-surface-1 p-8 text-center text-delta-ink-muted text-xs font-bold uppercase tracking-wider">
+              No promotional deals currently featured. Check back soon!
             </div>
           ) : (
             <div className="space-y-12 mt-8">
@@ -188,52 +301,62 @@ export default function RootPage() {
                 return (
                   <div key={category} className="space-y-4">
                     <div className="flex items-center gap-2 border-b border-delta-hairline pb-2">
-                      <span className="h-2 w-2 rounded-full bg-delta-red" />
-                      <h3 className="text-[16px] font-[700] uppercase tracking-wider text-delta-navy">
-                        {category} Deals
+                      <span className="h-2.5 w-2.5 rounded-full bg-delta-red" />
+                      <h3 className="text-[16px] font-[800] uppercase tracking-wider text-delta-navy">
+                        {category} Flights & Escapes
                       </h3>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                       {categoryDeals.map((deal) => {
                         const destCity = getCityFromAirport(deal.destination_name, deal.destination_iata)
                         const origCity = getCityFromAirport(deal.origin_name, deal.origin_iata)
                         const routeStr = `${deal.origin_iata} → ${deal.destination_iata}`
                         const fareStr = `৳${Number(deal.price).toLocaleString("en-US", { maximumFractionDigits: 0 })}`
-                        const tripTypeStr = deal.flight_type === "direct" ? "One-way" : "Round trip"
+                        const tripTypeStr = deal.flight_type === "direct" ? "One-way Direct" : "Round Trip / Connecting"
 
                         return (
                           <div
                             key={deal.flight_id}
-                            className="rounded-[4px] border border-delta-hairline bg-delta-canvas p-4 shadow-xs hover:border-delta-navy/30 transition-all duration-200"
+                            className="group rounded-[8px] border border-delta-hairline bg-delta-canvas p-5 shadow-xs hover:border-delta-navy hover:shadow-md transition-all duration-200 flex flex-col justify-between"
                           >
-                            <div className="flex items-center justify-between">
-                              <span className="text-[12px] font-[500] uppercase tracking-wide text-delta-ink-muted">
-                                {deal.tag}
-                              </span>
-                              <span className="flex items-center gap-1 rounded-full bg-delta-surface-1 px-2.5 py-0.5 text-[12px] text-delta-navy">
-                                <MapPin className="h-3 w-3" />
-                                {routeStr}
-                              </span>
+                            <div>
+                              <div className="flex items-center justify-between">
+                                <span className="rounded-full bg-delta-surface-2 px-2.5 py-0.5 text-[11px] font-[700] uppercase tracking-wide text-delta-navy">
+                                  {deal.tag}
+                                </span>
+                                <span className="flex items-center gap-1 font-mono text-[12px] font-[700] text-delta-navy bg-delta-surface-1 px-2.5 py-0.5 rounded border border-delta-hairline-light">
+                                  <MapPin className="h-3 w-3 text-delta-red" />
+                                  {routeStr}
+                                </span>
+                              </div>
+
+                              <h4 className="mt-4 text-[24px] font-[800] text-delta-navy group-hover:text-delta-red transition-colors">
+                                {destCity}
+                              </h4>
+                              <p className="mt-1 text-[13px] text-delta-ink-muted">
+                                {tripTypeStr} from <span className="font-semibold text-delta-ink">{origCity}</span>
+                              </p>
                             </div>
-                            <h3 className="mt-3 text-[24px] font-[700] leading-[32px] text-delta-navy">
-                              {destCity}
-                            </h3>
-                            <p className="mt-1 text-[13px] text-delta-ink-muted">
-                              {tripTypeStr} from {origCity}
-                            </p>
-                            <div className="mt-4 flex items-center justify-between border-t border-delta-hairline-light pt-4">
+
+                            <div className="mt-6 flex items-end justify-between border-t border-delta-hairline-light pt-4">
                               <div>
-                                <span className="text-[12px] text-delta-ink-muted">Fare from</span>
-                                <div className="text-[24px] font-[700] leading-[32px] text-delta-red">
+                                <span className="text-[11px] font-medium uppercase tracking-wide text-delta-ink-muted">
+                                  Fares from
+                                </span>
+                                <div className="text-[24px] font-[800] leading-none text-delta-red mt-0.5">
                                   {fareStr}
                                 </div>
                               </div>
-                              <Link
-                                href={`/booking?offerId=${deal.flight_id}`}
-                                className="rounded-[4px] border border-delta-navy px-4 py-2 text-[14px] font-[700] text-delta-navy hover:bg-delta-surface-1 transition-colors inline-block"
+
+                              <button
+                                type="button"
+                                onClick={() => handleSelectDeal(deal)}
+                                className="rounded-[4px] bg-delta-navy px-4 py-2 text-[13px] font-[700] text-white hover:bg-delta-navy-mid transition-colors inline-flex items-center gap-1.5 shadow-sm"
                               >
-                                Book now
-                              </Link>
+                                <span>Book Route</span>
+                                <ArrowRight className="h-3.5 w-3.5" />
+                              </button>
                             </div>
                           </div>
                         )
@@ -247,103 +370,25 @@ export default function RootPage() {
         </div>
       </section>
 
-      {/* ===== Benefits — 4-column grid, hairline dividers ===== */}
-      <section className="bg-delta-surface-1">
-        <div className="mx-auto max-w-[1280px] px-4 sm:px-8 py-14 sm:py-20">
-          <h2 className="text-[24px] font-[700] leading-[32px] text-delta-navy">
-            Why fly SkyLedger
-          </h2>
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {BENEFITS.map((b) => {
-              const Icon = b.icon
-              return (
-                <div
-                  key={b.title}
-                  className="rounded-[4px] border border-delta-hairline bg-delta-canvas p-6"
-                >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-[4px] bg-delta-surface-2 text-delta-navy">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="mt-4 text-[16px] font-[700] leading-[24px] text-delta-navy">
-                    {b.title}
-                  </h3>
-                  <p className="mt-2 text-[14px] leading-[20px] text-delta-ink-muted">
-                    {b.body}
-                  </p>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== SkyMiles — medallion status badges ===== */}
-      <section className="bg-delta-canvas">
-        <div className="mx-auto max-w-[1280px] px-4 sm:px-8 py-14 sm:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-            <div>
-              <h2 className="text-[36px] font-[700] leading-[44px] tracking-[-0.3px] text-delta-navy">
-                SkyMiles. The loyalty program built on you.
-              </h2>
-              <p className="mt-4 text-[16px] leading-[24px] text-delta-ink-muted">
-                Earn miles on every flight and reach Medallion status for priority
-                boarding, complimentary upgrades, and exclusive member fares.
-              </p>
-              <button
-                type="button"
-                className="mt-6 flex items-center gap-2 rounded-[4px] bg-delta-red px-6 py-3 text-[16px] font-[700] text-white hover:bg-delta-red-hover transition-colors"
-              >
-                Join SkyMiles
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* Medallion tiers */}
-            <div className="rounded-[4px] border border-delta-hairline bg-delta-surface-1 p-6">
-              <h3 className="text-[18px] font-[700] leading-[26px] text-delta-navy">
-                Medallion status tiers
-              </h3>
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                {MEDALLION_TIERS.map((m) => (
-                  <div
-                    key={m.tier}
-                    className={`rounded-[4px] border ${m.border} ${m.fill} p-4`}
-                  >
-                    <span
-                      className={`inline-flex items-center rounded-full px-3 py-1 text-[12px] font-[500] ${m.fill} ${m.text}`}
-                    >
-                      {m.tier}
-                    </span>
-                    <p className={`mt-2 text-[12px] ${m.text}`}>{m.miles}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-4 flex items-start gap-2 text-[12px] leading-[16px] text-delta-ink-muted">
-                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-delta-success" />
-                Status is earned by flying. No credit card spend required.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ===== Footer — navy-dark #001e3d ===== */}
-      <footer className="bg-delta-navy-dark text-white">
+      {/* ========================================================================= */}
+      {/* 7. FOOTER                                                                 */}
+      {/* ========================================================================= */}
+      <footer className="bg-delta-navy-dark text-white mt-auto">
         <div className="mx-auto max-w-[1280px] px-4 sm:px-8 py-12 sm:py-16">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {FOOTER_COLUMNS.map((col) => (
               <div key={col.title}>
-                <h4 className="text-[14px] font-[700] uppercase tracking-wide text-white">
+                <h4 className="text-[13px] font-[700] uppercase tracking-wider text-white border-b border-white/10 pb-2">
                   {col.title}
                 </h4>
                 <ul className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
-                    <li key={link}>
+                    <li key={link.name}>
                       <a
-                        href="#"
-                        className="text-[14px] leading-[20px] text-white/70 hover:text-white transition-colors"
+                        href={link.href}
+                        className="text-[13px] leading-[20px] text-white/70 hover:text-white transition-colors"
                       >
-                        {link}
+                        {link.name}
                       </a>
                     </li>
                   ))}
@@ -353,14 +398,14 @@ export default function RootPage() {
           </div>
 
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/15 pt-6">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-delta-navy">
-                <Plane className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-7 w-7 items-center justify-center rounded-[4px] bg-white text-delta-navy">
+                <Plane className="h-4 w-4 fill-delta-navy" />
               </div>
-              <span className="text-[16px] font-[700]">SkyLedger</span>
+              <span className="text-[16px] font-[800] tracking-tight">SkyLedger Airlines</span>
             </div>
             <p className="text-[12px] text-white/60">
-              © 2026 SkyLedger Airlines. All rights reserved.
+              © {new Date().getFullYear()} SkyLedger Airlines, Inc. All rights reserved. Transparent Fare System.
             </p>
           </div>
         </div>

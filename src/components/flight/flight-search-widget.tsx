@@ -235,6 +235,11 @@ function LocationInput({
   const [open, setOpen] = useState(false)
   const { results, loading } = useLocationSearch(query)
 
+  // Keep internal query input synchronized with incoming value prop
+  useEffect(() => {
+    setQuery(value)
+  }, [value])
+
   return (
     <div className="space-y-1.5">
       <label className="text-[12px] font-[500] text-delta-navy uppercase tracking-wide">{label}</label>
@@ -674,7 +679,17 @@ function FlightOfferCard({
   )
 }
 
-export function FlightSearchWidget() {
+export function FlightSearchWidget({
+  initialOrigin,
+  initialOriginCode,
+  initialDestination,
+  initialDestinationCode,
+}: {
+  initialOrigin?: string
+  initialOriginCode?: string
+  initialDestination?: string
+  initialDestinationCode?: string
+} = {}) {
   const [airlineNames, setAirlineNames] = useState<Record<string, string>>({})
 
   useEffect(() => {
@@ -693,14 +708,25 @@ export function FlightSearchWidget() {
   }, [])
 
   const [tripType, setTripType] = useState<"round" | "oneway">("round")
-  const [from, setFrom] = useState("")
-  const [fromCode, setFromCode] = useState("")
-  const [to, setTo] = useState("")
-  const [toCode, setToCode] = useState("")
+  const [from, setFrom] = useState(initialOrigin || "")
+  const [fromCode, setFromCode] = useState(initialOriginCode || "")
+  const [to, setTo] = useState(initialDestination || "")
+  const [toCode, setToCode] = useState(initialDestinationCode || "")
   const [depart, setDepart] = useState(() => format(new Date(), "yyyy-MM-dd"))
   const [returnDate, setReturnDate] = useState(() =>
     format(new Date(Date.now() + 7 * 86400000), "yyyy-MM-dd")
   )
+
+  useEffect(() => {
+    if (initialOriginCode) {
+      setFrom(initialOrigin || initialOriginCode)
+      setFromCode(initialOriginCode)
+    }
+    if (initialDestinationCode) {
+      setTo(initialDestination || initialDestinationCode)
+      setToCode(initialDestinationCode)
+    }
+  }, [initialOrigin, initialOriginCode, initialDestination, initialDestinationCode])
   const [passengers, setPassengers] = useState(1)
   const [cabin, setCabin] = useState("Main Cabin")
   const [showPassengerPopover, setShowPassengerPopover] = useState(false)
