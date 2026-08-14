@@ -399,19 +399,6 @@ async function run() {
     `)
     console.log("✓ created 'v_flight_search_optimized' View")
 
-    console.log("\\nDemonstrating DCL Permissions...")
-    try {
-      // Create user and grant permissions
-      await connection.query("CREATE USER IF NOT EXISTS 'skyledger_guest'@'localhost' IDENTIFIED BY 'guest_pass'")
-      await connection.query("GRANT SELECT ON skyledger_db.active_flights_view TO 'skyledger_guest'@'localhost'")
-      await connection.query("REVOKE UPDATE, DELETE ON skyledger_db.* FROM 'skyledger_guest'@'localhost'")
-      await connection.query("FLUSH PRIVILEGES")
-      console.log("✓ created guest user and executed GRANT/REVOKE commands")
-    } catch (e) {
-      console.log("⚠ Could not execute DCL commands (might lack ROOT privileges), skipping...", e)
-    }
-
-
     console.log("\\nSeeding Initial Data...")
 
     // Admin seed
