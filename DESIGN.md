@@ -48,7 +48,7 @@ seo:
       answer: "The header nav sits on a darker navy (#003366 or equivalent) while mid-page section headers and subheadings use a slightly lighter navy that creates visual hierarchy without introducing a second hue. This 'dual-navy surface ladder' is the system's primary depth mechanism — no shadows, no gradients, just the lightness step between two navy values. The convention is common in airline and finance brands that need to signal institutional gravitas without the warmth of a lifestyle gradient."
     - id: "booking-widget"
       title: "How is the flight search widget styled?"
-      answer: "The booking search widget sits directly in the above-fold hero on a white card surface, with field inputs that have a 1px hairline border, 4px corner radius, and a white fill. Labels appear as small navy text above each input (DIN Pro 12-14px, weight 400). The primary 'Search flights' CTA is a solid Delta red pill at 44-48px height. The widget is the densest component in the system — it holds origin/destination fields, date pickers, passenger count selectors, and fare-class toggles in roughly 500px of horizontal width."
+      answer: "The booking search widget sits directly in the above-fold hero on a white card surface with a 1px hairline border, 8px corner radius, and an 8px shadow at 6% opacity. It spans full width inside the layout container, housing origin/destination, dates, and travelers in a unified 4-column desktop alignment. Inputs have a 1px hairline border, 4px corner radius, and a white fill at 44px height. Labels appear as small navy text above each input (DIN Pro 12-14px, weight 500). The primary 'Search flights' CTA is a solid Delta red button at 48px height with 4px corner radius. The widget avoids horizontal line dividers, utilizing capsule segmented selectors and negative space for clean structural segmentation."
     - id: "medallion-status"
       title: "How does Delta style its Medallion status badges?"
       answer: "Delta's SkyMiles Medallion tiers (Silver, Gold, Platinum, Diamond) each receive a distinct badge treatment on account and loyalty surfaces. Silver uses a light gray chip with navy text; Gold uses a gold-adjacent amber fill with dark text; Platinum uses a deeper blue chip; Diamond uses a near-black navy chip with white text. The badge radius is fully rounded (pill). These badges appear in the logged-in account surfaces and deal-card loyalty sections; they are among the few non-structural uses of color in the system."
@@ -389,9 +389,9 @@ There is no 16px or 24px mid-soft tier. The scale is either 0-8px utilitarian or
 
 **`button-secondary`** — White canvas fill, navy border (1px), navy text. Same 48px height as the primary. Used for "Explore destinations," "View all offers," and modal cancel actions.
 
-**`top-nav`** — Deep navy (#003366) fill, white text in `{typography.nav-link}`, 56px height, no border-radius. Left: Delta wordmark + globe logo. Center: product links (Book, Check-in, My Trips, Travel Info, Loyalty). Right: language picker + Sign in.
+**`top-nav`** — Deep navy (#003366) fill, white text in `{typography.nav-link}`, 64px height (`h-16`), no border-radius. Left: SkyLedger wordmark + plane logo. Center: dedicated route links (Book Flights, Flight Status, Curated Deals, SkyMiles Benefits, Travel Info). Right: currency indicator + Sign in / Join Free.
 
-**`nav-link`** — Transparent background, white text, 8×12px padding. Active state swaps text to Delta red and adds a 2px red underline.
+**`nav-link`** — Transparent background, white text. Active state swaps text to Delta red (#e31837) with no horizontal lines or bottom underlines to maintain a clean layout style.
 
 **`hero-heading`** — Navy text on the white canvas, `{typography.display-xl}` (48px / 700). Campaign headline; sits above the search widget.
 
@@ -407,7 +407,7 @@ There is no 16px or 24px mid-soft tier. The scale is either 0-8px utilitarian or
 
 **`text-input`** — White canvas fill, ink text, 1px hairline border, 4px radius, 10×14px padding, 44px height. Used in the search widget for origin/destination, date, and passenger-count fields. Border thickens to 2px navy on focus; no glow.
 
-**`search-widget`** — White surface with a 1px hairline border and 8px shadow at 6% opacity, 4px radius, 24px internal padding. The page's primary interactive surface — houses all search fields and the "Search flights" primary CTA.
+**`search-widget`** — White surface with a 1px hairline border and 8px shadow at 6% opacity, 8px radius (`rounded-md`), 24px internal padding, spanning full viewport container width. The page's primary interactive surface — houses search inputs and the primary CTA while avoiding any horizontal line divider rules.
 
 **`medallion-badge`** — Navy-mid fill (#005480), white text, pill radius, 4×12px padding. Four tier variants (Silver / Gold / Platinum / Diamond) adjust fill color. Appears in logged-in account sections and loyalty-deal cards.
 
@@ -421,11 +421,15 @@ There is no 16px or 24px mid-soft tier. The scale is either 0-8px utilitarian or
 
 **Do** use the dual-navy surface ladder for hierarchy rather than introducing a gradient. The lightness contrast between `{colors.navy}` (header) and `{colors.navy-mid}` (sub-headers) creates sufficient depth; a gradient would soften the institutional precision that DIN Pro establishes typographically.
 
-**Do** use 1px `{colors.hairline}` borders as the primary structural device for cards and grids. The system's below-fold data density works precisely because hairlines separate rows and columns without taking up visual space.
+**Do** use 1px `{colors.hairline}` borders as the primary structural framing device for cards, grids, and input containers. Frame boundaries are acceptable; however, interior divider lines should be minimized.
+
+**Do** use layout spacing (gaps), padding, and background block shifts (e.g. `bg-delta-surface-1` vs white `canvas`) to partition segments inside a card or widget instead of drawing horizontal dividing lines.
 
 **Do** limit fare price highlights to `{colors.primary}` red on a white background. Price numbers in red are the system's deliberate attention anchor — placing them on any other colored surface (navy, gray) breaks the contrast logic.
 
 **Don't** use `{colors.primary}` (#e31837) as a section background or hero canvas color. Red backgrounds read as alerts or warnings in this system, not as brand confidence; that role belongs to `{colors.navy}`. The CTA button exists because red is scarce — making it abundant removes its function.
+
+**Don't** draw continuous horizontal divider lines (`border-t`, `border-b`, `<hr>`, or `divide-y`) inside cards (such as FlightOfferCard sections), segmented tabs (such as the trip-type switcher), search results timelines, or option popover lists. Use spacing and background blocks instead.
 
 **Don't** use the 12px or 16px radius tier. The system's most expressive surface (the search-widget card) sits at 8px; everything else is 0-4px. Introducing a 16px card radius would import the soft-consumer aesthetic of Airbnb or Booking.com and signal the wrong product register.
 
