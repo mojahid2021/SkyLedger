@@ -353,17 +353,17 @@ function LandingPageContent() {
           </div>
         </section>
 
-        {/* Curated Deals Section (Featured top 3, borderless card design) */}
+        {/* Curated Deals Section (Grouped by Tag) */}
         <section className="bg-delta-surface-1 py-16">
-          <div className="mx-auto max-w-[1280px] px-6 sm:px-8 flex flex-col gap-8">
+          <div className="mx-auto max-w-[1280px] px-6 sm:px-8 flex flex-col gap-12">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <div>
                 <p className="text-[12px] font-[700] uppercase tracking-wider text-delta-red flex items-center gap-1.5">
                   <Tag className="h-3.5 w-3.5 text-delta-red" />
-                  Featured Travel Offers
+                  Special Travel Offers
                 </p>
                 <h2 className="text-[24px] sm:text-[32px] font-[700] leading-tight text-delta-navy mt-1">
-                  Featured Destination Deals
+                  Explore Curated Deals
                 </h2>
               </div>
               <Link
@@ -384,60 +384,76 @@ function LandingPageContent() {
                 No promotional deals currently featured.
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {dbDeals.slice(0, 3).map((deal) => {
-                  const destCity = getCityFromAirport(deal.destination_name, deal.destination_iata)
-                  const origCity = getCityFromAirport(deal.origin_name, deal.origin_iata)
-                  const routeStr = `${deal.origin_iata} → ${deal.destination_iata}`
-                  const fareStr = `৳${Number(deal.price).toLocaleString("en-US", { maximumFractionDigits: 0 })}`
+              <div className="flex flex-col gap-12">
+                {Object.entries(
+                  dbDeals.reduce((acc: any, deal) => {
+                    const tag = deal.tag || "Featured Deals"
+                    if (!acc[tag]) acc[tag] = []
+                    acc[tag].push(deal)
+                    return acc
+                  }, {})
+                ).map(([tag, dealsGroup]: [string, any]) => (
+                  <div key={tag} className="flex flex-col gap-5">
+                    <h3 className="text-[20px] font-[700] text-delta-navy border-b border-delta-hairline pb-2 flex justify-between items-center">
+                      <span>{tag}</span>
+                      <span className="text-[12px] text-delta-ink-muted font-normal">{dealsGroup.length} Flights Available</span>
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {dealsGroup.slice(0, 3).map((deal: any) => {
+                        const destCity = getCityFromAirport(deal.destination_name, deal.destination_iata)
+                        const origCity = getCityFromAirport(deal.origin_name, deal.origin_iata)
+                        const routeStr = `${deal.origin_iata} → ${deal.destination_iata}`
+                        const fareStr = `৳${Number(deal.price).toLocaleString("en-US", { maximumFractionDigits: 0 })}`
 
-                  return (
-                    <div
-                      key={deal.flight_id}
-                      className="group rounded-[4px] border border-delta-hairline bg-white hover:border-delta-navy hover:shadow-md transition-all flex flex-col justify-between overflow-hidden"
-                    >
-                      <div className="p-5 flex flex-col">
-                        <div className="flex items-center justify-between">
-                          <span className="rounded-full bg-delta-surface-2 px-2.5 py-0.5 text-[11px] font-[700] uppercase tracking-wide text-delta-navy">
-                            {deal.tag}
-                          </span>
-                          <span className="flex items-center gap-1 font-mono text-[12px] font-[700] text-delta-navy bg-delta-surface-1 px-2.5 py-0.5 rounded border border-delta-hairline-light">
-                            <MapPin className="h-3 w-3 text-delta-red shrink-0" />
-                            {routeStr}
-                          </span>
-                        </div>
+                        return (
+                          <div
+                            key={deal.flight_id}
+                            className="group rounded-[4px] border border-delta-hairline bg-white hover:border-delta-navy hover:shadow-md transition-all flex flex-col justify-between overflow-hidden"
+                          >
+                            <div className="p-5 flex flex-col">
+                              <div className="flex items-center justify-between">
+                                <span className="rounded-full bg-delta-surface-2 px-2.5 py-0.5 text-[11px] font-[700] uppercase tracking-wide text-delta-navy">
+                                  {deal.tag}
+                                </span>
+                                <span className="flex items-center gap-1 font-mono text-[12px] font-[700] text-delta-navy bg-delta-surface-1 px-2.5 py-0.5 rounded border border-delta-hairline-light">
+                                  <MapPin className="h-3 w-3 text-delta-red shrink-0" />
+                                  {routeStr}
+                                </span>
+                              </div>
 
-                        <h3 className="mt-5 text-[24px] font-[700] text-delta-navy group-hover:text-delta-red transition-colors">
-                          {destCity}
-                        </h3>
-                        <p className="mt-1 text-[13px] text-delta-ink-muted font-normal">
-                          Flight from <span className="font-[600] text-delta-ink">{origCity}</span>
-                        </p>
-                      </div>
+                              <h3 className="mt-5 text-[24px] font-[700] text-delta-navy group-hover:text-delta-red transition-colors">
+                                {destCity}
+                              </h3>
+                              <p className="mt-1 text-[13px] text-delta-ink-muted font-normal">
+                                Flight from <span className="font-[600] text-delta-ink">{origCity}</span>
+                              </p>
+                            </div>
 
-                      {/* Outlined block footer - no horizontal border rule */}
-                      <div className="bg-delta-surface-1 px-5 py-4 flex items-end justify-between">
-                        <div>
-                          <span className="text-[10px] font-[700] uppercase tracking-wide text-delta-ink-muted">
-                            Fares from
-                          </span>
-                          <div className="text-[24px] font-[700] leading-none text-delta-red mt-0.5">
-                            {fareStr}
+                            <div className="bg-delta-surface-1 px-5 py-4 flex items-end justify-between">
+                              <div>
+                                <span className="text-[10px] font-[700] uppercase tracking-wide text-delta-ink-muted">
+                                  Fares from
+                                </span>
+                                <div className="text-[24px] font-[700] leading-none text-delta-red mt-0.5">
+                                  {fareStr}
+                                </div>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => handleSelectDeal(deal)}
+                                className="rounded-[4px] bg-delta-navy hover:bg-delta-navy-mid px-4 py-2 text-[12px] font-[700] text-white transition-colors inline-flex items-center gap-1.5 shadow-sm cursor-pointer uppercase tracking-wider"
+                              >
+                                <span>Book</span>
+                                <ArrowRight className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => handleSelectDeal(deal)}
-                          className="rounded-[4px] bg-delta-navy hover:bg-delta-navy-mid px-4 py-2 text-[12px] font-[700] text-white transition-colors inline-flex items-center gap-1.5 shadow-sm cursor-pointer uppercase tracking-wider"
-                        >
-                          <span>Book</span>
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
+                        )
+                      })}
                     </div>
-                  )
-                })}
+                  </div>
+                ))}
               </div>
             )}
           </div>

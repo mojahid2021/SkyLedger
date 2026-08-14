@@ -19,7 +19,7 @@ export async function GET() {
       INNER JOIN airports orig ON f.origin_airport_id = orig.id
       INNER JOIN airports dest ON f.destination_airport_id = dest.id
       ORDER BY fd.created_at DESC
-      LIMIT 6
+      LIMIT 20
     `
     const deals = await query<any[]>(sql)
     return NextResponse.json({ success: true, deals: deals || [] })

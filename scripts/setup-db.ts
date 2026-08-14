@@ -290,7 +290,7 @@ async function run() {
         destination_airport_id INT NOT NULL,
         aircraft_id INT NULL,
         is_direct TINYINT(1) DEFAULT 1,
-        flight_type ENUM('domestic', 'international') NOT NULL DEFAULT 'domestic',
+        flight_type ENUM('direct', 'connecting', 'multi-city') NOT NULL DEFAULT 'direct',
         layover_cities JSON NULL,
         departure_time DATETIME NOT NULL,
         arrival_time DATETIME NOT NULL,

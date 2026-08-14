@@ -109,7 +109,6 @@ export async function POST(request: Request) {
     const parsedTaxPercentage = tax_percentage ? parseFloat(tax_percentage) : 0.0
     const parsedSeatFee = seat_selection_fee ? parseFloat(seat_selection_fee) : 0.0
     const parsedTotalSeats = total_seats ? parseInt(total_seats, 10) : 0
-
     await query(
       "INSERT INTO flights (flight_number, airline_id, origin_airport_id, destination_airport_id, aircraft_id, is_direct, flight_type, layover_cities, departure_time, arrival_time, price, tax_percentage, seat_selection_fee, total_seats) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
@@ -119,7 +118,7 @@ export async function POST(request: Request) {
         parsedDestinationId,
         parsedAircraftId,
         is_direct ? 1 : 0,
-        flight_type,
+        flight_type || "direct",
         layover_cities || null,
         formattedDeparture,
         formattedArrival,
