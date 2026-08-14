@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import {
   Plane,
   ArrowRightLeft,
@@ -19,7 +19,7 @@ import { LocationInput } from "./location-input"
 import { FlightOfferCard } from "./flight-offer-card"
 import { Offer } from "./types"
 
-const CABIN_CLASSES = ["Main Cabin", "Comfort+", "First Class", "Delta One"]
+const CABIN_CLASSES = ["Economy Class", "Premium Economy", "First Class", "Business Class"]
 
 export function FlightSearchWidget({
   initialOrigin,
@@ -70,8 +70,21 @@ export function FlightSearchWidget({
     }
   }, [initialOrigin, initialOriginCode, initialDestination, initialDestinationCode])
   const [passengers, setPassengers] = useState(1)
-  const [cabin, setCabin] = useState("Main Cabin")
+  const [cabin, setCabin] = useState("Economy Class")
   const [showPassengerPopover, setShowPassengerPopover] = useState(false)
+  const popoverRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        setShowPassengerPopover(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
 
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
@@ -103,9 +116,9 @@ export function FlightSearchWidget({
 
     try {
       let reqCabin = "economy"
-      if (cabin === "Comfort+") reqCabin = "premium_economy"
+      if (cabin === "Premium Economy") reqCabin = "premium_economy"
       if (cabin === "First Class") reqCabin = "first"
-      if (cabin === "Delta One") reqCabin = "business"
+      if (cabin === "Business Class") reqCabin = "business"
 
       const url = `/api/flights/search?origin=${encodeURIComponent(
         originParam
@@ -243,7 +256,7 @@ export function FlightSearchWidget({
         {/* Travelers & Search CTA trigger row */}
         <div className="flex flex-col sm:flex-row gap-4 items-end">
           {/* Travelers Popover trigger */}
-          <div className="relative space-y-1.5 w-full sm:w-[260px]">
+          <div ref={popoverRef} className="relative space-y-1.5 w-full sm:w-[260px]">
             <label className="text-[12px] font-[500] text-delta-navy uppercase tracking-wide block">
               Travelers & Class
             </label>

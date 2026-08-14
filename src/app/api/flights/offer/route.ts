@@ -1,10 +1,41 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
 
+function getCabinPriceMultiplier(cabin: string): number {
+  switch (cabin?.toLowerCase()) {
+    case "premium_economy":
+      return 1.35 // 35% mark up for Premium Economy
+    case "business":
+      return 2.20 // 120% mark up for Business Class
+    case "first":
+      return 3.00 // 200% mark up for First Class
+    case "economy":
+    default:
+      return 1.00 // base price for Economy Class
+  }
+}
+
+function getFareBrandName(cabin: string): string {
+  switch (cabin?.toLowerCase()) {
+    case "premium_economy":
+      return "Premium Economy"
+    case "business":
+      return "Business Class"
+    case "first":
+      return "First Class"
+    case "economy":
+    default:
+      return "Economy Class"
+  }
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("id")
+    const passengersParam = searchParams.get("passengers") || "1"
+    const passengersCount = parseInt(passengersParam, 10) || 1
+    const cabinClass = searchParams.get("cabin") || "economy"
 
     if (!id) {
       return NextResponse.json({ success: false, error: "Missing required id parameter" }, { status: 400 })
@@ -61,10 +92,12 @@ export async function GET(request: Request) {
     const minutes = durationMin % 60
     const durationStr = `PT${hours}H${minutes}M`
 
-    const passengersCount = 1
-    const totalAmount = parseFloat(flight.price).toFixed(2)
-    const baseAmount = (parseFloat(flight.price) * 0.9).toFixed(2)
-    const taxAmount = (parseFloat(flight.price) * 0.1).toFixed(2)
+    const multiplier = getCabinPriceMultiplier(cabinClass)
+    const basePrice = parseFloat(flight.price) * multiplier
+
+    const totalAmount = (basePrice * passengersCount).toFixed(2)
+    const baseAmount = (basePrice * passengersCount * 0.9).toFixed(2)
+    const taxAmount = (basePrice * passengersCount * 0.1).toFixed(2)
 
     const offer = {
       id: flight.id,
@@ -94,7 +127,7 @@ export async function GET(request: Request) {
         {
           id: flight.id,
           duration: durationStr,
-          fare_brand_name: "Delta Choice Main",
+          fare_brand_name: getFareBrandName(cabinClass),
           origin: {
             name: flight.origin_name,
             iata_code: flight.origin_iata,

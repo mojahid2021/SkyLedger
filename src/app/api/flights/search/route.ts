@@ -13,6 +13,34 @@ async function resolveAirport(input: string) {
   return null
 }
 
+function getCabinPriceMultiplier(cabin: string): number {
+  switch (cabin?.toLowerCase()) {
+    case "premium_economy":
+      return 1.35 // 35% mark up for Premium Economy
+    case "business":
+      return 2.20 // 120% mark up for Business Class
+    case "first":
+      return 3.00 // 200% mark up for First Class
+    case "economy":
+    default:
+      return 1.00 // base price for Economy Class
+  }
+}
+
+function getFareBrandName(cabin: string): string {
+  switch (cabin?.toLowerCase()) {
+    case "premium_economy":
+      return "Premium Economy"
+    case "business":
+      return "Business Class"
+    case "first":
+      return "First Class"
+    case "economy":
+    default:
+      return "Economy Class"
+  }
+}
+
 function mapLocalFlightToOffer(flight: any, passengersCount: number, cabinClass: string) {
   const departureDate = new Date(flight.departure_time)
   const arrivalDate = new Date(flight.arrival_time)
@@ -24,9 +52,12 @@ function mapLocalFlightToOffer(flight: any, passengersCount: number, cabinClass:
   const minutes = durationMin % 60
   const durationStr = `PT${hours}H${minutes}M`
 
-  const totalAmount = (parseFloat(flight.price) * passengersCount).toFixed(2)
-  const baseAmount = (parseFloat(flight.price) * passengersCount * 0.9).toFixed(2)
-  const taxAmount = (parseFloat(flight.price) * passengersCount * 0.1).toFixed(2)
+  const multiplier = getCabinPriceMultiplier(cabinClass)
+  const basePrice = parseFloat(flight.price) * multiplier
+
+  const totalAmount = (basePrice * passengersCount).toFixed(2)
+  const baseAmount = (basePrice * passengersCount * 0.9).toFixed(2)
+  const taxAmount = (basePrice * passengersCount * 0.1).toFixed(2)
 
   return {
     id: flight.id,
@@ -34,6 +65,7 @@ function mapLocalFlightToOffer(flight: any, passengersCount: number, cabinClass:
     total_currency: "BDT",
     base_amount: baseAmount,
     tax_amount: taxAmount,
+    cabin_class: cabinClass,
     total_emissions_kg: "85",
     owner: {
       name: flight.airline_name,
@@ -56,7 +88,7 @@ function mapLocalFlightToOffer(flight: any, passengersCount: number, cabinClass:
       {
         id: flight.id,
         duration: durationStr,
-        fare_brand_name: "Delta Choice Main",
+        fare_brand_name: getFareBrandName(cabinClass),
         origin: {
           name: flight.origin_name,
           iata_code: flight.origin_iata,

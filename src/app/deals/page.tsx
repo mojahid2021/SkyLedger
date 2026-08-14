@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Sparkles, MapPin, ArrowRight } from "lucide-react"
+import { Tag, MapPin, ArrowRight } from "lucide-react"
 import { Navbar } from "@/components/layout/navbar"
 import { cn } from "@/lib/utils"
 
@@ -65,7 +65,7 @@ export default function DealsPage() {
         {/* Header Block */}
         <div className="flex flex-col gap-2">
           <div className="inline-flex items-center gap-1.5 bg-delta-navy text-white px-3 py-1 text-[11px] font-[700] uppercase tracking-wider w-fit rounded-[2px]">
-            <Sparkles className="h-3.5 w-3.5 text-delta-red" />
+            <Tag className="h-3.5 w-3.5 text-delta-red" />
             <span>Featured Travel Offers</span>
           </div>
           <h1 className="text-[32px] sm:text-[40px] font-[700] text-delta-navy tracking-tight leading-none mt-2">

@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import {
-  Sparkles,
+  Compass,
+  Tag,
   Luggage,
   Headphones,
   Info,
@@ -16,6 +17,7 @@ import {
 import Link from "next/link"
 import { FlightSearchWidget } from "@/components/flight/flight-search-widget"
 import { Navbar } from "@/components/layout/navbar"
+import { Footer } from "@/components/layout/footer"
 
 function getCityFromAirport(name: string, iata: string): string {
   const mappings: Record<string, string> = {
@@ -181,19 +183,29 @@ function LandingPageContent() {
 
       {/* Hero Content Section */}
       <main className="flex-1">
-        <section id="search-section" className="bg-delta-surface-1 py-16">
-          <div className="mx-auto max-w-[1280px] px-6 sm:px-8">
-            <div className="max-w-[780px] mb-8">
-              <div className="inline-flex items-center gap-1.5 bg-delta-navy text-white px-3 py-1 text-[11px] font-[700] uppercase tracking-wider mb-4 rounded-[2px]">
-                <Sparkles className="h-3 w-3 text-delta-red" />
+        <section id="search-section" className="bg-delta-surface-1 relative py-20">
+          {/* Subtle background visual glows wrapper to prevent horizontal scrollbars on mobile */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[radial-gradient(circle_at_center,#003366,transparent_70%)] opacity-[0.04] -mr-40 -mt-40" />
+            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[radial-gradient(circle_at_center,#e31837,transparent_70%)] opacity-[0.02] -ml-20 -mb-20" />
+          </div>
+
+          <div className="mx-auto max-w-[1280px] px-6 sm:px-8 relative z-10">
+            <div className="max-w-[820px] mb-10">
+              <div className="inline-flex items-center gap-2 bg-delta-red/10 text-delta-red border border-delta-red/20 px-3.5 py-1.5 text-[11px] font-[800] uppercase tracking-widest rounded-full mb-5 select-none shadow-2xs">
+                <Compass className="h-3.5 w-3.5 text-delta-red" />
                 <span>Next-Gen Flight Booking Experience</span>
               </div>
-              <h1 className="text-[36px] sm:text-[48px] font-[700] leading-[44px] sm:leading-[56px] tracking-[-0.5px] text-delta-navy">
-                Fly wherever you desire with effortless ease.
+              
+              <h1 className="text-[40px] sm:text-[56px] font-[800] leading-[48px] sm:leading-[64px] tracking-[-1.5px] text-delta-navy max-w-[820px] font-delta">
+                Fly wherever you desire with <span className="text-delta-red relative inline-block whitespace-nowrap">effortless ease<span className="absolute left-0 bottom-1 w-full h-[3px] bg-delta-red/20 rounded-full" /></span>.
               </h1>
-              <p className="mt-4 text-[16px] sm:text-[18px] leading-[24px] sm:leading-[28px] text-delta-ink-muted font-normal">
-                Explore hundreds of direct and connected routes across our global fleet. Real-time seat layouts,
-                transparent fares in Bangladeshi Taka (৳), and zero booking blackout dates.
+              
+              <p className="mt-5 text-[16px] sm:text-[18px] leading-[26px] sm:leading-[30px] text-delta-ink-muted max-w-[720px] font-normal">
+                Explore hundreds of direct and connected routes across our global fleet. Experience{" "}
+                <strong className="font-[700] text-delta-navy">real-time seat layouts</strong>, transparent fares in{" "}
+                <strong className="font-[700] text-delta-navy">Bangladeshi Taka (৳)</strong>, and{" "}
+                <strong className="font-[700] text-delta-navy">zero booking blackout dates</strong>.
               </p>
             </div>
 
@@ -347,7 +359,7 @@ function LandingPageContent() {
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <div>
                 <p className="text-[12px] font-[700] uppercase tracking-wider text-delta-red flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-delta-red" />
+                  <Tag className="h-3.5 w-3.5 text-delta-red" />
                   Featured Travel Offers
                 </p>
                 <h2 className="text-[24px] sm:text-[32px] font-[700] leading-tight text-delta-navy mt-1">
@@ -471,7 +483,7 @@ function LandingPageContent() {
               >
                 <div>
                   <div className="flex h-10 w-10 items-center justify-center bg-delta-surface-2 text-delta-navy rounded-[4px] mb-4">
-                    <Sparkles className="h-5 w-5 text-delta-red" />
+                    <Tag className="h-5 w-5 text-delta-red" />
                   </div>
                   <h3 className="text-[16px] font-[700] text-delta-navy group-hover:text-delta-red transition-colors">
                     Curated Deals
@@ -532,61 +544,7 @@ function LandingPageContent() {
         </section>
       </main>
 
-      {/* Footer (Using clean layout spacing, no top border line) */}
-      <footer className="bg-delta-navy-dark text-white py-16">
-        <div className="mx-auto max-w-[1280px] px-6 sm:px-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div>
-            <h4 className="text-[12px] font-[700] uppercase tracking-wider text-white pb-3 select-none">
-              Fly SkyLedger
-            </h4>
-            <ul className="space-y-2 text-[13px] text-white/70">
-              <li><Link href="/" className="hover:text-white hover:underline">Search Flights</Link></li>
-              <li><Link href="/deals" className="hover:text-white hover:underline">Curated Deals</Link></li>
-              <li><Link href="/flight-status" className="hover:text-white hover:underline">Flight Status</Link></li>
-              <li><Link href="/travel-info" className="hover:text-white hover:underline">Baggage & Travel Fees</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-[12px] font-[700] uppercase tracking-wider text-white pb-3 select-none">
-              SkyMiles Loyalty
-            </h4>
-            <ul className="space-y-2 text-[13px] text-white/70">
-              <li><Link href="/skymiles" className="hover:text-white hover:underline">About SkyMiles</Link></li>
-              <li><Link href="/skymiles" className="hover:text-white hover:underline">Medallion Status Tiers</Link></li>
-              <li><Link href="/user/wallet" className="hover:text-white hover:underline">SkyLedger Wallet</Link></li>
-              <li><Link href="/user/dashboard" className="hover:text-white hover:underline">Member Account</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-[12px] font-[700] uppercase tracking-wider text-white pb-3 select-none">
-              Customer Support
-            </h4>
-            <ul className="space-y-2 text-[13px] text-white/70">
-              <li><Link href="/travel-info" className="hover:text-white hover:underline">Help Center</Link></li>
-              <li><Link href="/travel-info" className="hover:text-white hover:underline">Refund Policies</Link></li>
-              <li><Link href="/travel-info" className="hover:text-white hover:underline">24-Hour Cancellation</Link></li>
-              <li><Link href="/travel-info" className="hover:text-white hover:underline">Flight Delay Info</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-[12px] font-[700] uppercase tracking-wider text-white pb-3 select-none">
-              Corporate Info
-            </h4>
-            <ul className="space-y-2 text-[13px] text-white/70">
-              <li><a href="#" className="hover:text-white hover:underline">Fleet Seat Map Layouts</a></li>
-              <li><a href="#" className="hover:text-white hover:underline">Partner Airlines</a></li>
-              <li><a href="#" className="hover:text-white hover:underline">About Us</a></li>
-            </ul>
-          </div>
-        </div>
-        <div className="mx-auto max-w-[1280px] px-6 sm:px-8 mt-12 text-[12px] text-white/40 flex flex-wrap justify-between items-center gap-4">
-          <p>© {new Date().getFullYear()} SkyLedger Airways. All rights reserved. Delta Air Lines Design Standard.</p>
-          <div className="flex gap-4">
-            <a href="#" className="hover:underline">Privacy Policy</a>
-            <a href="#" className="hover:underline">Terms of Use</a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

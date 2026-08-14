@@ -93,8 +93,8 @@ export async function POST(request: Request) {
       totalAmount,
       currency = "BDT",
       flightNumber = "SKL-101",
-      airlineCode = "DL",
-      airlineName = "Delta Air Lines",
+      airlineCode = "SL",
+      airlineName = "SkyLedger Airways",
       passengers = [],
     } = body
 

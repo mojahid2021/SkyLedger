@@ -465,7 +465,12 @@ export function FlightOfferCard({
               try {
                 sessionStorage.setItem("skyledger_selected_offer", JSON.stringify(offer))
               } catch {}
-              window.location.href = `/booking?offerId=${encodeURIComponent(offer.id)}`
+              const paxCount = offer.passengers?.length || 1
+              let cabinClass = (offer as any).cabin_class
+              if (!cabinClass && typeof window !== "undefined") {
+                cabinClass = new URLSearchParams(window.location.search).get("cabin") || "economy"
+              }
+              window.location.href = `/booking?offerId=${encodeURIComponent(offer.id)}&passengers=${paxCount}&cabin=${encodeURIComponent(cabinClass || "economy")}`
             }}
             className="bg-delta-red hover:bg-delta-red-hover text-white font-[700] px-6 h-[48px] flex items-center gap-2 rounded-[4px] cursor-pointer"
           >

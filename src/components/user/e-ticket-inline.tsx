@@ -18,6 +18,20 @@ interface ETicketInlineProps {
   onDone?: () => void
 }
 
+const getCabinClassLabel = (cabin: string) => {
+  switch (cabin?.toLowerCase()) {
+    case "premium_economy":
+      return "Premium Economy"
+    case "first":
+      return "First Class"
+    case "business":
+      return "Business Class"
+    case "economy":
+    default:
+      return "Economy Class"
+  }
+}
+
 export function ETicketInline({ booking, onDone }: ETicketInlineProps) {
   const reduceMotion = useReducedMotion()
   
@@ -103,9 +117,10 @@ export function ETicketInline({ booking, onDone }: ETicketInlineProps) {
                  >
                     <div className="mb-4 md:mb-0">
                       <p className="text-lg font-semibold tracking-tight text-slate-900">{p.first_name} {p.last_name}</p>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1.5 flex items-center gap-2">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1.5 flex flex-wrap items-center gap-2">
                         <span className="bg-slate-200/60 px-2 py-0.5 rounded-sm">{p.passenger_type}</span>
                         <span>{p.tickets?.[0]?.airline_name || "SL Express Group"}</span>
+                        <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-sm">{getCabinClassLabel(booking.cabin_class)}</span>
                       </p>
                     </div>
                     {p.tickets && p.tickets.length > 0 && (

@@ -79,20 +79,40 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Missing required flight scheduling fields" }, { status: 400 })
     }
 
+    // Convert ISO 8601 string (e.g. 2026-08-14T16:30) to standard SQL format (2026-08-14 16:30:00)
+    const formatMySQLDatetime = (isoStr: string) => {
+      if (!isoStr) return null
+      let clean = isoStr.replace("T", " ")
+      if (clean.length === 16) {
+        clean += ":00"
+      }
+      return clean
+    }
+
+    const formattedDeparture = formatMySQLDatetime(departure_time)
+    const formattedArrival = formatMySQLDatetime(arrival_time)
+
+    // Coerce values to integers/float for database schema compatibility
+    const parsedAirlineId = parseInt(airline_id, 10)
+    const parsedOriginId = parseInt(origin_airport_id, 10)
+    const parsedDestinationId = parseInt(destination_airport_id, 10)
+    const parsedAircraftId = aircraft_id ? parseInt(aircraft_id, 10) : null
+    const parsedPrice = parseFloat(price)
+
     await query(
       "INSERT INTO flights (flight_number, airline_id, origin_airport_id, destination_airport_id, aircraft_id, is_direct, flight_type, layover_cities, departure_time, arrival_time, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         flight_number,
-        airline_id,
-        origin_airport_id,
-        destination_airport_id,
-        aircraft_id || null,
+        parsedAirlineId,
+        parsedOriginId,
+        parsedDestinationId,
+        parsedAircraftId,
         is_direct ? 1 : 0,
         flight_type,
         layover_cities || null,
-        departure_time,
-        arrival_time,
-        price,
+        formattedDeparture,
+        formattedArrival,
+        parsedPrice,
       ]
     )
 

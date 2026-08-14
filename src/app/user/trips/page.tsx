@@ -8,6 +8,20 @@ import { UserSidebar } from "@/components/user/user-sidebar"
 import { BookingDetail } from "@/components/user/e-ticket-dialog"
 import { Plane, Ticket } from "lucide-react"
 
+const getCabinClassLabel = (cabin: string) => {
+  switch (cabin?.toLowerCase()) {
+    case "premium_economy":
+      return "Premium Economy"
+    case "first":
+      return "First Class"
+    case "business":
+      return "Business Class"
+    case "economy":
+    default:
+      return "Economy Class"
+  }
+}
+
 export default function UserTripsPage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
@@ -134,7 +148,7 @@ export default function UserTripsPage() {
                                 {b.booking_reference}
                               </span>
                               <span className="ml-3 text-xs font-medium uppercase tracking-wider text-slate-500">
-                                {b.cabin_class}
+                                {getCabinClassLabel(b.cabin_class)}
                               </span>
                             </div>
                             {isConfirmed ? (

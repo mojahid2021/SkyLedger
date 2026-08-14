@@ -45,7 +45,9 @@ function BookingContent() {
 
     if (offerIdParam) {
       setLoadingOffer(true)
-      fetch(`/api/flights/offer?id=${offerIdParam}`)
+      const passengersParam = searchParams.get("passengers") || "1"
+      const cabinParam = searchParams.get("cabin") || "economy"
+      fetch(`/api/flights/offer?id=${offerIdParam}&passengers=${passengersParam}&cabin=${cabinParam}`)
         .then((res) => res.json())
         .then((json) => {
           if (json.success && json.offer) {
