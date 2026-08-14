@@ -365,7 +365,7 @@ async function run() {
     `)
     console.log("✓ seeded initial aircraft (Boeing 737-800)")
 
-    // Seed flights (departure 2, 3, 4 days from now)
+    // Seed flights (departure 2, 3, 4 days from now + today's date)
     const formatMySQLDate = (d: Date) => d.toISOString().slice(0, 19).replace('T', ' ')
     const now = new Date()
     
@@ -378,15 +378,26 @@ async function run() {
     const dep3 = new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000)
     const arr3 = new Date(dep3.getTime() + 7 * 60 * 60 * 1000)
 
+    // Today's flights
+    const depToday1 = new Date(now.getTime() + 3 * 60 * 60 * 1000)
+    const arrToday1 = new Date(depToday1.getTime() + 1.5 * 60 * 60 * 1000)
+
+    const depToday2 = new Date(now.getTime() + 6 * 60 * 60 * 1000)
+    const arrToday2 = new Date(depToday2.getTime() + 2.5 * 60 * 60 * 1000)
+
     await connection.query(`
       INSERT IGNORE INTO flights (id, flight_number, airline_id, origin_airport_id, destination_airport_id, aircraft_id, is_direct, flight_type, departure_time, arrival_time, price, status) VALUES
       (1, 'DL 101', 1, 1, 2, 1, 1, 'direct', ?, ?, 9800.00, 'scheduled'),
       (2, 'DL 202', 1, 1, 3, 1, 1, 'direct', ?, ?, 14900.00, 'scheduled'),
-      (3, 'DL 303', 1, 2, 4, 1, 1, 'direct', ?, ?, 41200.00, 'scheduled')
+      (3, 'DL 303', 1, 2, 4, 1, 1, 'direct', ?, ?, 41200.00, 'scheduled'),
+      (4, 'BG 088', 1, 1, 3, 1, 1, 'direct', ?, ?, 6500.00, 'scheduled'),
+      (5, 'BG 202', 1, 1, 2, 1, 1, 'direct', ?, ?, 5800.00, 'scheduled')
     `, [
       formatMySQLDate(dep1), formatMySQLDate(arr1),
       formatMySQLDate(dep2), formatMySQLDate(arr2),
-      formatMySQLDate(dep3), formatMySQLDate(arr3)
+      formatMySQLDate(dep3), formatMySQLDate(arr3),
+      formatMySQLDate(depToday1), formatMySQLDate(arrToday1),
+      formatMySQLDate(depToday2), formatMySQLDate(arrToday2)
     ])
     console.log("✓ seeded initial flights")
 
