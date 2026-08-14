@@ -203,59 +203,68 @@ export async function POST(request: Request) {
 
     // Insert passengers & tickets
     for (const p of passengers) {
-      const [passengerResult] = await connection.execute<any>(
-        `INSERT INTO booking_passengers
-          (booking_id, first_name, last_name, email, phone, date_of_birth, passport_number, passenger_type)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          bookingId,
-          p.firstName,
-          p.lastName,
-          p.email || user.email,
-          p.phone || null,
-          p.dateOfBirth || null,
-          p.passportNumber || null,
-          p.passengerType || "adult",
-        ]
-      )
-      const passengerId = passengerResult.insertId
+      // TCL: Create a savepoint before inserting a passenger's tickets
+      await connection.execute("SAVEPOINT ticket_savepoint")
+      
+      try {
+        const [passengerResult] = await connection.execute<any>(
+          `INSERT INTO booking_passengers
+            (booking_id, first_name, last_name, email, phone, date_of_birth, passport_number, passenger_type)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            bookingId,
+            p.firstName,
+            p.lastName,
+            p.email || user.email,
+            p.phone || null,
+            p.dateOfBirth || null,
+            p.passportNumber || null,
+            p.passengerType || "adult",
+          ]
+        )
+        const passengerId = passengerResult.insertId
 
-      // Outbound ticket
-      const outboundTicketNumber = generateTicketNumber()
-      await connection.execute(
-        `INSERT INTO booking_tickets
-          (booking_id, passenger_id, segment_type, flight_number, airline_code, airline_name, seat_designator, seat_price, ticket_number)
-        VALUES (?, ?, 'outbound', ?, ?, ?, ?, ?, ?)`,
-        [
-          bookingId,
-          passengerId,
-          p.outboundFlightNumber || flightNumber,
-          airlineCode,
-          airlineName,
-          p.outboundSeat || null,
-          p.outboundSeatPrice || 0.0,
-          outboundTicketNumber,
-        ]
-      )
-
-      // Return ticket if applicable
-      if (returnDate || p.returnSeat) {
-        const returnTicketNumber = generateTicketNumber()
+        // Outbound ticket
+        const outboundTicketNumber = generateTicketNumber()
         await connection.execute(
           `INSERT INTO booking_tickets
             (booking_id, passenger_id, segment_type, flight_number, airline_code, airline_name, seat_designator, seat_price, ticket_number)
-          VALUES (?, ?, 'return', ?, ?, ?, ?, ?, ?)`,
+          VALUES (?, ?, 'outbound', ?, ?, ?, ?, ?, ?)`,
           [
             bookingId,
             passengerId,
-            p.returnFlightNumber || flightNumber,
+            p.outboundFlightNumber || flightNumber,
             airlineCode,
             airlineName,
-            p.returnSeat || null,
-            p.returnSeatPrice || 0.0,
-            returnTicketNumber,
+            p.outboundSeat || null,
+            p.outboundSeatPrice || 0.0,
+            outboundTicketNumber,
           ]
         )
+
+        // Return ticket if applicable
+        if (returnDate || p.returnSeat) {
+          const returnTicketNumber = generateTicketNumber()
+          await connection.execute(
+            `INSERT INTO booking_tickets
+              (booking_id, passenger_id, segment_type, flight_number, airline_code, airline_name, seat_designator, seat_price, ticket_number)
+            VALUES (?, ?, 'return', ?, ?, ?, ?, ?, ?)`,
+            [
+              bookingId,
+              passengerId,
+              p.returnFlightNumber || flightNumber,
+              airlineCode,
+              airlineName,
+              p.returnSeat || null,
+              p.returnSeatPrice || 0.0,
+              returnTicketNumber,
+            ]
+          )
+        }
+      } catch (innerError) {
+        // TCL: Rollback to savepoint in case a specific passenger's ticketing fails
+        await connection.execute("ROLLBACK TO SAVEPOINT ticket_savepoint")
+        throw new Error("Failed to issue tickets for passenger: " + p.firstName)
       }
     }
 
@@ -289,6 +298,7 @@ export async function POST(request: Request) {
       },
     })
   } catch (error) {
+    // TCL: Full rollback on severe failure
     await connection.rollback()
     connection.release()
     console.error("Booking creation failed:", error)

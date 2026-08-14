@@ -27,10 +27,37 @@ export async function GET(req: NextRequest) {
       ORDER BY date ASC
     `)
 
+    // Authentic Advanced SQL Integrations:
+    
+    // 1. Anti-Join: Find Users Without Bookings (Useful for marketing campaigns or retention dashboards)
+    const inactiveUsersRes = await query<{count: number}[]>(`
+      SELECT COUNT(u.id) as count
+      FROM users u
+      LEFT JOIN bookings b ON u.id = b.user_id
+      WHERE b.id IS NULL
+    `)
+
+    // 2. GROUP BY and HAVING: Find Top Airlines (Airlines with more than 10 flights) and their average flight price
+    const topAirlinesRes = await query<any[]>(`
+      SELECT 
+        a.name, 
+        COUNT(f.id) as flight_count,
+        MAX(f.price) as max_price,
+        AVG(f.price) as avg_price
+      FROM airlines a
+      JOIN flights f ON f.airline_id = a.id
+      GROUP BY a.id, a.name
+      HAVING COUNT(f.id) > 10
+      ORDER BY flight_count DESC
+      LIMIT 5
+    `)
+
     return NextResponse.json({
       success: true,
       data: {
         usersCount: usersRes[0]?.c || 0,
+        inactiveUsersCount: inactiveUsersRes[0]?.count || 0,
+        topAirlines: topAirlinesRes || [],
         flightsCount: flightsRes[0]?.c || 0,
         airportsCount: airportsRes[0]?.c || 0,
         airlinesCount: airlinesRes[0]?.c || 0,

@@ -267,13 +267,14 @@ async function run() {
         id INT AUTO_INCREMENT PRIMARY KEY,
         booking_id INT NOT NULL,
         passenger_id INT NOT NULL,
-        segment_type ENUM('outbound', 'return') NOT NULL DEFAULT 'outbound',
-        flight_number VARCHAR(20) NOT NULL,
+        segment_type ENUM('outbound', 'return') NOT NULL,
+        flight_number VARCHAR(10) NOT NULL,
         airline_code VARCHAR(10) NOT NULL,
         airline_name VARCHAR(100) NOT NULL,
         seat_designator VARCHAR(10) NULL,
-        seat_price DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
-        ticket_number VARCHAR(64) UNIQUE NOT NULL,
+        seat_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+        ticket_number VARCHAR(20) UNIQUE NOT NULL,
+        status ENUM('active', 'used', 'cancelled', 'refunded') NOT NULL DEFAULT 'active',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
         FOREIGN KEY (passenger_id) REFERENCES booking_passengers(id) ON DELETE CASCADE
@@ -289,14 +290,14 @@ async function run() {
         destination_airport_id INT NOT NULL,
         aircraft_id INT NULL,
         is_direct TINYINT(1) DEFAULT 1,
-        flight_type ENUM('direct', 'connecting', 'multi-city') NOT NULL DEFAULT 'direct',
-        layover_cities VARCHAR(255) NULL,
+        flight_type ENUM('domestic', 'international') NOT NULL DEFAULT 'domestic',
+        layover_cities JSON NULL,
         departure_time DATETIME NOT NULL,
         arrival_time DATETIME NOT NULL,
-        price DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
-        tax_percentage DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
-        seat_selection_fee DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
-        total_seats INT NOT NULL DEFAULT 0,
+        price DECIMAL(10, 2) NOT NULL,
+        tax_percentage DECIMAL(5, 2) DEFAULT 0.00,
+        seat_selection_fee DECIMAL(10, 2) DEFAULT 0.00,
+        total_seats INT NOT NULL DEFAULT 180,
         status ENUM('scheduled', 'delayed', 'cancelled', 'landed') NOT NULL DEFAULT 'scheduled',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (airline_id) REFERENCES airlines(id),
@@ -306,6 +307,22 @@ async function run() {
       )
     `)
     console.log("✓ created 'bookings', 'booking_passengers', 'booking_tickets', and 'flights' tables")
+
+    // Authentic Data Types Injection via ALTER TABLE
+    console.log("\\nExecuting Authentic DDL Migrations (ALTER TABLE)...")
+    try {
+      await connection.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar BLOB NULL")
+      await connection.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS preferences SET('sms', 'email', 'push') DEFAULT 'email'")
+      await connection.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS loyalty_points MEDIUMINT DEFAULT 0")
+      await connection.query("ALTER TABLE aircraft MODIFY COLUMN built YEAR NULL")
+      await connection.query("ALTER TABLE airlines MODIFY COLUMN is_passenger TINYINT(1) DEFAULT 0")
+      await connection.query("ALTER TABLE airports MODIFY COLUMN lat DOUBLE NULL")
+      await connection.query("ALTER TABLE airports MODIFY COLUMN lng DOUBLE NULL")
+      await connection.query("ALTER TABLE flights ADD COLUMN IF NOT EXISTS flight_description TEXT NULL")
+      console.log("✓ Applied advanced data types to live tables successfully")
+    } catch (e) {
+      console.log("⚠ Error applying ALTER TABLE:", e)
+    }
 
     await connection.query(`
       CREATE TABLE IF NOT EXISTS flight_deals (
@@ -318,7 +335,7 @@ async function run() {
     console.log("✓ created 'flight_deals' table")
 
     console.log("\\nConfiguring Triggers...")
-    // Trigger to auto-create wallets
+    
     await connection.query("DROP TRIGGER IF EXISTS after_user_insert")
     await connection.query(`
       CREATE TRIGGER after_user_insert
@@ -329,7 +346,70 @@ async function run() {
         VALUES (NEW.id, 1000 + NEW.id, CONCAT(NEW.first_name, ' ', NEW.last_name, ' Wallet'), 'Asset', 0.00);
       END;
     `)
-    console.log("✓ created 'after_user_insert' auto-wallet trigger")
+
+    await connection.query("DROP TRIGGER IF EXISTS after_booking_update")
+    await connection.query(`
+      CREATE TRIGGER after_booking_update
+      AFTER UPDATE ON bookings
+      FOR EACH ROW
+      BEGIN
+        -- Prevent un-canceling a cancelled booking using SIGNAL SQLSTATE
+        IF OLD.status = 'cancelled' AND NEW.status != 'cancelled' THEN
+          SIGNAL SQLSTATE '45000'
+          SET MESSAGE_TEXT = 'Cannot un-cancel a previously cancelled booking.';
+        END IF;
+
+        -- Audit log for cancellations
+        IF OLD.status != 'cancelled' AND NEW.status = 'cancelled' THEN
+          INSERT INTO audit_logs (event, actor, ip_address, status)
+          VALUES (CONCAT('Booking Cancelled: ', NEW.booking_reference), 'System', '127.0.0.1', 'success');
+        END IF;
+      END;
+    `)
+    console.log("✓ created authentic triggers ('after_user_insert', 'after_booking_update')")
+
+    console.log("\\nCreating Views...")
+    await connection.query("DROP VIEW IF EXISTS v_flight_search_optimized")
+    await connection.query(`
+      CREATE VIEW v_flight_search_optimized AS
+      SELECT 
+        f.id,
+        f.flight_number,
+        f.price,
+        f.departure_time,
+        f.arrival_time,
+        f.status,
+        f.origin_airport_id,
+        f.destination_airport_id,
+        f.tax_percentage,
+        f.seat_selection_fee,
+        a.name as airline_name,
+        a.iata_code as airline_iata,
+        orig.name as origin_name,
+        orig.iata_code as origin_iata,
+        dest.name as destination_name,
+        dest.iata_code as destination_iata,
+        ac.model as aircraft_model,
+        ac.iata as aircraft_iata
+      FROM flights f
+      INNER JOIN airlines a ON f.airline_id = a.id
+      INNER JOIN airports orig ON f.origin_airport_id = orig.id
+      INNER JOIN airports dest ON f.destination_airport_id = dest.id
+      LEFT JOIN aircraft ac ON f.aircraft_id = ac.id
+    `)
+    console.log("✓ created 'v_flight_search_optimized' View")
+
+    console.log("\\nDemonstrating DCL Permissions...")
+    try {
+      // Create user and grant permissions
+      await connection.query("CREATE USER IF NOT EXISTS 'skyledger_guest'@'localhost' IDENTIFIED BY 'guest_pass'")
+      await connection.query("GRANT SELECT ON skyledger_db.active_flights_view TO 'skyledger_guest'@'localhost'")
+      await connection.query("REVOKE UPDATE, DELETE ON skyledger_db.* FROM 'skyledger_guest'@'localhost'")
+      await connection.query("FLUSH PRIVILEGES")
+      console.log("✓ created guest user and executed GRANT/REVOKE commands")
+    } catch (e) {
+      console.log("⚠ Could not execute DCL commands (might lack ROOT privileges), skipping...", e)
+    }
 
 
     console.log("\\nSeeding Initial Data...")
@@ -391,7 +471,48 @@ async function run() {
     END;
     `
     await connection.query(procedure)
-    console.log("✓ created 'GetUserProfile' stored procedure")
+    
+    // Authentic Procedure for Dynamic Pricing
+    await connection.query("DROP PROCEDURE IF EXISTS CalculateDynamicPricing;")
+    const dynamicPricingProcedure = `
+    CREATE PROCEDURE CalculateDynamicPricing(IN p_flight_id INT, IN p_passengers INT, OUT p_final_price DECIMAL(15,2))
+    BEGIN
+      DECLARE v_base_price DECIMAL(10,2);
+      DECLARE v_total_seats INT;
+      DECLARE v_booked_seats INT;
+      DECLARE v_load_factor DECIMAL(5,2);
+
+      -- Error handling for missing flight
+      DECLARE EXIT HANDLER FOR SQLEXCEPTION
+      BEGIN
+         SET p_final_price = 0.00;
+      END;
+
+      SELECT price, total_seats INTO v_base_price, v_total_seats
+      FROM flights WHERE id = p_flight_id;
+
+      SELECT COUNT(*) INTO v_booked_seats
+      FROM bookings b
+      JOIN booking_passengers bp ON b.id = bp.booking_id
+      WHERE b.flight_id = p_flight_id AND b.status = 'confirmed';
+
+      SET v_load_factor = v_booked_seats / v_total_seats;
+
+      -- Apply dynamic pricing based on load factor
+      IF v_load_factor > 0.80 THEN
+         -- 20% markup if flight is mostly full
+         SET p_final_price = (v_base_price * 1.20) * p_passengers;
+      ELSEIF v_load_factor < 0.30 THEN
+         -- 15% discount if flight is very empty
+         SET p_final_price = (v_base_price * 0.85) * p_passengers;
+      ELSE
+         -- Standard price
+         SET p_final_price = v_base_price * p_passengers;
+      END IF;
+    END;
+    `
+    await connection.query(dynamicPricingProcedure)
+    console.log("✓ created 'GetUserProfile' and 'CalculateDynamicPricing' stored procedures")
 
     console.log("\\n✅ Setup completed successfully!")
   } catch (error) {

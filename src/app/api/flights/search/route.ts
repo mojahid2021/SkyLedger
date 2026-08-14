@@ -159,42 +159,33 @@ export async function GET(request: Request) {
     const destination = d.iata_code || d.icao_code
 
     // Query matching local flights from the MariaDB database
+    // Query matching local flights from the MariaDB database using the optimized View
+    // and a correlated subquery to determine if the flight is a "great deal"
     let localFlights = await query<any[]>(`
       SELECT 
-        f.id,
-        f.flight_number,
-        f.airline_id,
-        f.origin_airport_id,
-        f.destination_airport_id,
-        f.aircraft_id,
-        f.is_direct,
-        f.flight_type,
-        f.layover_cities,
-        f.departure_time,
-        f.arrival_time,
-        f.price,
-        f.tax_percentage,
-        f.seat_selection_fee,
-        f.status,
-        f.created_at,
-        a.name as airline_name,
-        a.iata_code as airline_iata,
-        orig.name as origin_name,
-        orig.iata_code as origin_iata,
-        dest.name as destination_name,
-        dest.iata_code as destination_iata,
-        ac.model as aircraft_model,
-        ac.reg_number as aircraft_reg,
-        ac.iata as aircraft_iata,
-        ac.icao as aircraft_icao
-      FROM flights f
-      INNER JOIN airlines a ON f.airline_id = a.id
-      INNER JOIN airports orig ON f.origin_airport_id = orig.id
-      INNER JOIN airports dest ON f.destination_airport_id = dest.id
-      LEFT JOIN aircraft ac ON f.aircraft_id = ac.id
-      WHERE f.origin_airport_id = ? 
-        AND f.destination_airport_id = ?
-        AND DATE(f.departure_time) = ?
+        v.*,
+        -- Correlated subquery to check if price is lower than average for this route
+        (
+          SELECT AVG(f2.price) 
+          FROM flights f2 
+          WHERE f2.origin_airport_id = v.origin_airport_id 
+            AND f2.destination_airport_id = v.destination_airport_id
+        ) as route_avg_price,
+        (
+          CASE 
+            WHEN v.price < (
+              SELECT AVG(f2.price) 
+              FROM flights f2 
+              WHERE f2.origin_airport_id = v.origin_airport_id 
+                AND f2.destination_airport_id = v.destination_airport_id
+            ) THEN 1
+            ELSE 0 
+          END
+        ) as is_great_deal
+      FROM v_flight_search_optimized v
+      WHERE v.origin_airport_id = ? 
+        AND v.destination_airport_id = ?
+        AND DATE(v.departure_time) = ?
     `, [o.id, d.id, departure_at])
 
     const localOffers = (localFlights || []).map(lf => mapLocalFlightToOffer(lf, passengersCount, cabin))

@@ -75,3 +75,27 @@ src/
 ├── context/                # Auth context
 └── lib/                    # MySQL connection pool & utilities
 ```
+
+## 🗄 Advanced Database Architecture
+
+SkyLedger employs advanced relational database capabilities directly within MariaDB, demonstrating complex SQL functionality in a real-world application:
+
+### Data Definition (DDL) & Data Types
+- **Dynamic Migrations**: `scripts/setup-db.ts` programmatically alters the schema using `ALTER TABLE`, injecting columns dynamically during setup.
+- **Complex Types**: The schema uses diverse MySQL data types including `BLOB` (for avatars), `SET` (for preferences), `YEAR`, `DOUBLE` (for geospatial lat/lng), and `TINYINT(1)` boolean flags.
+
+### Views & Query Optimization
+- **`v_flight_search_optimized`**: A highly optimized Database View pre-joining `flights`, `airlines`, `airports`, and `aircraft`. The core search API queries this View instead of executing massive multi-table JOINs in the application layer.
+
+### Triggers & Security
+- **Data Integrity**: An `AFTER UPDATE` trigger on the `bookings` table manages audit logs. It also utilizes `SIGNAL SQLSTATE` to actively intercept and block invalid state transitions (e.g., preventing a cancelled ticket from being un-cancelled).
+
+### Stored Procedures & Logic
+- **Dynamic Pricing**: The checkout API (`/api/flights/offer`) delegates complex markup/discount calculations to the `CalculateDynamicPricing` Stored Procedure. This procedure uses `IN`/`OUT` parameters, `IF/ELSEIF` flow control, and internal Exception Handlers to apply pricing rules natively in MySQL based on the flight's load factor.
+
+### Advanced Relational Queries (DML)
+- **UNION ALL**: The global search bar unifies queries across airlines, airports, and cities into a single dataset.
+- **Anti-Joins**: Admin dashboards use `LEFT JOIN ... WHERE ... IS NULL` to identify inactive users.
+- **HAVING & Aggregates**: Metrics dashboards utilize grouped queries paired with `HAVING`, `MAX()`, and `AVG()` filters to determine "Top Airlines".
+- **Correlated Subqueries**: Flight searches utilize correlated subqueries to dynamically detect if a specific flight's price is a "Great Deal" compared to the historical average for that specific route.
+- **TCL (`SAVEPOINT`)**: Multi-passenger ticket issuance is guarded by `SAVEPOINT` and `ROLLBACK TO SAVEPOINT`, ensuring robust failure recovery during complex database transactions.

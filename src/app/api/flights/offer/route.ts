@@ -95,12 +95,22 @@ export async function GET(request: Request) {
     const durationStr = `PT${hours}H${minutes}M`
 
     const multiplier = getCabinPriceMultiplier(cabinClass)
-    const basePrice = parseFloat(flight.price) * multiplier
+    
+    // Call the Stored Procedure to get dynamic pricing based on flight load
+    await query("CALL CalculateDynamicPricing(?, ?, @final_price)", [flightId, passengersCount])
+    const dynamicPriceRes = await query<any[]>("SELECT @final_price as final_price")
+    
+    // Fallback to static price if procedure fails
+    const dbPrice = dynamicPriceRes[0]?.final_price 
+      ? parseFloat(dynamicPriceRes[0].final_price) 
+      : (parseFloat(flight.price) * passengersCount)
+
+    const basePriceTotal = dbPrice * multiplier
 
     const taxPercentage = flight.tax_percentage ? parseFloat(flight.tax_percentage) : 0
     const seatFee = flight.seat_selection_fee ? parseFloat(flight.seat_selection_fee) : 0
 
-    const baseAmount = (basePrice * passengersCount).toFixed(2)
+    const baseAmount = basePriceTotal.toFixed(2)
     const taxAmount = (parseFloat(baseAmount) * (taxPercentage / 100)).toFixed(2)
     const totalAmount = (parseFloat(baseAmount) + parseFloat(taxAmount)).toFixed(2)
 
