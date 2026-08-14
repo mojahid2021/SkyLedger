@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { recordAuditLog } from "@/lib/mongodb"
+import bcrypt from "bcryptjs"
 
 export async function POST(request: Request) {
   try {
@@ -32,7 +33,12 @@ export async function POST(request: Request) {
     }
 
     const user = users[0]
-    if (user.password_hash !== password) {
+    
+    // Check if password matches (support both hash and plain text for backward compatibility if needed, but here we expect bcrypt)
+    const isMatch = await bcrypt.compare(password, user.password_hash).catch(() => false);
+    const isLegacyPlain = user.password_hash === password;
+    
+    if (!isMatch && !isLegacyPlain) {
       await recordAuditLog({
         event: "Failed Sign-In Attempt (Invalid Password)",
         actor: email,

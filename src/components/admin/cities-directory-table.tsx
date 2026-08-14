@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 export function CitiesDirectoryTable() {
   const [cities, setCities] = useState<any[]>([])
@@ -29,6 +30,16 @@ export function CitiesDirectoryTable() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalRecords, setTotalRecords] = useState(0)
+
+  const [isManualAddOpen, setIsManualAddOpen] = useState(false)
+  const [manualData, setManualData] = useState({
+    name: "",
+    city_code: "",
+    country_code: "",
+    lat: "",
+    lng: ""
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const fetchCities = (currentPage = page, searchQuery = search) => {
     setLoading(true)
@@ -80,28 +91,100 @@ export function CitiesDirectoryTable() {
     }
   }
 
+  const handleManualAddSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    try {
+      const res = await fetch("/api/admin/cities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(manualData)
+      })
+      if (res.ok) {
+        setIsManualAddOpen(false)
+        setManualData({ name: "", city_code: "", country_code: "", lat: "", lng: "" })
+        fetchCities(1, search)
+      } else {
+        alert("Failed to add city")
+      }
+    } catch (err) {
+      alert("An error occurred")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
-      {/* Top Banner / Sync Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-[4px] border border-delta-navy/15 bg-white p-5 shadow-xs">
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[4px] bg-delta-navy text-white">
-            <Globe className="h-6 w-6 text-delta-red" />
-          </div>
-          <div>
-            <h2 className="text-base font-[700] text-delta-navy flex items-center gap-2">
-              Cities Management & AirLabs Sync
-              <Badge className="bg-delta-navy-mid text-white text-[10px] font-[600]">
-                MariaDB Engine
-              </Badge>
-            </h2>
-            <p className="text-xs text-delta-ink-muted mt-0.5">
-              Synchronize global city records from AirLabs API into MariaDB.
-            </p>
-          </div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <span className="text-[11px] font-[600] uppercase tracking-wider text-delta-red">
+            Content Management
+          </span>
+          <h1 className="text-xl font-[700] tracking-tight text-delta-navy sm:text-2xl flex items-center gap-2">
+            Cities Directory & Sync
+          </h1>
+          <p className="text-xs text-delta-ink-muted">
+            Manage global cities database and synchronize data from AirLabs API into MariaDB.
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+          <Dialog open={isManualAddOpen} onOpenChange={setIsManualAddOpen}>
+            <DialogTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-delta-navy/20 text-delta-navy hover:bg-delta-navy/5 font-[700] text-xs h-9 shadow-xs"
+              >
+                <Database className="mr-2 h-3.5 w-3.5" />
+                Add Manually
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <form onSubmit={handleManualAddSubmit}>
+                <DialogHeader>
+                  <DialogTitle>Add City Manually</DialogTitle>
+                  <DialogDescription>
+                    Enter the details of the new city.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">Name *</label>
+                    <input required type="text" value={manualData.name} onChange={e => setManualData({...manualData, name: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">City Code</label>
+                      <input type="text" value={manualData.city_code} onChange={e => setManualData({...manualData, city_code: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">Country Code</label>
+                      <input type="text" value={manualData.country_code} onChange={e => setManualData({...manualData, country_code: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">Latitude</label>
+                      <input type="number" step="any" value={manualData.lat} onChange={e => setManualData({...manualData, lat: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-delta-navy">Longitude</label>
+                      <input type="number" step="any" value={manualData.lng} onChange={e => setManualData({...manualData, lng: e.target.value})} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="ghost" onClick={() => setIsManualAddOpen(false)}>Cancel</Button>
+                  <Button type="submit" disabled={isSubmitting} className="bg-delta-navy text-white hover:bg-delta-navy/90">
+                    {isSubmitting ? "Adding..." : "Add City"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+
           <Button
             size="sm"
             variant="outline"

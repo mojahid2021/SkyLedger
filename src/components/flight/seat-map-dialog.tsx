@@ -109,10 +109,10 @@ export function SeatMapDialog({
     ? currentSeatMap.cabins.filter((c) => c.deck === activeDeck)
     : []
 
-  const currentPassengerId = `pas_${activePassengerIndex + 1}`
+  const currentPassengerId = activePassengerIndex + 1
 
   const handleSelectSeat = (
-    segmentId: string,
+    segmentId: string | number,
     seat: SeatElement,
     service: AvailableService
   ) => {
@@ -184,8 +184,7 @@ export function SeatMapDialog({
                 Total Seat Extra
               </span>
               <span className="text-lg font-bold text-white">
-                +{currency === "GBP" ? "£" : currency === "EUR" ? "€" : "$"}
-                {totalSeatsPrice.toFixed(2)}
+                +৳{totalSeatsPrice.toFixed(2)}
               </span>
             </div>
           )}
@@ -194,7 +193,7 @@ export function SeatMapDialog({
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-3 text-slate-600 min-h-[350px]">
             <Loader2 className="w-9 h-9 animate-spin text-[#003366]" />
-            <p className="text-sm font-medium">Loading aircraft seat layout from Duffel...</p>
+            <p className="text-sm font-medium">Loading aircraft seat layout...</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-20 px-6 text-center gap-4 min-h-[350px]">
@@ -311,7 +310,7 @@ export function SeatMapDialog({
               )}
             </div>
 
-            {/* Fallback Notice Banner if Duffel returns no seat map for this offer */}
+            {/* Fallback Notice Banner if API returns no seat map for this offer */}
             {fallbackNotice && (
               <div className="bg-blue-50 border-b border-blue-200 px-4 py-2 text-xs text-blue-900 flex items-center justify-between gap-2 shrink-0">
                 <div className="flex items-center gap-2">
@@ -451,10 +450,10 @@ function CabinView({
   onSelectSeat,
 }: {
   cabin: Cabin
-  segmentId: string
+  segmentId: string | number
   activePassengerIndex: number
   selectedSeats: SelectedSeatChoice[]
-  onSelectSeat: (segmentId: string, seat: SeatElement, service: AvailableService) => void
+  onSelectSeat: (segmentId: string | number, seat: SeatElement, service: AvailableService) => void
 }) {
   const cabinClassLabel = cabin.cabin_class.replace("_", " ").toUpperCase()
 
@@ -530,10 +529,10 @@ function ElementCell({
   onSelectSeat,
 }: {
   element: RowElement
-  segmentId: string
+  segmentId: string | number
   activePassengerIndex: number
   selectedSeats: SelectedSeatChoice[]
-  onSelectSeat: (segmentId: string, seat: SeatElement, service: AvailableService) => void
+  onSelectSeat: (segmentId: string | number, seat: SeatElement, service: AvailableService) => void
 }) {
   // Fixed size for seat, bassinet, empty element
   const fixedBoxStyle = "w-9 h-9 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center text-xs font-bold rounded-[4px] transition-all"
@@ -630,7 +629,7 @@ function ElementCell({
     // Find service matching current active passenger, or fallback to first service
     const matchingService =
       availableServices.find(
-        (s) => s.passenger_id === `pas_${activePassengerIndex + 1}`
+        (s) => s.passenger_id === activePassengerIndex + 1 || s.passenger_id === `pas_${activePassengerIndex + 1}`
       ) || availableServices[0]
 
     // Check if this seat is selected by ANY passenger
@@ -644,7 +643,7 @@ function ElementCell({
       selectedByChoice && selectedByChoice.passengerIndex !== activePassengerIndex
 
     const totalAmt = matchingService ? parseFloat(matchingService.total_amount || "0") : 0
-    const priceDisplay = totalAmt > 0 ? `+${matchingService?.total_currency === "GBP" ? "£" : "$"}${totalAmt}` : ""
+    const priceDisplay = totalAmt > 0 ? `+৳${totalAmt}` : ""
 
     if (!isAvailable) {
       return (
@@ -693,7 +692,7 @@ function ElementCell({
         <span>{seat.designator}</span>
         {totalAmt > 0 && (
           <span className="absolute -top-1 -right-1 text-[8px] bg-amber-500 text-white font-bold px-1 rounded-full border border-amber-600">
-            $
+          ৳
           </span>
         )}
       </button>

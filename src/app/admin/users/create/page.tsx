@@ -59,7 +59,7 @@ export default function CreateUserPage() {
       if (data.success) {
         setMessage(data.message || "User created successfully!")
         setTimeout(() => {
-          router.push("/admin/dashboard?tab=users")
+          router.push("/admin/users")
         }, 1200)
       } else {
         setError(data.error || "Failed to create new user")
@@ -76,10 +76,22 @@ export default function CreateUserPage() {
       <AdminNavbar />
 
       <div className="flex min-h-0 flex-1">
-        <AdminSidebar activeSection="users" onSectionChange={() => router.push("/admin/dashboard")} />
+        <AdminSidebar
+          activeSection="create-user"
+          onSectionChange={(section) => {
+            if (section === "overview") router.push("/admin/overview")
+            else router.push(`/admin/${section}`)
+          }}
+        />
 
         <main className="min-w-0 flex-1 overflow-y-auto">
-          <AdminMobileNav activeSection="users" onSectionChange={() => router.push("/admin/dashboard")} />
+          <AdminMobileNav
+            activeSection="create-user"
+            onSectionChange={(section) => {
+              if (section === "overview") router.push("/admin/overview")
+              else router.push(`/admin/${section}`)
+            }}
+          />
 
           <div className="w-full space-y-6 p-4 sm:p-6 lg:p-8">
             {/* Header with back button */}
@@ -88,7 +100,7 @@ export default function CreateUserPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => router.push("/admin/dashboard?tab=users")}
+                  onClick={() => router.push("/admin/users")}
                   className="h-9 w-9 p-0 rounded-[4px] border-delta-hairline text-delta-navy hover:bg-delta-surface-1"
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -232,7 +244,7 @@ export default function CreateUserPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => router.push("/admin/dashboard?tab=users")}
+                    onClick={() => router.push("/admin/users")}
                     className="h-10 rounded-[4px] border-delta-hairline text-xs font-[600]"
                   >
                     Cancel

@@ -32,7 +32,7 @@ export async function GET(request: Request) {
         b.id,
         b.booking_reference,
         b.user_id,
-        b.duffel_offer_id,
+        b.flight_id,
         b.origin_code,
         b.destination_code,
         b.departure_date,
@@ -84,17 +84,17 @@ export async function POST(request: Request) {
     const body = await request.json()
     const {
       userId,
-      duffelOfferId,
+      flightId,
       originCode,
       destinationCode,
       departureDate,
       returnDate,
       cabinClass = "economy",
       totalAmount,
-      currency = "USD",
+      currency = "BDT",
       flightNumber = "SKL-101",
-      airlineCode = "DL",
-      airlineName = "Delta Air Lines",
+      airlineCode = "SL",
+      airlineName = "SkyLedger Airways",
       passengers = [],
     } = body
 
@@ -136,7 +136,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: `Insufficient wallet balance. Required: $${bookingCost.toFixed(2)}, Available: $${walletBalance.toFixed(2)}`,
+          error: `Insufficient wallet balance. Required: ৳${bookingCost.toFixed(2)}, Available: ৳${walletBalance.toFixed(2)}`,
         },
         { status: 400 }
       )
@@ -172,12 +172,12 @@ export async function POST(request: Request) {
     // Insert booking
     const [bookingResult] = await connection.execute<any>(
       `INSERT INTO bookings 
-        (booking_reference, user_id, duffel_offer_id, origin_code, destination_code, departure_date, return_date, cabin_class, total_amount, currency, status)
+        (booking_reference, user_id, flight_id, origin_code, destination_code, departure_date, return_date, cabin_class, total_amount, currency, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed')`,
       [
         bookingReference,
         userId,
-        duffelOfferId || null,
+        flightId || null,
         originCode,
         destinationCode,
         departureDate,

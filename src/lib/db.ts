@@ -136,20 +136,128 @@ export async function initMySQLDatabase() {
       );
     `)
 
+    // Create airlines table
+    await p.execute(`
+      CREATE TABLE IF NOT EXISTS airlines (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        iata_code VARCHAR(10) NULL,
+        iata_prefix VARCHAR(10) NULL,
+        iata_accounting VARCHAR(10) NULL,
+        icao_code VARCHAR(10) NULL,
+        callsign VARCHAR(50) NULL,
+        country_code VARCHAR(10) NULL,
+        iosa_registered TINYINT(1) NULL DEFAULT 0,
+        is_scheduled TINYINT(1) NULL DEFAULT 0,
+        is_passenger TINYINT(1) NULL DEFAULT 0,
+        is_cargo TINYINT(1) NULL DEFAULT 0,
+        is_international TINYINT(1) NULL DEFAULT 0,
+        total_aircrafts INT NULL DEFAULT 0,
+        average_fleet_age DECIMAL(4, 1) NULL,
+        accidents_last_5y INT NULL DEFAULT 0,
+        crashes_last_5y INT NULL DEFAULT 0,
+        website VARCHAR(255) NULL,
+        facebook VARCHAR(255) NULL,
+        twitter VARCHAR(255) NULL,
+        instagram VARCHAR(255) NULL,
+        linkedin VARCHAR(255) NULL,
+        slug VARCHAR(255) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_iata (iata_code),
+        INDEX idx_icao (icao_code),
+        INDEX idx_country (country_code),
+        INDEX idx_slug (slug)
+      );
+    `)
+
+    // Create aircraft table
+    await p.execute(`
+      CREATE TABLE IF NOT EXISTS aircraft (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        hex VARCHAR(10) NULL,
+        reg_number VARCHAR(20) NULL,
+        flag VARCHAR(10) NULL,
+        airline_icao VARCHAR(10) NULL,
+        airline_iata VARCHAR(10) NULL,
+        seen INT NULL,
+        icao VARCHAR(10) NULL,
+        iata VARCHAR(10) NULL,
+        model VARCHAR(255) NULL,
+        engine VARCHAR(20) NULL,
+        engine_count VARCHAR(10) NULL,
+        manufacturer VARCHAR(100) NULL,
+        type VARCHAR(50) NULL,
+        category VARCHAR(10) NULL,
+        built INT NULL,
+        age DECIMAL(5,1) NULL,
+        msn VARCHAR(30) NULL,
+        line VARCHAR(30) NULL,
+        lat DECIMAL(10, 6) NULL,
+        lng DECIMAL(10, 6) NULL,
+        alt INT NULL,
+        dir INT NULL,
+        speed INT NULL,
+        v_speed INT NULL,
+        squawk VARCHAR(10) NULL,
+        last_seen TIMESTAMP NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_reg_number (reg_number),
+        INDEX idx_model (model),
+        INDEX idx_manufacturer (manufacturer),
+        INDEX idx_airline_iata (airline_iata)
+      );
+    `)
+
+    // Create flights table
+    await p.execute(`
+      CREATE TABLE IF NOT EXISTS flights (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        flight_number VARCHAR(20) NOT NULL,
+        airline_id INT NOT NULL,
+        origin_airport_id INT NOT NULL,
+        destination_airport_id INT NOT NULL,
+        aircraft_id INT NULL,
+        is_direct TINYINT(1) DEFAULT 1,
+        flight_type ENUM('direct', 'connecting', 'multi-city') NOT NULL DEFAULT 'direct',
+        layover_cities VARCHAR(255) NULL,
+        departure_time DATETIME NOT NULL,
+        arrival_time DATETIME NOT NULL,
+        price DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
+        status ENUM('scheduled', 'delayed', 'cancelled', 'landed') NOT NULL DEFAULT 'scheduled',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (airline_id) REFERENCES airlines(id),
+        FOREIGN KEY (origin_airport_id) REFERENCES airports(id),
+        FOREIGN KEY (destination_airport_id) REFERENCES airports(id),
+        FOREIGN KEY (aircraft_id) REFERENCES aircraft(id)
+      );
+    `)
+
+    // Create flight_deals table
+    await p.execute(`
+      CREATE TABLE IF NOT EXISTS flight_deals (
+        flight_id INT PRIMARY KEY,
+        tag VARCHAR(50) NOT NULL DEFAULT 'Low fare',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (flight_id) REFERENCES flights(id) ON DELETE CASCADE
+      );
+    `)
+
     // Create bookings table
     await p.execute(`
       CREATE TABLE IF NOT EXISTS bookings (
         id INT AUTO_INCREMENT PRIMARY KEY,
         booking_reference VARCHAR(32) UNIQUE NOT NULL,
         user_id INT NOT NULL,
-        duffel_offer_id VARCHAR(128) NULL,
+        flight_id INT NULL,
         origin_code VARCHAR(10) NOT NULL,
         destination_code VARCHAR(10) NOT NULL,
         departure_date VARCHAR(30) NOT NULL,
         return_date VARCHAR(30) NULL,
         cabin_class VARCHAR(50) NOT NULL DEFAULT 'economy',
         total_amount DECIMAL(15, 2) NOT NULL,
-        currency VARCHAR(10) NOT NULL DEFAULT 'USD',
+        currency VARCHAR(10) NOT NULL DEFAULT 'BDT',
         status ENUM('confirmed', 'cancelled') NOT NULL DEFAULT 'confirmed',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

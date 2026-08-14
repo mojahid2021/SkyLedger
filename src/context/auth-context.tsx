@@ -75,7 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data.user))
 
         if (data.user.role === "admin") {
-          router.push("/admin/dashboard")
+          router.push("/admin/overview")
         } else {
           router.push("/user/dashboard")
         }

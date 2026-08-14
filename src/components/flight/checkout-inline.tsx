@@ -1,9 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Plane, CreditCard, ShieldCheck, AlertCircle, Loader2, ArrowRight, ArrowLeft, User } from "lucide-react"
+import { Plane, CreditCard, ShieldCheck, AlertCircle, Loader2, ChevronRight, ChevronLeft, User, Check, Wallet } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/context/auth-context"
 import { PassengerDetail } from "@/components/flight/passenger-info-inline"
@@ -24,6 +22,18 @@ interface CheckoutInlineProps {
   onBack?: () => void
 }
 
+const PAX_COLORS = [
+  { bg: "bg-red-100",    text: "text-red-700",    border: "border-red-300"    },
+  { bg: "bg-sky-100",    text: "text-sky-700",    border: "border-sky-300"    },
+  { bg: "bg-green-100",  text: "text-green-700",  border: "border-green-300"  },
+  { bg: "bg-orange-100", text: "text-orange-700", border: "border-orange-300" },
+]
+
+
+function getInitials(first: string, last: string) {
+  return ((first?.[0] || "") + (last?.[0] || "")).toUpperCase() || "?"
+}
+
 export function CheckoutInline({
   offer,
   selectedSeats = [],
@@ -39,131 +49,114 @@ export function CheckoutInline({
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (user?.id) {
-      fetchUserWallet()
-    }
-  }, [user?.id])
+  useEffect(() => { if (user?.id) fetchWallet() }, [user?.id])
 
-  async function fetchUserWallet() {
+  async function fetchWallet() {
     setLoadingBalance(true)
-    setError(null)
     try {
-      const res = await fetch(`/api/accounts`)
+      const res  = await fetch(`/api/accounts`)
       const data = await res.json()
       if (data.success && Array.isArray(data.data)) {
-        const userWallet = data.data.find((a: any) => a.user_id === user?.id)
-        if (userWallet) {
-          setWalletBalance(parseFloat(userWallet.balance || "0"))
-        } else {
-          setWalletBalance(0)
-        }
+        const w = data.data.find((a: any) => a.user_id === user?.id)
+        setWalletBalance(w ? parseFloat(w.balance || "0") : 0)
       }
-    } catch {
-      setWalletBalance(0)
-    } finally {
-      setLoadingBalance(false)
-    }
+    } catch { setWalletBalance(0) }
+    finally { setLoadingBalance(false) }
   }
 
   if (!offer) return null
 
-  const baseFare = parseFloat(offer.total_amount || "0")
-  const totalSeatFee = selectedSeats.reduce((sum, s) => sum + (s.totalAmount || 0), 0)
-  const finalTotalAmount = (baseFare + totalSeatFee).toFixed(2)
-  const totalNum = parseFloat(finalTotalAmount)
-  const currency = offer.total_currency || "USD"
+  // Fare calculation
+  const baseFarePerPax = parseFloat(offer.total_amount || "0") / (passengers.length || 1)
+  let adjustedBase = 0
+  passengers.forEach((_, idx) => {
+    let mult = 1.0
+    selectedSeats.filter((s) => s.passengerIndex === idx).forEach((s) => {
+      const m = s.cabinClass === "first" ? 3.0 : s.cabinClass === "business" ? 2.2 : s.cabinClass === "premium_economy" ? 1.35 : 1.0
+      if (m > mult) mult = m
+    })
+    adjustedBase += baseFarePerPax * mult
+  })
 
-  const owner = offer.owner || {}
-  const ownerName = owner.name || "Airline"
-  const firstSlice = offer.slices?.[0]
-  const firstSeg = firstSlice?.segments?.[0]
+  const taxPercentage     = offer.tax_percentage || 0
+  const totalSeatFee      = selectedSeats.reduce((sum, s) => sum + (s.totalAmount || 0), 0)
+  const totalSeatFeeWithTax = totalSeatFee + (totalSeatFee * (taxPercentage / 100))
+  const finalTotalAmount  = (adjustedBase + totalSeatFeeWithTax).toFixed(2)
+  const totalNum          = parseFloat(finalTotalAmount)
+  const currency          = offer.total_currency || "BDT"
+
+  const owner        = offer.owner || {}
+  const ownerName    = owner.name || "Airline"
+  const firstSlice   = offer.slices?.[0]
+  const firstSeg     = firstSlice?.segments?.[0]
   const flightNumber = firstSeg?.operating_carrier_flight_number || firstSeg?.marketing_carrier_flight_number || "SKL-101"
-  const carrierCode = firstSeg?.operating_carrier?.iata_code || owner.iata_code || "DL"
+  const carrierCode  = firstSeg?.operating_carrier?.iata_code || owner.iata_code || "DL"
 
-  const canAfford = walletBalance !== null && walletBalance >= totalNum
+  const canAfford  = walletBalance !== null && walletBalance >= totalNum
+  const balAfter   = (walletBalance || 0) - totalNum
 
-  const handleConfirmPayment = async () => {
+  const cabinLabel = (routeInfo.cabinClass || "economy") === "premium_economy" ? "Premium Economy"
+    : (routeInfo.cabinClass || "economy") === "business" ? "Business"
+    : (routeInfo.cabinClass || "economy") === "first" ? "First Class"
+    : "Economy"
+
+  const handlePay = async () => {
     if (!user?.id || !canAfford) return
-
-    setSubmitting(true)
-    setError(null)
+    setSubmitting(true); setError(null)
 
     try {
       const formattedPassengers = passengers.map((p, idx) => {
-        const passSeatChoices = selectedSeats.filter((s) => s.passengerIndex === idx)
-        const outboundChoice = passSeatChoices[0]
-        const returnChoice = passSeatChoices[1]
-
+        const seatChoices = selectedSeats.filter((s) => s.passengerIndex === idx)
         return {
-          firstName: p.firstName,
-          lastName: p.lastName,
-          email: p.email || user.email,
-          phone: p.phone,
-          dateOfBirth: p.dateOfBirth,
-          passportNumber: p.passportNumber,
+          firstName: p.firstName, lastName: p.lastName, email: p.email || user.email,
+          phone: p.phone, dateOfBirth: p.dateOfBirth, passportNumber: p.passportNumber,
           passengerType: p.passengerType || "adult",
-          outboundSeat: outboundChoice?.seatDesignator,
-          outboundSeatPrice: outboundChoice?.totalAmount || 0,
-          returnSeat: returnChoice?.seatDesignator,
-          returnSeatPrice: returnChoice?.totalAmount || 0,
+          outboundSeat: seatChoices[0]?.seatDesignator,
+          outboundSeatPrice: seatChoices[0]?.totalAmount || 0,
+          returnSeat: seatChoices[1]?.seatDesignator,
+          returnSeatPrice: seatChoices[1]?.totalAmount || 0,
         }
       })
 
-      const payload = {
-        userId: user.id,
-        duffelOfferId: offer.id,
-        originCode: routeInfo.origin,
-        destinationCode: routeInfo.destination,
-        departureDate: routeInfo.departureDate,
-        returnDate: routeInfo.returnDate,
-        cabinClass: routeInfo.cabinClass || "economy",
-        totalAmount: totalNum,
-        currency,
-        flightNumber,
-        airlineCode: carrierCode,
-        airlineName: ownerName,
-        passengers: formattedPassengers,
-      }
-
-      const res = await fetch("/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      let highestCabin = routeInfo.cabinClass || "economy"
+      selectedSeats.forEach((s: any) => {
+        if (s.cabinClass === "first") highestCabin = "first"
+        else if (s.cabinClass === "business" && highestCabin !== "first") highestCabin = "business"
+        else if (s.cabinClass === "premium_economy" && highestCabin !== "first" && highestCabin !== "business") highestCabin = "premium_economy"
       })
 
+      const res  = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id, flightId: offer.id,
+          originCode: routeInfo.origin, destinationCode: routeInfo.destination,
+          departureDate: routeInfo.departureDate, returnDate: routeInfo.returnDate,
+          cabinClass: highestCabin, totalAmount: totalNum, currency,
+          flightNumber, airlineCode: carrierCode, airlineName: ownerName,
+          passengers: formattedPassengers,
+        }),
+      })
       const data = await res.json()
 
       if (data.success) {
         onBookingComplete({
           id: data.data.bookingId,
           booking_reference: data.data.bookingReference,
-          origin_code: routeInfo.origin,
-          destination_code: routeInfo.destination,
-          departure_date: routeInfo.departureDate,
-          return_date: routeInfo.returnDate,
-          cabin_class: routeInfo.cabinClass || "economy",
-          total_amount: totalNum,
-          currency,
-          status: "confirmed",
-          created_at: new Date().toISOString(),
+          origin_code: routeInfo.origin, destination_code: routeInfo.destination,
+          departure_date: routeInfo.departureDate, return_date: routeInfo.returnDate,
+          cabin_class: highestCabin, total_amount: totalNum, currency,
+          status: "confirmed", created_at: new Date().toISOString(),
           passengers: formattedPassengers.map((p, idx) => ({
             id: idx + 1,
-            first_name: p.firstName,
-            last_name: p.lastName,
-            email: p.email,
-            phone: p.phone,
-            passport_number: p.passportNumber,
-            passenger_type: p.passengerType,
-            tickets: [
-              {
-                ticket_number: `006-${Math.floor(1000000000 + Math.random() * 9000000000)}`,
-                flight_number: flightNumber,
-                airline_name: ownerName,
-                seat_designator: p.outboundSeat,
-                segment_type: "outbound",
-              },
-            ],
+            first_name: p.firstName, last_name: p.lastName,
+            email: p.email, phone: p.phone,
+            passport_number: p.passportNumber, passenger_type: p.passengerType,
+            tickets: [{
+              ticket_number: `006-${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+              flight_number: flightNumber, airline_name: ownerName,
+              seat_designator: p.outboundSeat, segment_type: "outbound",
+            }],
           })),
         })
       } else {
@@ -177,85 +170,83 @@ export function CheckoutInline({
   }
 
   return (
-    <div className="w-full bg-white border border-delta-hairline rounded-[6px] overflow-hidden shadow-sm my-4">
-      {/* Header Bar */}
-      <div className="bg-delta-navy text-white p-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="bg-delta-red p-1.5 rounded-[3px] text-white">
-            <CreditCard className="h-5 w-5" />
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-white tracking-wide uppercase">
-              CHECKOUT & WALLET PAYMENT (STEP 3 OF 3)
-            </h3>
-            <p className="text-xs text-slate-300">
-              Review itinerary breakdown and complete double-entry ledger settlement.
-            </p>
-          </div>
+    <div className="bg-delta-canvas border border-delta-hairline rounded-sm overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
+      {/* Header */}
+      <div className="bg-delta-navy px-5 py-4 flex items-center gap-2.5">
+        <div className="bg-delta-red p-1.5 rounded-sm">
+          <CreditCard className="h-4 w-4 text-white" />
+        </div>
+        <div>
+          <h3 className="text-sm font-bold text-white uppercase tracking-wide">Checkout & Payment</h3>
+          <p className="text-xs text-white/60 mt-0.5">Review your booking and confirm payment</p>
         </div>
       </div>
 
-      {/* Body */}
       <div className="p-5 space-y-5">
-        {/* Flight Summary Card */}
-        <div className="bg-slate-50 border border-delta-hairline rounded-[4px] p-4 space-y-3">
-          <div className="flex items-center justify-between border-b border-delta-hairline pb-2">
+        {/* Route card */}
+        <div className="bg-delta-surface-1 border border-delta-hairline rounded-sm p-4 space-y-3">
+          <div className="flex items-center justify-between border-b border-delta-hairline pb-2.5">
             <span className="text-xs font-bold uppercase tracking-wider text-delta-navy flex items-center gap-1.5">
               <Plane className="h-4 w-4 text-delta-red" />
               {ownerName} · {carrierCode} {flightNumber}
             </span>
-            <Badge className="bg-delta-navy text-white text-[10px] uppercase tracking-wider">
-              {routeInfo.cabinClass || "Economy"}
-            </Badge>
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-delta-navy text-white px-2 py-0.5 rounded-sm">
+              {cabinLabel}
+            </span>
           </div>
-
-          <div className="flex items-center justify-between text-sm font-bold text-delta-navy">
+          <div className="flex items-center justify-between text-delta-navy">
             <div>
-              <span className="text-xl">{routeInfo.origin}</span>
-              <span className="text-xs text-delta-ink-muted block font-normal">{routeInfo.departureDate}</span>
+              <span className="text-2xl font-bold uppercase">{routeInfo.origin}</span>
+              <span className="text-xs text-delta-ink-muted block font-medium mt-0.5">{routeInfo.departureDate}</span>
             </div>
-            <div className="flex items-center gap-2 text-xs font-normal text-delta-ink-muted">
-              <div className="h-[1px] w-12 bg-delta-hairline" />
+            <div className="flex items-center gap-2 text-delta-ink-muted">
+              <div className="h-[1px] w-10 bg-delta-hairline" />
               <Plane className="h-4 w-4 rotate-90 text-delta-navy" />
-              <div className="h-[1px] w-12 bg-delta-hairline" />
+              <div className="h-[1px] w-10 bg-delta-hairline" />
             </div>
             <div className="text-right">
-              <span className="text-xl">{routeInfo.destination}</span>
+              <span className="text-2xl font-bold uppercase">{routeInfo.destination}</span>
               {routeInfo.returnDate && (
-                <span className="text-xs text-delta-ink-muted block font-normal">Return: {routeInfo.returnDate}</span>
+                <span className="text-xs text-delta-ink-muted block font-medium mt-0.5">Return: {routeInfo.returnDate}</span>
               )}
             </div>
           </div>
         </div>
 
-        {/* Passengers & Assigned Seats Summary */}
+        {/* Passengers & seats */}
         <div className="space-y-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-delta-navy flex items-center gap-1">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-delta-navy flex items-center gap-1.5 select-none">
             <User className="h-3.5 w-3.5 text-delta-red" />
-            Ticketed Passengers & Assigned Seats ({passengers.length})
+            Ticketed Travelers ({passengers.length})
           </span>
-          <div className="border border-delta-hairline rounded-[4px] divide-y divide-delta-hairline bg-white">
+          <div className="border border-delta-hairline rounded-sm overflow-hidden bg-delta-canvas">
             {passengers.map((p, idx) => {
-              const passSeatChoices = selectedSeats.filter((s) => s.passengerIndex === idx)
+              const seatChoices = selectedSeats.filter((s) => s.passengerIndex === idx)
+              const colors = PAX_COLORS[idx % PAX_COLORS.length]
+              const initials = getInitials(p.firstName, p.lastName)
               return (
-                <div key={idx} className="p-3 flex items-center justify-between text-xs">
-                  <div>
-                    <span className="font-bold text-delta-navy uppercase">
-                      {p.firstName} {p.lastName}
-                    </span>
-                    <span className="text-delta-ink-muted block text-[11px]">{p.email}</span>
+                <div
+                  key={idx}
+                  className="p-3.5 flex items-center justify-between border-b border-delta-hairline last:border-0"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className={`w-7 h-7 rounded-sm flex items-center justify-center text-[11px] font-bold border ${colors.bg} ${colors.text} ${colors.border}`}>
+                      {initials || (idx + 1)}
+                    </div>
+                    <div>
+                      <span className="text-sm font-bold text-delta-navy block">{p.firstName} {p.lastName}</span>
+                      <span className="text-[11px] text-delta-ink-muted capitalize">{p.passengerType}</span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    {passSeatChoices.length > 0 ? (
-                      <div className="flex items-center gap-1.5">
-                        {passSeatChoices.map((s, sIdx) => (
-                          <span key={sIdx} className="bg-delta-navy text-white px-2 py-0.5 rounded font-mono text-[10px] font-bold">
-                            Seat {s.seatDesignator}
-                          </span>
-                        ))}
-                      </div>
+                  <div className="flex items-center gap-1.5">
+                    {seatChoices.length > 0 ? (
+                      seatChoices.map((s, sIdx) => (
+                        <span key={sIdx} className="bg-delta-navy text-white px-2 py-0.5 rounded-sm font-mono text-[10px] font-bold">
+                          {s.seatDesignator}
+                        </span>
+                      ))
                     ) : (
-                      <span className="text-slate-400 italic">Standard Seating</span>
+                      <span className="text-[11px] text-delta-ink-muted italic">Standard seating</span>
                     )}
                   </div>
                 </div>
@@ -264,109 +255,124 @@ export function CheckoutInline({
           </div>
         </div>
 
-        {/* Price Breakdown */}
-        <div className="space-y-2 border-t border-delta-hairline pt-4">
-          <span className="text-xs font-bold uppercase tracking-wider text-delta-navy">
-            Fare & Fee Calculation Summary
-          </span>
-          <div className="space-y-1 text-xs">
-            <div className="flex justify-between text-delta-ink">
-              <span>Base Flight Fare ({passengers.length} Traveler{passengers.length > 1 ? "s" : ""})</span>
-              <span className="font-mono font-bold">${baseFare.toFixed(2)}</span>
+        {/* Receipt-style fare breakdown */}
+        <div className="border border-delta-hairline rounded-sm overflow-hidden">
+          <div className="bg-delta-surface-1 px-4 py-2.5 border-b border-delta-hairline">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-delta-navy">Fare Breakdown</span>
+          </div>
+          <div className="p-4 space-y-2.5 bg-delta-canvas">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-delta-ink-muted">Base fare ({passengers.length} passenger{passengers.length > 1 ? "s" : ""})</span>
+              <span className="font-mono font-bold text-delta-ink">৳{adjustedBase.toFixed(2)}</span>
             </div>
             {totalSeatFee > 0 && (
-              <div className="flex justify-between text-delta-ink">
-                <span>Selected Preferred Seats</span>
-                <span className="font-mono font-bold">${totalSeatFee.toFixed(2)}</span>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-delta-ink-muted">Seat selection fee</span>
+                <span className="font-mono font-bold text-delta-ink">৳{totalSeatFee.toFixed(2)}</span>
               </div>
             )}
-            <div className="flex justify-between text-delta-navy font-bold text-sm border-t border-delta-hairline pt-2 mt-2">
-              <span>Total Amount Due</span>
-              <span className="font-mono text-delta-red font-black text-lg">${finalTotalAmount} {currency}</span>
+            {/* Dotted separator */}
+            <div className="border-t border-dashed border-delta-hairline pt-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-bold text-delta-navy">Total Amount Due</span>
+                <span className="text-2xl font-bold text-delta-red">৳{finalTotalAmount} <span className="text-xs text-delta-ink-muted font-normal">{currency}</span></span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Ledger Wallet Settlement Check */}
-        <div className="bg-slate-50 border border-delta-hairline rounded-[4px] p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-delta-navy flex items-center gap-1.5">
-              <CreditCard className="h-4 w-4 text-delta-navy" />
-              Settlement Method: SkyLedger Asset Wallet
+        {/* Wallet */}
+        <div className={`border rounded-sm overflow-hidden ${canAfford ? "border-delta-success/30" : "border-delta-error/30"}`}>
+          <div className={`px-4 py-2.5 border-b flex items-center justify-between ${canAfford ? "bg-delta-success/8 border-delta-success/20" : "bg-delta-error/8 border-delta-error/20"}`}>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-delta-navy flex items-center gap-1.5">
+              <Wallet className="h-3.5 w-3.5 text-delta-navy-mid" />
+              SkyLedger Asset Wallet
             </span>
             {loadingBalance ? (
               <Loader2 className="h-4 w-4 animate-spin text-delta-navy" />
             ) : (
-              <span className="text-xs font-bold text-delta-navy">
-                Available Wallet: <strong className="font-mono text-sm text-emerald-700">${(walletBalance || 0).toFixed(2)}</strong>
+              <span className={`font-mono font-bold text-sm px-2 py-0.5 rounded-sm border ${
+                canAfford
+                  ? "text-delta-success bg-delta-success/10 border-delta-success/25"
+                  : "text-delta-error bg-delta-error/10 border-delta-error/25"
+              }`}>
+                ৳{(walletBalance || 0).toFixed(2)}
               </span>
             )}
           </div>
 
-          {!loadingBalance && !canAfford && (
-            <div className="bg-rose-50 border border-rose-200 text-rose-800 p-3 rounded-[4px] text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
-                <div>
-                  <strong className="block">Insufficient Ledger Wallet Balance!</strong> You need an additional{" "}
-                  <strong className="font-mono">${(totalNum - (walletBalance || 0)).toFixed(2)}</strong> to settle this flight reservation.
+          <div className="p-4 bg-delta-canvas space-y-2.5">
+            {!loadingBalance && canAfford && (
+              <>
+                <div className="flex items-center gap-2 text-delta-success text-xs font-bold">
+                  <ShieldCheck className="h-4 w-4 shrink-0" />
+                  <span>Balance verified. Ready to confirm booking.</span>
                 </div>
+                <div className="flex items-center justify-between text-xs border-t border-delta-hairline-light pt-2.5">
+                  <span className="text-delta-ink-muted">Balance after booking</span>
+                  <span className="font-mono font-bold text-delta-ink">৳{balAfter.toFixed(2)}</span>
+                </div>
+              </>
+            )}
+            {!loadingBalance && !canAfford && (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-start gap-2 text-delta-error">
+                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 animate-pulse" />
+                  <div>
+                    <p className="text-xs font-bold">Insufficient balance</p>
+                    <p className="text-[11px] text-delta-ink-muted mt-0.5">
+                      Need additional <strong className="font-mono text-delta-ink">৳{(totalNum - (walletBalance || 0)).toFixed(2)}</strong>
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => router.push("/user/wallet")}
+                  className="shrink-0 h-9 px-4 rounded-sm bg-delta-red hover:bg-delta-red-hover text-white text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                >
+                  Top Up Wallet
+                </button>
               </div>
-              <Button 
-                onClick={() => router.push("/user/wallet")}
-                className="bg-delta-navy hover:bg-delta-navy-dark text-white text-[11px] uppercase tracking-wider font-bold h-8 shrink-0"
-              >
-                Recharge Wallet
-              </Button>
-            </div>
-          )}
-
-          {!loadingBalance && canAfford && (
-            <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-2.5 rounded-[4px] text-xs flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-              <span>Double-entry ledger wallet settlement verified. Balance remaining after reservation: <strong className="font-mono">${((walletBalance || 0) - totalNum).toFixed(2)}</strong></span>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
+        {/* Error */}
         {error && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-800 p-3 rounded-[4px] text-xs flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
-            <span>{error}</span>
+          <div className="flex items-start gap-2.5 bg-delta-error/10 border border-delta-error/25 rounded-sm p-3.5">
+            <AlertCircle className="h-4 w-4 text-delta-error shrink-0 mt-0.5" />
+            <p className="text-xs text-delta-error font-medium">{error}</p>
           </div>
         )}
 
-        {/* Footer Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-delta-hairline">
+        {/* Actions */}
+        <div className="flex items-center justify-between pt-4 border-t border-delta-hairline">
           {onBack && (
-            <Button
-              variant="outline"
-              size="sm"
+            <button
               onClick={onBack}
               disabled={submitting}
-              className="text-xs font-bold uppercase gap-1"
+              className="h-10 px-4 rounded-sm border border-delta-navy text-delta-navy bg-delta-canvas hover:bg-delta-surface-1 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40"
             >
-              <ArrowLeft className="h-4 w-4" /> Back to Passenger Info
-            </Button>
+              <ChevronLeft className="h-4 w-4" /> Back
+            </button>
           )}
 
-          <Button
-            onClick={handleConfirmPayment}
+          <button
+            onClick={handlePay}
             disabled={!canAfford || submitting || loadingBalance}
-            className="bg-delta-red hover:bg-red-700 text-white text-xs font-bold uppercase tracking-wider px-6 h-10 rounded-[4px] flex items-center gap-2 ml-auto"
+            className="ml-auto h-12 px-8 rounded-sm bg-delta-red hover:bg-delta-red-hover text-white font-bold text-sm flex items-center gap-3 transition-colors cursor-pointer shadow-none disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {submitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Settling Flight Ledger...</span>
+                <span>Processing Payment...</span>
               </>
             ) : (
               <>
-                <span>Confirm & Settle ${finalTotalAmount}</span>
-                <ArrowRight className="h-4 w-4" />
+                <span>Confirm & Pay ৳{finalTotalAmount}</span>
+                <ChevronRight className="h-4 w-4" />
               </>
             )}
-          </Button>
+          </button>
         </div>
       </div>
     </div>
