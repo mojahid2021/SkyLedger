@@ -197,7 +197,7 @@ export function AdminSidebar({
     if (pathname === "/admin/flights") return "flights"
     if (pathname === "/admin/bookings") return "bookings"
     if (pathname === "/admin/settings") return "settings"
-    if (pathname === "/admin/dashboard" || pathname === "/admin/overview") return "overview"
+    if (pathname === "/admin/overview") return "overview"
 
     return activeSection
   }
@@ -211,7 +211,7 @@ export function AdminSidebar({
     if (storedGroups) {
       try {
         initialGroups = JSON.parse(storedGroups)
-      } catch (e) {}
+      } catch (e) { }
     }
 
     // Auto-expand group containing the active child item

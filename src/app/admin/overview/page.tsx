@@ -7,7 +7,19 @@ import { Users, Plane, Building2, MapPin, CreditCard, Loader2 } from "lucide-rea
 import { useAuth } from "@/context/auth-context"
 import { AdminNavbar } from "@/components/admin/admin-navbar"
 import { AdminSidebar, AdminMobileNav, type AdminSection } from "@/components/admin/admin-sidebar"
-import { AuditLogList } from "@/components/admin/audit-log-list"
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from "recharts"
 
 interface OverviewStats {
   usersCount: number
@@ -87,6 +99,20 @@ function AdminOverviewContent() {
     { label: "Airports Available", value: stats.airportsCount.toLocaleString(), icon: MapPin, color: "text-orange-700", bg: "bg-orange-50", border: "border-orange-100" },
   ] : []
 
+  const pieData = stats ? [
+    { name: "Users", value: stats.usersCount },
+    { name: "Flights", value: stats.flightsCount },
+    { name: "Bookings", value: stats.bookingsCount },
+  ] : []
+
+  const barData = stats ? [
+    { name: "Airports", count: stats.airportsCount },
+    { name: "Airlines", count: stats.airlinesCount },
+    { name: "Flights", count: stats.flightsCount },
+  ] : []
+
+  const COLORS = ["#EF4444", "#3B82F6", "#10B981", "#F59E0B"]
+
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-delta-surface-1 font-sans text-delta-ink">
       <AdminNavbar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
@@ -149,15 +175,49 @@ function AdminOverviewContent() {
               )}
             </div>
 
-            {/* Audit Logs */}
+            {/* Analytics Charts */}
             <div className="space-y-3 pt-4">
               <SectionHeading
-                eyebrow="Security & Events"
-                title="Recent System Audit Logs"
-                description="Most recent authentication and data modification events."
+                eyebrow="Analytics"
+                title="Data Distribution"
+                description="Visual representation of platform metrics."
               />
-              <div className="rounded-sm border border-delta-hairline bg-delta-canvas shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
-                <AuditLogList />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="rounded-sm border border-delta-hairline bg-delta-canvas p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] h-[350px] pb-12">
+                  <h3 className="text-sm font-bold text-delta-navy mb-4">Entity Overview</h3>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={barData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip contentStyle={{ borderRadius: '4px', border: '1px solid #E5E7EB' }} />
+                      <Bar dataKey="count" fill="#0F172A" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                <div className="rounded-sm border border-delta-hairline bg-delta-canvas p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] h-[350px] pb-12">
+                  <h3 className="text-sm font-bold text-delta-navy mb-4">Activity Breakdown</h3>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{ borderRadius: '4px', border: '1px solid #E5E7EB' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
           </div>
