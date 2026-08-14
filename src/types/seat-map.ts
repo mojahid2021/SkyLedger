@@ -10,8 +10,8 @@ export type ElementType =
   | "restricted_seat_general"
 
 export interface AvailableService {
-  id: string
-  passenger_id: string
+  id: string | number
+  passenger_id: string | number
   total_amount: string
   total_currency: string
 }
@@ -91,18 +91,18 @@ export interface Cabin {
 }
 
 export interface SeatMap {
-  id: string
-  segment_id: string
-  slice_id: string
+  id: string | number
+  segment_id: string | number
+  slice_id: string | number
   cabins: Cabin[]
 }
 
 export interface SelectedSeatChoice {
-  segmentId: string
-  passengerId: string
+  segmentId: string | number
+  passengerId: string | number
   passengerIndex: number
   seatDesignator: string
-  serviceId: string
+  serviceId: string | number
   totalAmount: number
   totalCurrency: string
   disclosures?: string[]

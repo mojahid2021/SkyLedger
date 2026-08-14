@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     params.append("store_id", storeId)
     params.append("store_passwd", storePasswd)
     params.append("total_amount", rechargeAmount.toString())
-    params.append("currency", "USD")
+    params.append("currency", "BDT")
     params.append("tran_id", tran_id)
     params.append("success_url", `${baseUrl}/api/wallet/recharge/sslcommerz/success`)
     params.append("fail_url", `${baseUrl}/api/wallet/recharge/sslcommerz/fail`)

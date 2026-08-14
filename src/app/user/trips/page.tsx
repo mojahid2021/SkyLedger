@@ -162,7 +162,7 @@ export default function UserTripsPage() {
                           
                           <div className="flex items-center justify-between pt-6 border-t border-slate-200/60">
                              <div className="text-sm text-slate-500">
-                                Total: <span className="font-medium text-slate-900 ml-1">${Number(b.total_amount).toFixed(2)} {b.currency}</span>
+                                Total: <span className="font-medium text-slate-900 ml-1">৳{Number(b.total_amount).toFixed(2)} {b.currency}</span>
                              </div>
                              <div className="flex gap-2">
                                 {isConfirmed && (

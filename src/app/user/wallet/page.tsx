@@ -103,7 +103,7 @@ function WalletContent() {
     if (statusParam === "success") {
       // Re-fetch transactions instantly on success
       fetchTransactions()
-      setRechargeSuccess(`Recharged $${Number(amountParam).toFixed(2)} to your wallet. Ref: ${refParam}`)
+      setRechargeSuccess(`Recharged ৳${Number(amountParam).toFixed(2)} to your wallet. Ref: ${refParam}`)
       setDepositOpen(true)
       router.replace("/user/wallet")
     } else if (statusParam === "fail") {
@@ -164,7 +164,7 @@ function WalletContent() {
       const data = await res.json()
       if (data.success) {
         setWalletBalance(data.data.newBalance)
-        setWithdrawSuccess(`Successfully withdrew $${amount.toFixed(2)} from your wallet!`)
+        setWithdrawSuccess(`Successfully withdrew ৳${amount.toFixed(2)} from your wallet!`)
         setWithdrawAmount("")
         fetchTransactions()
       } else {
@@ -207,7 +207,7 @@ function WalletContent() {
                     ) : (
                       <div className="flex flex-col sm:flex-row sm:items-baseline gap-4">
                         <h1 className="text-6xl md:text-8xl tracking-[-0.04em] font-semibold text-slate-900 leading-none">
-                          ${walletBalance !== null ? Math.floor(walletBalance).toString() : "0"}
+                          ৳{walletBalance !== null ? Math.floor(walletBalance).toString() : "0"}
                           <span className="text-4xl md:text-6xl text-slate-300">
                             .{walletBalance !== null ? (walletBalance % 1).toFixed(2).substring(2) : "00"}
                           </span>
@@ -246,7 +246,7 @@ function WalletContent() {
                                       "disabled:opacity-50 disabled:cursor-not-allowed"
                                     )}
                                   >
-                                    ${amt}
+                                    ৳{amt}
                                   </button>
                                 )
                               })}
@@ -254,7 +254,7 @@ function WalletContent() {
 
                             <div className="flex gap-2">
                               <div className="relative flex-1">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">৳</span>
                                 <Input
                                   type="number"
                                   placeholder="Custom"
@@ -317,7 +317,7 @@ function WalletContent() {
                                       isDisabled && "opacity-50 hover:bg-slate-50 cursor-not-allowed text-slate-400"
                                     )}
                                   >
-                                    ${amt}
+                                    ৳{amt}
                                   </button>
                                 )
                               })}
@@ -325,7 +325,7 @@ function WalletContent() {
 
                             <div className="flex gap-2">
                               <div className="relative flex-1">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">৳</span>
                                 <Input
                                   type="number"
                                   placeholder="Custom"
@@ -391,7 +391,7 @@ function WalletContent() {
                          "text-sm font-medium tabular-nums text-right",
                          tx.type === "credit" ? "text-emerald-600" : "text-slate-900"
                        )}>
-                         {tx.type === "credit" ? "+" : "-"}${Number(tx.amount).toFixed(2)}
+                         {tx.type === "credit" ? "+" : "-"}৳{Number(tx.amount).toFixed(2)}
                          {tx.status === "pending" && <span className="block text-[10px] text-amber-500 uppercase tracking-wider mt-0.5">Pending</span>}
                          {tx.status === "failed" && <span className="block text-[10px] text-rose-500 uppercase tracking-wider mt-0.5">Failed</span>}
                        </div>

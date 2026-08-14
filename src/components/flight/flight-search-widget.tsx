@@ -30,21 +30,7 @@ import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/context/auth-context"
 
-const AIRLINE_NAMES: Record<string, string> = {
-  BG: "Biman Bangladesh Airlines",
-  BS: "US-Bangla Airlines",
-  VQ: "NOVOAIR",
-  DL: "Delta Air Lines",
-  AA: "American Airlines",
-  UA: "United Airlines",
-  BA: "British Airways",
-  LH: "Lufthansa",
-  AF: "Air France",
-  EK: "Emirates",
-  QR: "Qatar Airways",
-  SQ: "Singapore Airlines",
-  ZZ: "Duffel Airways",
-}
+
 
 interface LocationResult {
   id: number
@@ -54,7 +40,7 @@ interface LocationResult {
   country_code: string | null
 }
 
-interface DuffelCarrier {
+interface Carrier {
   id?: string
   name?: string
   iata_code?: string
@@ -63,7 +49,7 @@ interface DuffelCarrier {
   conditions_of_carriage_url?: string | null
 }
 
-interface DuffelLocation {
+interface Location {
   id?: string
   name?: string
   iata_code?: string
@@ -72,18 +58,18 @@ interface DuffelLocation {
   time_zone?: string | null
 }
 
-interface DuffelBaggage {
+interface Baggage {
   quantity?: number
   type?: "checked" | "carry_on" | string
 }
 
-interface DuffelAmenityDetail {
+interface AmenityDetail {
   seat?: { pitch?: string | null; legroom?: string | null; type?: string | null }
   wifi?: { available?: boolean | null; cost?: string | null }
   power?: { available?: boolean | null }
 }
 
-interface DuffelPassengerSegment {
+interface PassengerSegment {
   passenger_id?: string
   cabin_class?: string
   cabin_class_marketing_name?: string | null
@@ -91,12 +77,12 @@ interface DuffelPassengerSegment {
   cabin?: {
     name?: string
     marketing_name?: string
-    amenities?: DuffelAmenityDetail
+    amenities?: AmenityDetail
   }
-  baggages?: DuffelBaggage[]
+  baggages?: Baggage[]
 }
 
-interface DuffelSegment {
+interface Segment {
   id?: string
   departing_at?: string
   arriving_at?: string
@@ -108,21 +94,21 @@ interface DuffelSegment {
   distance?: string | null
   aircraft?: { id?: string; iata_code?: string | null; name?: string | null } | null
   stops?: any[]
-  operating_carrier?: DuffelCarrier | null
-  marketing_carrier?: DuffelCarrier | null
-  origin?: DuffelLocation | null
-  destination?: DuffelLocation | null
-  passengers?: DuffelPassengerSegment[]
+  operating_carrier?: Carrier | null
+  marketing_carrier?: Carrier | null
+  origin?: Location | null
+  destination?: Location | null
+  passengers?: PassengerSegment[]
 }
 
-interface DuffelSlice {
+interface Slice {
   id?: string
   duration?: string
   fare_brand_name?: string | null
   ngs_shelf?: number | null
-  origin?: DuffelLocation | null
-  destination?: DuffelLocation | null
-  segments?: DuffelSegment[]
+  origin?: Location | null
+  destination?: Location | null
+  segments?: Segment[]
   conditions?: {
     change_before_departure?: { allowed?: boolean; penalty_amount?: string | null; penalty_currency?: string | null } | null
     priority_check_in?: boolean | null
@@ -131,7 +117,7 @@ interface DuffelSlice {
   } | null
 }
 
-interface DuffelOffer {
+interface Offer {
   id: string
   total_amount: string
   total_currency: string
@@ -150,12 +136,12 @@ interface DuffelOffer {
     price_guarantee_expires_at?: string | null
     payment_required_by?: string | null
   } | null
-  owner?: DuffelCarrier | null
+  owner?: Carrier | null
   conditions?: {
     refund_before_departure?: { allowed?: boolean; penalty_amount?: string | null; penalty_currency?: string | null } | null
     change_before_departure?: { allowed?: boolean; penalty_amount?: string | null; penalty_currency?: string | null } | null
   } | null
-  slices?: DuffelSlice[]
+  slices?: Slice[]
   passengers?: any[]
 }
 
@@ -321,10 +307,18 @@ function LocationInput({
   )
 }
 
-function FlightOfferCard({ offer, index }: { offer: DuffelOffer; index: number }) {
+function FlightOfferCard({
+  offer,
+  index,
+  airlineNames,
+}: {
+  offer: Offer
+  index: number
+  airlineNames: Record<string, string>
+}) {
   const { user } = useAuth()
   const owner = offer.owner || {}
-  const ownerName = owner.name || (owner.iata_code ? AIRLINE_NAMES[owner.iata_code] : undefined) || "Airline"
+  const ownerName = owner.name || (owner.iata_code ? airlineNames[owner.iata_code.toUpperCase()] : undefined) || "Airline"
   const ownerLogo = owner.logo_symbol_url || owner.logo_lockup_url || (owner.iata_code ? `https://assets.duffel.com/img/airlines/for-light-background/full-color-logo/${owner.iata_code}.svg` : null)
 
   const slices = offer.slices || []
@@ -336,7 +330,7 @@ function FlightOfferCard({ offer, index }: { offer: DuffelOffer; index: number }
 
   const emissionsKg = offer.total_emissions_kg
   const baseTotalAmount = parseFloat(offer.total_amount || "0")
-  const currency = offer.total_currency || "USD"
+  const currency = offer.total_currency || "BDT"
   const baseAmount = offer.base_amount
   const taxAmount = offer.tax_amount
   const finalTotalAmount = baseTotalAmount.toFixed(2)
@@ -355,10 +349,10 @@ function FlightOfferCard({ offer, index }: { offer: DuffelOffer; index: number }
   // Format passengers for SeatMapDialog
   const dialogPassengers = (offer.passengers && offer.passengers.length > 0)
     ? offer.passengers.map((p: any, idx: number) => ({
-        id: p.id || `pas_00${idx + 1}`,
+        id: p.id || (idx + 1),
         label: `Passenger ${idx + 1} (${p.type || "Adult"})`,
       }))
-    : [{ id: "pas_001", label: "Passenger 1 (Adult)" }]
+    : [{ id: 1, label: "Passenger 1 (Adult)" }]
 
   return (
     <div className="group rounded-[8px] border border-delta-hairline bg-white shadow-sm hover:border-delta-navy hover:shadow-md transition-all overflow-hidden">
@@ -593,7 +587,7 @@ function FlightOfferCard({ offer, index }: { offer: DuffelOffer; index: number }
                 {refCond?.allowed ? (
                   <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                     <ShieldCheck className="h-3 w-3 text-emerald-600" />
-                    {refCond.penalty_amount ? `Refundable (${refCond.penalty_currency || "USD"} ${refCond.penalty_amount} fee)` : "Fully Refundable"}
+                    {refCond.penalty_amount ? `Refundable (৳${refCond.penalty_amount} fee)` : "Fully Refundable"}
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
@@ -605,7 +599,7 @@ function FlightOfferCard({ offer, index }: { offer: DuffelOffer; index: number }
                 {chgCond?.allowed ? (
                   <span className="inline-flex items-center gap-1 text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
                     <RefreshCw className="h-3 w-3 text-blue-600" />
-                    {chgCond.penalty_amount ? `Changeable (${chgCond.penalty_currency || "USD"} ${chgCond.penalty_amount} fee)` : "Free Changes"}
+                    {chgCond.penalty_amount ? `Changeable (৳${chgCond.penalty_amount} fee)` : "Free Changes"}
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
@@ -630,11 +624,11 @@ function FlightOfferCard({ offer, index }: { offer: DuffelOffer; index: number }
         <div className="flex items-center gap-4">
           <div>
             <div className="flex items-baseline gap-1">
-              <span className="text-[22px] font-[800] text-delta-red">${finalTotalAmount}</span>
+              <span className="text-[22px] font-[800] text-delta-red">৳{finalTotalAmount}</span>
               <span className="text-[12px] font-[700] text-delta-navy">{currency}</span>
             </div>
             <div className="text-[11px] text-delta-ink-muted">
-              Base: ${baseAmount} + Tax: ${taxAmount} · Total per traveler
+              Base: ৳{baseAmount} + Tax: ৳{taxAmount} · Total per traveler
             </div>
           </div>
 
@@ -681,6 +675,23 @@ function FlightOfferCard({ offer, index }: { offer: DuffelOffer; index: number }
 }
 
 export function FlightSearchWidget() {
+  const [airlineNames, setAirlineNames] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    async function loadAirlines() {
+      try {
+        const res = await fetch("/api/airlines")
+        const json = await res.json()
+        if (json.success && json.data) {
+          setAirlineNames(json.data)
+        }
+      } catch (err) {
+        console.error("Failed to load airlines:", err)
+      }
+    }
+    loadAirlines()
+  }, [])
+
   const [tripType, setTripType] = useState<"round" | "oneway">("round")
   const [from, setFrom] = useState("")
   const [fromCode, setFromCode] = useState("")
@@ -696,7 +707,7 @@ export function FlightSearchWidget() {
 
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
-  const [searchResults, setSearchResults] = useState<DuffelOffer[] | null>(null)
+  const [searchResults, setSearchResults] = useState<Offer[] | null>(null)
   const [routeInfo, setRouteInfo] = useState<{ origin: string; destination: string } | null>(null)
 
   const handleSearch = async () => {
@@ -719,13 +730,13 @@ export function FlightSearchWidget() {
 
       const url = `/api/flights/search?origin=${encodeURIComponent(originParam)}&destination=${encodeURIComponent(destParam)}&departure_at=${depart}&one_way=${tripType === "oneway"}&cabin=${reqCabin}&passengers=${passengers}`
       const res = await fetch(tripType === "round" && returnDate ? url + `&return_at=${returnDate}` : url)
-      const duffelData = await res.json()
+      const flightData = await res.json()
 
-      if (duffelData.success && Array.isArray(duffelData.data)) {
-        setSearchResults(duffelData.data)
+      if (flightData.success && Array.isArray(flightData.data)) {
+        setSearchResults(flightData.data)
         setRouteInfo({ origin: originParam, destination: destParam })
       } else {
-        const errMessage = duffelData.details ? duffelData.details[0]?.message : (duffelData.error || "No flights found matching your search criteria.")
+        const errMessage = flightData.details ? flightData.details[0]?.message : (flightData.error || "No flights found matching your search criteria.")
         setSearchError(errMessage)
         setSearchResults([])
       }
@@ -930,7 +941,7 @@ export function FlightSearchWidget() {
           ) : (
             <div className="space-y-4">
               {searchResults.map((offer, idx) => (
-                <FlightOfferCard key={offer.id || `offer-${idx}`} offer={offer} index={idx} />
+                <FlightOfferCard key={offer.id || `offer-${idx}`} offer={offer} index={idx} airlineNames={airlineNames} />
               ))}
             </div>
           )}

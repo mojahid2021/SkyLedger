@@ -51,7 +51,7 @@ export function StatsCards() {
   const stats = [
     {
       title: "Net Balance",
-      value: `$${data.netBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+      value: `৳${data.netBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
       change: "Live",
       isPositive: data.netBalance >= 0,
       subtext: `${data.count} total ledger entries`,
@@ -60,7 +60,7 @@ export function StatsCards() {
     },
     {
       title: "Total Revenue (Credit)",
-      value: `$${data.totalCredit.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+      value: `৳${data.totalCredit.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
       change: "Live",
       isPositive: true,
       subtext: "Calculated from database",
@@ -69,7 +69,7 @@ export function StatsCards() {
     },
     {
       title: "Total Expenses (Debit)",
-      value: `$${data.totalDebit.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+      value: `৳${data.totalDebit.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
       change: "Live",
       isPositive: false,
       subtext: "Calculated from database",

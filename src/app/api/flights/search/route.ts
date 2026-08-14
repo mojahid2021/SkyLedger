@@ -13,7 +13,7 @@ async function resolveAirport(input: string) {
   return null
 }
 
-function mapLocalFlightToDuffelOffer(flight: any, passengersCount: number, cabinClass: string) {
+function mapLocalFlightToOffer(flight: any, passengersCount: number, cabinClass: string) {
   const departureDate = new Date(flight.departure_time)
   const arrivalDate = new Date(flight.arrival_time)
   
@@ -29,9 +29,9 @@ function mapLocalFlightToDuffelOffer(flight: any, passengersCount: number, cabin
   const taxAmount = (parseFloat(flight.price) * passengersCount * 0.1).toFixed(2)
 
   return {
-    id: `local_off_${flight.id}`,
+    id: flight.id,
     total_amount: totalAmount,
-    total_currency: "USD",
+    total_currency: "BDT",
     base_amount: baseAmount,
     tax_amount: taxAmount,
     total_emissions_kg: "85",
@@ -45,16 +45,16 @@ function mapLocalFlightToDuffelOffer(flight: any, passengersCount: number, cabin
       payment_required_by: null,
     },
     conditions: {
-      refund_before_departure: { allowed: true, penalty_amount: "50.00", penalty_currency: "USD" },
-      change_before_departure: { allowed: true, penalty_amount: "30.00", penalty_currency: "USD" },
+      refund_before_departure: { allowed: true, penalty_amount: "50.00", penalty_currency: "BDT" },
+      change_before_departure: { allowed: true, penalty_amount: "30.00", penalty_currency: "BDT" },
     },
     passengers: Array.from({ length: passengersCount }).map((_, idx) => ({
-      id: `local_pas_${idx + 1}`,
+      id: idx + 1,
       type: "adult",
     })),
     slices: [
       {
-        id: `local_slice_${flight.id}`,
+        id: flight.id,
         duration: durationStr,
         fare_brand_name: "Delta Choice Main",
         origin: {
@@ -67,7 +67,7 @@ function mapLocalFlightToDuffelOffer(flight: any, passengersCount: number, cabin
         },
         segments: [
           {
-            id: `local_seg_${flight.id}`,
+            id: flight.id,
             operating_carrier_flight_number: flight.flight_number.replace(/^[A-Z0-9]+\s*/i, ""),
             marketing_carrier_flight_number: flight.flight_number.replace(/^[A-Z0-9]+\s*/i, ""),
             operating_carrier: {
@@ -160,7 +160,7 @@ export async function GET(request: Request) {
         AND DATE(f.departure_time) = ?
     `, [o.id, d.id, departure_at])
 
-    const localOffers = (localFlights || []).map(lf => mapLocalFlightToDuffelOffer(lf, passengersCount, cabin))
+    const localOffers = (localFlights || []).map(lf => mapLocalFlightToOffer(lf, passengersCount, cabin))
 
     return NextResponse.json({ 
       success: true, 

@@ -236,7 +236,7 @@ function AdminFlightsContent() {
                             </span>
                           </td>
                           <td className="px-4 py-3 text-right font-mono text-xs font-[700] text-delta-navy">
-                            ${Number(flight.price).toFixed(2)}
+                            ৳{Number(flight.price).toFixed(2)}
                           </td>
                         </tr>
                       ))}

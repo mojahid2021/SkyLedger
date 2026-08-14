@@ -27,7 +27,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA1A",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "30.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -41,7 +41,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA1B",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "30.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -55,7 +55,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA1C",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "30.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -73,7 +73,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA1D",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "30.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -87,7 +87,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA1E",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "30.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -119,7 +119,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA1H",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "30.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -133,7 +133,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA1J",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "30.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -147,7 +147,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA1K",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "30.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -179,7 +179,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA2A",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "20.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -193,7 +193,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA2B",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "20.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -207,7 +207,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA2C",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "20.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -239,7 +239,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA2F",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "20.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -253,7 +253,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA2G",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "20.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -278,7 +278,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA2J",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "20.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -292,7 +292,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA2K",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "20.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -314,7 +314,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA3A",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "10.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -335,7 +335,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA3C",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "10.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -353,7 +353,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA3D",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "10.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -367,7 +367,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA3E",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "10.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -381,7 +381,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA3F",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "10.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -406,7 +406,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA3H",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "10.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -420,7 +420,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA3J",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "10.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -434,7 +434,7 @@ const FALLBACK_SEAT_MAPS = [
                         id: "ase_00009UhD4ongolulWAAA3K",
                         passenger_id: "pas_00009hj8USM7Ncg31cAAA",
                         total_amount: "10.00",
-                        total_currency: "USD",
+                        total_currency: "BDT",
                       },
                     ],
                   },
@@ -467,8 +467,8 @@ function generateSeatMapForFlight(
   aircraftModel: string,
   aircraftIata: string,
   aircraftIcao: string,
-  segmentId: string,
-  sliceId: string,
+  segmentId: number,
+  sliceId: number,
   bookedSeats: Set<string>
 ) {
   const modelUpper = (aircraftModel || "").toUpperCase();
@@ -509,10 +509,10 @@ function generateSeatMapForFlight(
         ? []
         : [
             {
-              id: `ase_${flightId}_${designator}`,
-              passenger_id: `pas_1`,
+              id: flightId * 1000 + parseInt(designator) * 10 + (designator.charCodeAt(designator.length - 1) - 64),
+              passenger_id: 1,
               total_amount: amount,
-              total_currency: "USD",
+              total_currency: "BDT",
             },
           ],
     };
@@ -789,7 +789,7 @@ function generateSeatMapForFlight(
   }
 
   return {
-    id: `sea_local_${flightId}`,
+    id: flightId,
     segment_id: segmentId,
     slice_id: sliceId,
     cabins,
@@ -808,8 +808,7 @@ export async function GET(request: Request) {
       )
     }
 
-    const flightIdStr = offerId.replace("local_off_", "").replace("local_slice_", "").replace("local_seg_", "")
-    let flightId = parseInt(flightIdStr, 10)
+    let flightId = parseInt(offerId, 10)
     if (isNaN(flightId)) {
       const match = offerId.match(/\d+/)
       flightId = match ? parseInt(match[0], 10) : 1
@@ -864,8 +863,8 @@ export async function GET(request: Request) {
       }
     }
     
-    const segmentId = `local_seg_${flightId}`
-    const sliceId = `local_slice_${flightId}`
+    const segmentId = flightId
+    const sliceId = flightId
     const seatMap = generateSeatMapForFlight(
       flightId,
       aircraftModel,

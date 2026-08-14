@@ -217,7 +217,7 @@ export function TransactionsTable() {
                       }
                     >
                       {txn.type === "credit" ? "+" : "-"}
-                      ${txn.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                      ৳{txn.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                     </span>
                   </TableCell>
                   <TableCell>

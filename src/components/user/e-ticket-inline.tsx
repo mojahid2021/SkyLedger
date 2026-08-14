@@ -145,7 +145,7 @@ export function ETicketInline({ booking, onDone }: ETicketInlineProps) {
            <div>
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Total Settled</p>
               <p className="text-2xl font-semibold tracking-tight text-slate-900">
-                ${Number(booking.total_amount).toFixed(2)} <span className="text-sm text-slate-400 ml-1">{booking.currency}</span>
+                ৳{Number(booking.total_amount).toFixed(2)} <span className="text-sm text-slate-400 ml-1">{booking.currency}</span>
               </p>
               <div className="flex items-center gap-1.5 text-emerald-600 mt-2 bg-emerald-50 px-2.5 py-1 rounded w-fit">
                    <ShieldCheck weight="fill" className="h-4 w-4" />

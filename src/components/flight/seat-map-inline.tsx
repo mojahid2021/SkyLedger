@@ -100,10 +100,10 @@ export function SeatMapInline({
     ? currentSeatMap.cabins.filter((c) => c.deck === activeDeck)
     : []
 
-  const currentPassengerId = `pas_${activePassengerIndex + 1}`
+  const currentPassengerId = activePassengerIndex + 1
 
   const handleSelectSeat = (
-    segmentId: string,
+    segmentId: string | number,
     seat: SeatElement,
     service: AvailableService
   ) => {
@@ -175,10 +175,9 @@ export function SeatMapInline({
             <span className="text-[10px] uppercase tracking-wider text-slate-300 block font-semibold">
               Seat Selection Fee
             </span>
-            <span className="text-lg font-bold text-white">
-              +{currency === "GBP" ? "£" : currency === "EUR" ? "€" : "$"}
-              {totalSeatsPrice.toFixed(2)}
-            </span>
+              <span className="text-lg font-bold text-white">
+                +৳{totalSeatsPrice.toFixed(2)}
+              </span>
           </div>
         )}
       </div>
@@ -232,7 +231,7 @@ export function SeatMapInline({
                 const isCurrent = activePassengerIndex === idx
                 const chosen = selectedSeats.find(
                   (s) =>
-                    s.segmentId === (currentSeatMap?.id || `seg_${activeSegmentIndex}`) &&
+                    s.segmentId === (currentSeatMap?.id || activeSegmentIndex) &&
                     s.passengerIndex === idx
                 )
                 return (
@@ -288,13 +287,13 @@ export function SeatMapInline({
                                 const isAvailable = seat.available_services && seat.available_services.length > 0
                                 const isSelectedByThisPax = selectedSeats.some(
                                   (s) =>
-                                    s.segmentId === (currentSeatMap.id || `seg_${activeSegmentIndex}`) &&
+                                    s.segmentId === (currentSeatMap.id || activeSegmentIndex) &&
                                     s.passengerIndex === activePassengerIndex &&
                                     s.seatDesignator === seat.designator
                                 )
                                 const isSelectedByOtherPax = selectedSeats.some(
                                   (s) =>
-                                    s.segmentId === (currentSeatMap.id || `seg_${activeSegmentIndex}`) &&
+                                    s.segmentId === (currentSeatMap.id || activeSegmentIndex) &&
                                     s.passengerIndex !== activePassengerIndex &&
                                     s.seatDesignator === seat.designator
                                 )
@@ -306,7 +305,7 @@ export function SeatMapInline({
                                     key={elIdx}
                                     type="button"
                                     disabled={!isAvailable || isSelectedByOtherPax}
-                                    onClick={() => availableService && handleSelectSeat(currentSeatMap.id || `seg_${activeSegmentIndex}`, seat, availableService)}
+                                    onClick={() => availableService && handleSelectSeat(currentSeatMap.id || activeSegmentIndex, seat, availableService)}
                                     className={`w-9 h-9 rounded-[4px] border text-[11px] font-mono font-bold flex flex-col items-center justify-center transition-all ${
                                       isSelectedByThisPax
                                         ? "bg-delta-red text-white border-delta-red shadow-md scale-105"
@@ -319,7 +318,7 @@ export function SeatMapInline({
                                     title={`Seat ${seat.designator}${cost > 0 ? ` (+${cost})` : ""}`}
                                   >
                                     <span>{seat.designator}</span>
-                                    {cost > 0 && <span className="text-[8px] font-sans font-normal opacity-90">${cost}</span>}
+                                    {cost > 0 && <span className="text-[8px] font-sans font-normal opacity-90">৳{cost}</span>}
                                   </button>
                                 )
                               }

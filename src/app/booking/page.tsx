@@ -112,7 +112,7 @@ function BookingContent() {
           </div>
 
           <Badge className="bg-delta-navy text-white text-xs uppercase px-3 py-1 font-mono font-bold">
-            Fare: ${parseFloat(offer.total_amount || "0").toFixed(2)} {offer.total_currency || "USD"}
+            Fare: ৳{parseFloat(offer.total_amount || "0").toFixed(2)} BDT
           </Badge>
         </div>
 

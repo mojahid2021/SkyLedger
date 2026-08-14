@@ -136,7 +136,7 @@ export default function UserTransactionsPage() {
                          </div>
                          <div className="flex flex-col items-end pl-4 shrink-0">
                            <div className={cn("text-base font-medium tracking-tight tabular-nums", isCredit ? "text-slate-900" : "text-slate-400")}>
-                             {isCredit ? "+" : "-"}${val.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                             {isCredit ? "+" : "-"}৳{val.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                            </div>
                            {txn.status === "pending" && <span className="text-[10px] text-amber-500 uppercase tracking-widest mt-1">Pending</span>}
                            {txn.status === "failed" && <span className="text-[10px] text-rose-500 uppercase tracking-widest mt-1">Failed</span>}

@@ -90,19 +90,19 @@ export default function UserDashboardPage() {
                  <div>
                    <span className="block text-sm font-medium text-slate-400 mb-3 tracking-tight">Net Treasury</span>
                    <div className="text-4xl md:text-5xl font-semibold tracking-tight text-slate-900">
-                     {loadingTxns ? <div className="h-12 w-32 bg-slate-50 animate-pulse rounded" /> : `$${netBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+                     {loadingTxns ? <div className="h-12 w-32 bg-slate-50 animate-pulse rounded" /> : `৳${netBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
                    </div>
                  </div>
                  <div>
                    <span className="block text-sm font-medium text-slate-400 mb-3 tracking-tight">Total Inflow</span>
                    <div className="text-3xl md:text-4xl font-medium tracking-tight text-emerald-600/80">
-                     {loadingTxns ? <div className="h-10 w-28 bg-slate-50 animate-pulse rounded" /> : `$${totalCredit.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+                     {loadingTxns ? <div className="h-10 w-28 bg-slate-50 animate-pulse rounded" /> : `৳${totalCredit.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
                    </div>
                  </div>
                  <div>
                    <span className="block text-sm font-medium text-slate-400 mb-3 tracking-tight">Total Outflow</span>
                    <div className="text-3xl md:text-4xl font-medium tracking-tight text-slate-300">
-                     {loadingTxns ? <div className="h-10 w-28 bg-slate-50 animate-pulse rounded" /> : `$${totalDebit.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+                     {loadingTxns ? <div className="h-10 w-28 bg-slate-50 animate-pulse rounded" /> : `৳${totalDebit.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
                    </div>
                  </div>
               </div>

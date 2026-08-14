@@ -79,7 +79,7 @@ export function CheckoutDialog({
   const totalSeatFee = selectedSeats.reduce((sum, s) => sum + (s.totalAmount || 0), 0)
   const finalTotalAmount = (baseFare + totalSeatFee).toFixed(2)
   const totalNum = parseFloat(finalTotalAmount)
-  const currency = offer.total_currency || "USD"
+  const currency = offer.total_currency || "BDT"
 
   const owner = offer.owner || {}
   const ownerName = owner.name || "Airline"
@@ -120,7 +120,7 @@ export function CheckoutDialog({
 
       const payload = {
         userId: user.id,
-        duffelOfferId: offer.id,
+        flightId: offer.id,
         originCode: routeInfo.origin,
         destinationCode: routeInfo.destination,
         departureDate: routeInfo.departureDate,
@@ -284,17 +284,17 @@ export function CheckoutDialog({
             <div className="space-y-1 text-xs">
               <div className="flex justify-between text-delta-ink">
                 <span>Base Flight Fare ({passengers.length} Traveler{passengers.length > 1 ? "s" : ""})</span>
-                <span className="font-mono font-bold">${baseFare.toFixed(2)}</span>
+                <span className="font-mono font-bold">৳{baseFare.toFixed(2)}</span>
               </div>
               {totalSeatFee > 0 && (
                 <div className="flex justify-between text-delta-ink">
                   <span>Selected Preferred Seats</span>
-                  <span className="font-mono font-bold">${totalSeatFee.toFixed(2)}</span>
+                  <span className="font-mono font-bold">৳{totalSeatFee.toFixed(2)}</span>
                 </div>
               )}
               <div className="flex justify-between text-delta-navy font-bold text-sm border-t border-delta-hairline pt-2 mt-2">
                 <span>Total Amount Due</span>
-                <span className="font-mono text-delta-red font-black text-lg">${finalTotalAmount} {currency}</span>
+                <span className="font-mono text-delta-red font-black text-lg">৳{finalTotalAmount} {currency}</span>
               </div>
             </div>
           </div>
@@ -310,7 +310,7 @@ export function CheckoutDialog({
                 <Loader2 className="h-4 w-4 animate-spin text-delta-navy" />
               ) : (
                 <span className="text-xs font-bold text-delta-navy">
-                  Available: <strong className="font-mono text-sm text-emerald-700">${(walletBalance || 0).toFixed(2)}</strong>
+                  Available: <strong className="font-mono text-sm text-emerald-700">৳{(walletBalance || 0).toFixed(2)}</strong>
                 </span>
               )}
             </div>
@@ -320,7 +320,7 @@ export function CheckoutDialog({
                 <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
                 <div>
                   <strong>Insufficient Wallet Balance!</strong> You need an additional{" "}
-                  <strong className="font-mono">${(totalNum - (walletBalance || 0)).toFixed(2)}</strong> in your ledger wallet to complete this reservation.
+                  <strong className="font-mono">৳{(totalNum - (walletBalance || 0)).toFixed(2)}</strong> in your ledger wallet to complete this reservation.
                 </div>
               </div>
             )}
@@ -328,7 +328,7 @@ export function CheckoutDialog({
             {!loadingBalance && canAfford && (
               <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-2.5 rounded-[4px] text-xs flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-                <span>Double-entry ledger wallet settlement ready. Remaining after purchase: <strong className="font-mono">${((walletBalance || 0) - totalNum).toFixed(2)}</strong></span>
+                <span>Double-entry ledger wallet settlement ready. Remaining after purchase: <strong className="font-mono">৳{((walletBalance || 0) - totalNum).toFixed(2)}</strong></span>
               </div>
             )}
           </div>
@@ -364,7 +364,7 @@ export function CheckoutDialog({
               </>
             ) : (
               <>
-                <span>Confirm & Pay ${finalTotalAmount}</span>
+                <span>Confirm & Pay ৳{finalTotalAmount}</span>
                 <ArrowRight className="h-4 w-4" />
               </>
             )}

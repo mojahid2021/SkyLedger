@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     if (currentBalance < withdrawalAmount) {
       connection.release()
       return NextResponse.json(
-        { success: false, error: `Insufficient balance. Available: $${currentBalance.toFixed(2)}` },
+        { success: false, error: `Insufficient balance. Available: ৳${currentBalance.toFixed(2)}` },
         { status: 400 }
       )
     }

@@ -316,7 +316,7 @@ export default function CreateFlightPage() {
 
                       <div>
                         <label className="text-[11px] font-[700] uppercase tracking-wider text-delta-navy">
-                          Ticket Price ($)
+                          Ticket Price (৳)
                         </label>
                         <input
                           type="number"
