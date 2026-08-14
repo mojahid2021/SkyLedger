@@ -301,47 +301,7 @@ function BookingContent() {
     <div className="min-h-screen bg-delta-surface-1 flex flex-col font-sans">
       <UserNavbar />
 
-      {/* Page header — navy bar */}
-      <div className="bg-delta-navy border-b border-delta-navy-dark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2.5 mb-5">
-            <button
-              onClick={() => router.push("/")}
-              className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm font-medium cursor-pointer"
-            >
-              <div className="w-6 h-6 rounded-sm bg-white/10 border border-white/15 flex items-center justify-center hover:bg-white/20 transition-colors">
-                <ArrowLeft className="h-3.5 w-3.5" />
-              </div>
-              Search Results
-            </button>
-            <span className="text-white/25">/</span>
-            <span className="text-xs font-bold uppercase tracking-widest text-delta-red">Flight Booking</span>
-          </div>
 
-          {/* Route display */}
-          {!isConfirmedStep && (
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
-              <div>
-                <div className="flex items-center gap-3 mb-1">
-                  <span className="text-4xl sm:text-5xl font-bold tracking-tight text-white">{origin}</span>
-                  <Plane className="h-5 w-5 text-delta-red rotate-90 shrink-0" />
-                  <span className="text-4xl sm:text-5xl font-bold tracking-tight text-white">{destination}</span>
-                </div>
-                <p className="text-sm text-white/50">{ownerName} · {carrierCode} {flightNumber}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">Total Fare</p>
-                <p className="text-xl font-bold text-delta-red">৳{parseFloat(offer.total_amount || "0").toFixed(2)}</p>
-                <p className="text-[10px] text-white/40">BDT + seat fees</p>
-              </div>
-            </div>
-          )}
-
-          {/* Step progress bar */}
-          {!isConfirmedStep && <StepProgress currentStep={currentStep} />}
-        </div>
-      </div>
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
