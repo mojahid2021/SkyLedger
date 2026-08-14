@@ -131,7 +131,7 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
       const data = await res.json()
 
       if (data.success) {
-        router.push("/admin/dashboard?tab=users")
+        router.push("/admin/users")
       } else {
         setError(data.error || "Failed to delete user")
       }
@@ -154,7 +154,7 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
         <AdminSidebar
           activeSection="users"
           onSectionChange={(section) => {
-            if (section === "overview") router.push("/admin/dashboard")
+            if (section === "overview") router.push("/admin/overview")
             else router.push(`/admin/${section}`)
           }}
         />
@@ -163,7 +163,7 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
           <AdminMobileNav
             activeSection="users"
             onSectionChange={(section) => {
-              if (section === "overview") router.push("/admin/dashboard")
+              if (section === "overview") router.push("/admin/overview")
               else router.push(`/admin/${section}`)
             }}
           />
@@ -175,7 +175,7 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => router.push("/admin/dashboard?tab=users")}
+                  onClick={() => router.push("/admin/users")}
                   className="h-9 w-9 p-0 rounded-[4px] border-delta-hairline text-delta-navy hover:bg-delta-canvas transition-colors"
                 >
                   <ArrowLeft className="h-4 w-4" />

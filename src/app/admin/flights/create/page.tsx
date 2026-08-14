@@ -20,7 +20,7 @@ export default function CreateFlightPage() {
   const handleSidebarChange = (section: AdminSection) => {
     if (section === "create-flight") return
     if (section === "overview") {
-      router.push("/admin/dashboard")
+      router.push("/admin/overview")
     } else if (section === "create-user") {
       router.push("/admin/users/create")
     } else {

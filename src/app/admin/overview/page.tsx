@@ -13,6 +13,8 @@ import {
   Cell,
   BarChart,
   Bar,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -26,8 +28,13 @@ interface OverviewStats {
   flightsCount: number
   airportsCount: number
   airlinesCount: number
+  citiesCount: number
+  aircraftCount: number
   bookingsCount: number
   totalRevenue: number
+  totalSeats: number
+  bookedSeats: number
+  bookingTrend: { date: string, count: number }[]
 }
 
 function AdminOverviewContent() {
@@ -100,16 +107,19 @@ function AdminOverviewContent() {
   ] : []
 
   const pieData = stats ? [
-    { name: "Users", value: stats.usersCount },
-    { name: "Flights", value: stats.flightsCount },
-    { name: "Bookings", value: stats.bookingsCount },
+    { name: "Booked Seats", value: stats.bookedSeats || 0 },
+    { name: "Empty Seats", value: Math.max((stats.totalSeats || 0) - (stats.bookedSeats || 0), 0) },
   ] : []
 
   const barData = stats ? [
     { name: "Airports", count: stats.airportsCount },
+    { name: "Cities", count: stats.citiesCount },
     { name: "Airlines", count: stats.airlinesCount },
-    { name: "Flights", count: stats.flightsCount },
+    { name: "Aircraft", count: stats.aircraftCount },
+    { name: "Users", count: stats.usersCount },
   ] : []
+
+  const areaData = stats?.bookingTrend || []
 
   const COLORS = ["#EF4444", "#3B82F6", "#10B981", "#F59E0B"]
 
@@ -134,8 +144,8 @@ function AdminOverviewContent() {
             }}
           />
 
-          <div className="space-y-8 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-            
+          <div className="space-y-8 p-4 sm:p-6 lg:p-8 mx-auto">
+
             {/* Header */}
             <div className="border-b border-delta-hairline pb-4">
               <h1 className="text-2xl font-bold tracking-tight text-delta-navy">Platform Overview</h1>
@@ -176,15 +186,35 @@ function AdminOverviewContent() {
             </div>
 
             {/* Analytics Charts */}
-            <div className="space-y-3 pt-4">
+            <div className="space-y-6 pt-4">
               <SectionHeading
                 eyebrow="Analytics"
-                title="Data Distribution"
-                description="Visual representation of platform metrics."
+                title="Platform Data & Booking Trends"
+                description="Visual representation of platform metrics and recent booking activity."
               />
+
+              <div className="rounded-sm border border-delta-hairline bg-delta-canvas p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] h-[350px] pb-12 w-full">
+                <h3 className="text-sm font-bold text-delta-navy mb-4">Flights Bookings Data (Last 7 Days)</h3>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={areaData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <defs>
+                      <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip contentStyle={{ borderRadius: '4px', border: '1px solid #E5E7EB' }} />
+                    <Area type="monotone" dataKey="count" stroke="#EF4444" fillOpacity={1} fill="url(#colorCount)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="rounded-sm border border-delta-hairline bg-delta-canvas p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] h-[350px] pb-12">
-                  <h3 className="text-sm font-bold text-delta-navy mb-4">Entity Overview</h3>
+                  <h3 className="text-sm font-bold text-delta-navy mb-4">Entity Overview (Airports, Cities, Airlines, Aircraft, Users)</h3>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={barData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
@@ -195,9 +225,9 @@ function AdminOverviewContent() {
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-                
+
                 <div className="rounded-sm border border-delta-hairline bg-delta-canvas p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] h-[350px] pb-12">
-                  <h3 className="text-sm font-bold text-delta-navy mb-4">Activity Breakdown</h3>
+                  <h3 className="text-sm font-bold text-delta-navy mb-4">Overall Flight Booking Ratio</h3>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -208,13 +238,14 @@ function AdminOverviewContent() {
                         outerRadius={100}
                         fill="#8884d8"
                         dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                       >
                         {pieData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
                       <Tooltip contentStyle={{ borderRadius: '4px', border: '1px solid #E5E7EB' }} />
+                      <Legend />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>

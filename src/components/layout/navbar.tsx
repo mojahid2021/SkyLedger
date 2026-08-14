@@ -81,7 +81,7 @@ export function Navbar() {
             <>
               {/* Primary Filled CTA Button */}
               <Link
-                href={user.role === "admin" ? "/admin/dashboard" : "/user/dashboard"}
+                href={user.role === "admin" ? "/admin/overview" : "/user/dashboard"}
                 className="flex items-center justify-center rounded-[4px] bg-delta-red px-5 py-2 text-[13px] font-[700] uppercase tracking-wider text-white hover:bg-delta-red-hover transition-colors shadow-sm"
               >
                 Dashboard
@@ -165,7 +165,7 @@ export function Navbar() {
           {user ? (
             <div className="flex flex-col gap-3 mt-2">
               <Link
-                href={user.role === "admin" ? "/admin/dashboard" : "/user/dashboard"}
+                href={user.role === "admin" ? "/admin/overview" : "/user/dashboard"}
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center justify-center gap-2 rounded-[4px] bg-white/10 py-2.5 text-[13px] font-[600] text-white border border-white/20"
               >

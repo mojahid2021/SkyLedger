@@ -62,7 +62,7 @@ const NAV_GROUPS: NavGroup[] = [
         id: "overview",
         label: "Control Overview",
         icon: LayoutDashboard,
-        href: "/admin/dashboard",
+        href: "/admin/overview",
       },
       {
         id: "users-parent",
@@ -82,12 +82,6 @@ const NAV_GROUPS: NavGroup[] = [
             href: "/admin/users/create",
           },
         ],
-      },
-      {
-        id: "audit",
-        label: "System Audit Logs",
-        icon: ShieldCheck,
-        href: "/admin/audit",
       },
     ],
   },
@@ -159,6 +153,12 @@ const NAV_GROUPS: NavGroup[] = [
         label: "System Settings",
         icon: Settings,
         href: "/admin/settings",
+      },
+      {
+        id: "audit",
+        label: "System Audit Logs",
+        icon: ShieldCheck,
+        href: "/admin/audit",
       },
     ],
   },
@@ -243,7 +243,6 @@ export function AdminSidebar({
     const possibleSections = [
       "overview",
       "users",
-      "audit",
       "airports",
       "cities",
       "airlines",
@@ -251,6 +250,7 @@ export function AdminSidebar({
       "flights",
       "create-flight",
       "settings",
+      "audit",
     ]
 
     if (possibleSections.includes(item.id)) {
@@ -401,7 +401,7 @@ export function AdminMobileNav({ activeSection, onSectionChange }: AdminSidebarP
     if (pathname === "/admin/fleets") return "fleets"
     if (pathname === "/admin/bookings") return "bookings"
 
-    if (pathname === "/admin/dashboard" || pathname === "/admin/overview") {
+    if (pathname === "/admin/overview" || pathname === "/admin/overview") {
       const tab = searchParams?.get("tab")
       if (tab) return tab
       return "overview"
@@ -420,7 +420,6 @@ export function AdminMobileNav({ activeSection, onSectionChange }: AdminSidebarP
     const possibleSections = [
       "overview",
       "users",
-      "audit",
       "airports",
       "cities",
       "airlines",
@@ -428,6 +427,7 @@ export function AdminMobileNav({ activeSection, onSectionChange }: AdminSidebarP
       "flights",
       "create-flight",
       "settings",
+      "audit",
     ]
 
     if (possibleSections.includes(item.id)) {

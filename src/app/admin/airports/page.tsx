@@ -15,7 +15,7 @@ export default function AdminAirportsPage() {
   const handleSectionChange = (section: AdminSection) => {
     if (section === "airports") return
     if (section === "overview") {
-      router.push("/admin/dashboard")
+      router.push("/admin/overview")
     } else if (section === "create-flight") {
       router.push("/admin/flights/create")
     } else if (section === "create-user") {
