@@ -85,7 +85,8 @@ function FlightSummaryCard({ offer, currentStep, selectedSeats = [] }: { offer: 
   const owner = offer.owner || {}
   const ownerName = owner.name || "Airline"
   const carrierCode = firstSeg?.operating_carrier?.iata_code || owner.iata_code || "DL"
-  const flightNumber = firstSeg?.operating_carrier_flight_number || firstSeg?.marketing_carrier_flight_number || "SKL-101"
+  const rawFlightNum = firstSeg?.operating_carrier_flight_number || firstSeg?.marketing_carrier_flight_number || "101"
+  const flightNumber = rawFlightNum.toString().includes(carrierCode) ? rawFlightNum : `${carrierCode}-${rawFlightNum}`
   const origin = firstSlice?.origin?.iata_code || "JFK"
   const destination = firstSlice?.destination?.iata_code || "LAX"
   const originCity = firstSlice?.origin?.city_name || ""
@@ -114,6 +115,9 @@ function FlightSummaryCard({ offer, currentStep, selectedSeats = [] }: { offer: 
   const totalSeatFeeWithTax = totalSeatFee + (totalSeatFee * (taxPercentage / 100))
   const finalTotalAmount = adjustedBase + totalSeatFeeWithTax
 
+  const originalBase = parseFloat(offer.total_amount || "0")
+  const cabinUpgradeFee = adjustedBase - originalBase
+
   const cabinLabel = cabinClass === "premium_economy" ? "Premium Economy"
     : cabinClass === "business" ? "Business"
     : cabinClass === "first" ? "First Class"
@@ -128,7 +132,7 @@ function FlightSummaryCard({ offer, currentStep, selectedSeats = [] }: { offer: 
         <div className="flex items-center gap-2 mb-3">
           <Plane className="h-3.5 w-3.5 text-white/60" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">
-            {ownerName} · {carrierCode} {flightNumber}
+            {ownerName} · {flightNumber}
           </span>
         </div>
         <div className="flex items-center justify-between">
@@ -170,13 +174,19 @@ function FlightSummaryCard({ offer, currentStep, selectedSeats = [] }: { offer: 
         <div className="pt-3 mt-2 border-t border-delta-hairline-light">
           <p className="text-[10px] font-bold uppercase tracking-wider text-delta-navy mb-2">Fare Breakdown</p>
           <div className="flex items-center justify-between text-xs mb-1.5">
-            <span className="text-delta-ink-muted font-medium">Base Fare ({paxCount} pax)</span>
-            <span className="font-mono font-bold text-delta-ink">৳{adjustedBase.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="text-delta-ink-muted font-medium">Standard Base Fare ({paxCount} pax)</span>
+            <span className="font-mono font-bold text-delta-ink">৳{originalBase.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
+          {cabinUpgradeFee > 0 && (
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="text-delta-navy font-medium">Premium Cabin Upgrade</span>
+              <span className="font-mono font-bold text-delta-navy">+৳{cabinUpgradeFee.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+          )}
           {totalSeatFee > 0 && (
             <div className="flex items-center justify-between text-xs mb-1.5">
               <span className="text-delta-ink-muted font-medium">Seat Selection Fee</span>
-              <span className="font-mono font-bold text-delta-ink">৳{totalSeatFeeWithTax.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className="font-mono font-bold text-delta-ink">+৳{totalSeatFeeWithTax.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
           )}
           <div className="flex items-center justify-between mt-2 border-t border-dashed border-delta-hairline-light pt-2">

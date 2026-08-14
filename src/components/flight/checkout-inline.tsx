@@ -89,8 +89,9 @@ export function CheckoutInline({
   const ownerName    = owner.name || "Airline"
   const firstSlice   = offer.slices?.[0]
   const firstSeg     = firstSlice?.segments?.[0]
-  const flightNumber = firstSeg?.operating_carrier_flight_number || firstSeg?.marketing_carrier_flight_number || "SKL-101"
   const carrierCode  = firstSeg?.operating_carrier?.iata_code || owner.iata_code || "DL"
+  const rawFlightNum = firstSeg?.operating_carrier_flight_number || firstSeg?.marketing_carrier_flight_number || "101"
+  const flightNumber = rawFlightNum.toString().includes(carrierCode) ? rawFlightNum : `${carrierCode}-${rawFlightNum}`
 
   const canAfford  = walletBalance !== null && walletBalance >= totalNum
   const balAfter   = (walletBalance || 0) - totalNum
@@ -188,7 +189,7 @@ export function CheckoutInline({
           <div className="flex items-center justify-between border-b border-delta-hairline pb-2.5">
             <span className="text-xs font-bold uppercase tracking-wider text-delta-navy flex items-center gap-1.5">
               <Plane className="h-4 w-4 text-delta-red" />
-              {ownerName} · {carrierCode} {flightNumber}
+              {ownerName} · {flightNumber}
             </span>
             <span className="text-[10px] font-bold uppercase tracking-wider bg-delta-navy text-white px-2 py-0.5 rounded-sm">
               {cabinLabel}
@@ -262,20 +263,26 @@ export function CheckoutInline({
           </div>
           <div className="p-4 space-y-2.5 bg-delta-canvas">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-delta-ink-muted">Base fare ({passengers.length} passenger{passengers.length > 1 ? "s" : ""})</span>
-              <span className="font-mono font-bold text-delta-ink">৳{adjustedBase.toFixed(2)}</span>
+              <span className="text-delta-ink-muted">Standard Base Fare ({passengers.length} pax)</span>
+              <span className="font-mono font-bold text-delta-ink">৳{parseFloat(offer.total_amount || "0").toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
-            {totalSeatFee > 0 && (
+            {adjustedBase - parseFloat(offer.total_amount || "0") > 0 && (
+              <div className="flex items-center justify-between text-sm text-delta-navy">
+                <span className="font-medium">Premium Cabin Upgrade</span>
+                <span className="font-mono font-bold">+৳{(adjustedBase - parseFloat(offer.total_amount || "0")).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+            )}
+            {totalSeatFeeWithTax > 0 && (
               <div className="flex items-center justify-between text-sm">
-                <span className="text-delta-ink-muted">Seat selection fee</span>
-                <span className="font-mono font-bold text-delta-ink">৳{totalSeatFee.toFixed(2)}</span>
+                <span className="text-delta-ink-muted">Seat Selection Fee</span>
+                <span className="font-mono font-bold text-delta-ink">+৳{totalSeatFeeWithTax.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             )}
             {/* Dotted separator */}
             <div className="border-t border-dashed border-delta-hairline pt-2.5">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-bold text-delta-navy">Total Amount Due</span>
-                <span className="text-2xl font-bold text-delta-red">৳{finalTotalAmount} <span className="text-xs text-delta-ink-muted font-normal">{currency}</span></span>
+                <span className="text-2xl font-bold text-delta-red">৳{Number(finalTotalAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-xs text-delta-ink-muted font-normal">{currency}</span></span>
               </div>
             </div>
           </div>

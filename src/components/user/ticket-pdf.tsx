@@ -1,169 +1,178 @@
 import React from "react"
-import { Document, Page, Text, View, StyleSheet, Image, Font } from "@react-pdf/renderer"
+import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer"
 import { BookingDetail } from "./e-ticket-dialog"
 
-// Note: React-PDF doesn't support web fonts out of the box without loading them.
-// We will use standard fonts for robustness.
+const COLORS = {
+  navy: "#0f172a",
+  navyMid: "#1e293b",
+  red: "#e31837",
+  canvas: "#f8fafc",
+  surface: "#ffffff",
+  ink: "#334155",
+  inkMuted: "#64748b",
+  hairline: "#e2e8f0",
+  success: "#16a34a"
+}
 
 const styles = StyleSheet.create({
   page: {
-    backgroundColor: "#ffffff",
+    backgroundColor: COLORS.canvas,
     fontFamily: "Helvetica",
-    padding: 40,
+    padding: 30,
   },
-  header: {
+  ticketContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottomWidth: 2,
-    borderBottomColor: "#0f172a",
-    paddingBottom: 20,
+    backgroundColor: COLORS.surface,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.hairline,
+    overflow: "hidden",
     marginBottom: 20,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#0f172a",
-    letterSpacing: -1,
+  mainTicket: {
+    flex: 3,
+    borderRightWidth: 1,
+    borderRightColor: COLORS.hairline,
+    borderRightStyle: "dashed",
+    position: "relative",
   },
-  subtitle: {
-    fontSize: 10,
-    color: "#64748b",
-    textTransform: "uppercase",
-    letterSpacing: 2,
-    marginTop: 4,
+  stubTicket: {
+    flex: 1,
+    backgroundColor: COLORS.canvas,
   },
-  pnrBox: {
-    backgroundColor: "#f1f5f9",
-    padding: 10,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-  },
-  pnrLabel: {
-    fontSize: 8,
-    color: "#64748b",
-    textTransform: "uppercase",
-    marginBottom: 2,
-  },
-  pnrValue: {
-    fontSize: 16,
-    fontWeight: "bold",
-    fontFamily: "Courier",
-    color: "#e31837",
-  },
-  flightInfoRow: {
+  header: {
+    backgroundColor: COLORS.navy,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#0f172a",
-    borderRadius: 8,
-    padding: 24,
-    marginBottom: 24,
   },
-  airportBlock: {
-    flex: 1,
-  },
-  airportBlockRight: {
-    flex: 1,
-    alignItems: "flex-end",
-  },
-  airportCode: {
-    fontSize: 48,
-    fontWeight: "bold",
+  brandText: {
     color: "#ffffff",
-  },
-  airportLabel: {
-    fontSize: 10,
-    color: "#94a3b8",
-    textTransform: "uppercase",
+    fontSize: 22,
+    fontWeight: "bold",
     letterSpacing: 1,
-    marginBottom: 4,
   },
-  flightMiddle: {
-    flex: 1,
+  boardingPassText: {
+    color: "#ffffff",
+    fontSize: 10,
+    textTransform: "uppercase",
+    letterSpacing: 2,
+    opacity: 0.8,
+  },
+  stubHeader: {
+    backgroundColor: COLORS.navy,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
     alignItems: "center",
     justifyContent: "center",
   },
-  dateText: {
-    fontSize: 12,
-    color: "#ffffff",
-    fontWeight: "bold",
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#0f172a",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
-    paddingBottom: 8,
-    marginBottom: 12,
-  },
-  passengerRow: {
+  flightRouteBox: {
+    padding: 24,
     flexDirection: "row",
     justifyContent: "space-between",
-    borderBottomWidth: 1,
-    borderBottomColor: "#f1f5f9",
-    paddingBottom: 12,
-    marginBottom: 12,
+    alignItems: "center",
   },
-  paxName: {
-    fontSize: 14,
+  airportCode: {
+    fontSize: 42,
     fontWeight: "bold",
-    color: "#0f172a",
+    color: COLORS.navy,
+    marginBottom: 4,
   },
-  paxType: {
-    fontSize: 10,
-    color: "#64748b",
-    marginTop: 4,
-  },
-  ticketBlock: {
-    alignItems: "flex-end",
-  },
-  ticketLabel: {
-    fontSize: 8,
-    color: "#64748b",
+  cityText: {
+    fontSize: 12,
+    color: COLORS.inkMuted,
     textTransform: "uppercase",
   },
-  ticketValue: {
-    fontSize: 14,
+  flightIconWrapper: {
+    flex: 1,
+    alignItems: "center",
+    paddingHorizontal: 10,
+  },
+  flightIconLine: {
+    width: "100%",
+    height: 2,
+    backgroundColor: COLORS.red,
+    position: "relative",
+  },
+  detailsGrid: {
+    flexDirection: "row",
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    gap: 20,
+  },
+  detailBox: {
+    flex: 1,
+  },
+  label: {
+    fontSize: 9,
+    color: COLORS.inkMuted,
+    textTransform: "uppercase",
+    marginBottom: 4,
+  },
+  value: {
+    fontSize: 12,
     fontWeight: "bold",
-    fontFamily: "Courier",
-    color: "#0f172a",
-    marginTop: 2,
+    color: COLORS.navy,
+  },
+  valueRed: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: COLORS.red,
+  },
+  paxRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.hairline,
+    backgroundColor: COLORS.canvas,
+  },
+  paxName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: COLORS.navy,
+  },
+  cabinClass: {
+    fontSize: 10,
+    backgroundColor: COLORS.navy,
+    color: "#ffffff",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    textTransform: "uppercase",
+  },
+  stubBody: {
+    padding: 16,
+    gap: 16,
+  },
+  stubAirport: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: COLORS.navy,
   },
   footer: {
     marginTop: "auto",
-    borderTopWidth: 1,
-    borderTopColor: "#e2e8f0",
     paddingTop: 20,
     flexDirection: "row",
     justifyContent: "space-between",
   },
   footerText: {
-    fontSize: 9,
-    color: "#94a3b8",
-  },
-  totalPrice: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#e31837",
+    fontSize: 10,
+    color: COLORS.inkMuted,
   },
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    alignSelf: "flex-start",
+    marginBottom: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 4,
-    backgroundColor: "#dcfce7",
-    color: "#166534",
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "bold",
     textTransform: "uppercase",
-    alignSelf: "flex-start",
-    marginBottom: 12,
-  },
-  statusBadgeCancelled: {
-    backgroundColor: "#fee2e2",
-    color: "#991b1b",
   }
 })
 
@@ -172,78 +181,117 @@ const getCabinClassLabel = (cabin: string) => {
     case "premium_economy": return "Premium Economy"
     case "first":           return "First Class"
     case "business":        return "Business Class"
-    default:                return "Economy Class"
+    default:                return "Economy"
   }
 }
 
 export const TicketPDF = ({ booking }: { booking: BookingDetail }) => (
   <Document>
-    <Page size="A4" style={styles.page}>
+    <Page size="A4" orientation="landscape" style={styles.page}>
       
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>SkyLedger</Text>
-          <Text style={styles.subtitle}>Electronic Boarding Pass</Text>
-        </View>
-        <View style={styles.pnrBox}>
-          <Text style={styles.pnrLabel}>Booking Reference</Text>
-          <Text style={styles.pnrValue}>{booking.booking_reference}</Text>
-        </View>
+      <View style={[
+        styles.statusBadge, 
+        { 
+          backgroundColor: booking.status === "confirmed" ? "#dcfce7" : "#fee2e2",
+          color: booking.status === "confirmed" ? "#166534" : "#991b1b"
+        }
+      ]}>
+        <Text>{booking.status === "confirmed" ? "✓ Booking Confirmed" : "✕ Booking Cancelled"}</Text>
       </View>
 
-      <Text style={[styles.statusBadge, booking.status === "cancelled" ? styles.statusBadgeCancelled : {}]}>
-        {booking.status === "confirmed" ? "✓ Confirmed" : "✕ Cancelled"}
-      </Text>
+      {(booking.passengers || []).map((p, i) => {
+        const ticket = p.tickets?.[0]
+        const flightNum = ticket?.flight_number || "TBA"
+        const seatNum = ticket?.seat_designator || "TBA"
 
-      {/* Flight Route */}
-      <View style={styles.flightInfoRow}>
-        <View style={styles.airportBlock}>
-          <Text style={styles.airportLabel}>Origin</Text>
-          <Text style={styles.airportCode}>{booking.origin_code}</Text>
-        </View>
-        <View style={styles.flightMiddle}>
-          <Text style={styles.dateText}>{booking.departure_date}</Text>
-        </View>
-        <View style={styles.airportBlockRight}>
-          <Text style={styles.airportLabel}>Destination</Text>
-          <Text style={styles.airportCode}>{booking.destination_code}</Text>
-        </View>
-      </View>
-
-      {/* Passengers */}
-      <Text style={styles.sectionTitle}>Passenger Manifest</Text>
-      <View>
-        {(booking.passengers || []).map((p, i) => (
-          <View style={styles.passengerRow} key={p.id || i}>
-            <View>
-              <Text style={styles.paxName}>{p.first_name} {p.last_name}</Text>
-              <Text style={styles.paxType}>
-                {p.passenger_type.toUpperCase()} • {getCabinClassLabel(booking.cabin_class)}
-              </Text>
-            </View>
-            {p.tickets && p.tickets.length > 0 && (
-              <View style={styles.ticketBlock}>
-                <Text style={styles.ticketLabel}>Flight / Seat</Text>
-                <Text style={styles.ticketValue}>
-                  {p.tickets[0].flight_number} / {p.tickets[0].seat_designator || "TBA"}
-                </Text>
+        return (
+          <View style={styles.ticketContainer} wrap={false} key={p.id || i}>
+            {/* Main Ticket Section */}
+            <View style={styles.mainTicket}>
+              
+              <View style={styles.header}>
+                <Text style={styles.brandText}>SkyLedger</Text>
+                <Text style={styles.boardingPassText}>Electronic Ticket</Text>
               </View>
-            )}
-          </View>
-        ))}
-      </View>
 
-      {/* Footer */}
+              <View style={styles.flightRouteBox}>
+                <View>
+                  <Text style={styles.airportCode}>{booking.origin_code}</Text>
+                  <Text style={styles.cityText}>Origin</Text>
+                </View>
+                <View style={styles.flightIconWrapper}>
+                  <Text style={{ fontSize: 10, color: COLORS.red, marginBottom: 4, fontWeight: "bold" }}>
+                    {booking.departure_date}
+                  </Text>
+                  <View style={styles.flightIconLine} />
+                  <Text style={{ fontSize: 10, color: COLORS.inkMuted, marginTop: 4 }}>
+                    {flightNum}
+                  </Text>
+                </View>
+                <View style={{ alignItems: "flex-end" }}>
+                  <Text style={styles.airportCode}>{booking.destination_code}</Text>
+                  <Text style={styles.cityText}>Destination</Text>
+                </View>
+              </View>
+
+              <View style={styles.detailsGrid}>
+                <View style={styles.detailBox}>
+                  <Text style={styles.label}>Passenger</Text>
+                  <Text style={styles.value}>{p.first_name} {p.last_name}</Text>
+                </View>
+                <View style={styles.detailBox}>
+                  <Text style={styles.label}>Booking Ref</Text>
+                  <Text style={styles.valueRed}>{booking.booking_reference}</Text>
+                </View>
+                <View style={styles.detailBox}>
+                  <Text style={styles.label}>Seat</Text>
+                  <Text style={styles.value}>{seatNum}</Text>
+                </View>
+              </View>
+
+              <View style={styles.paxRow}>
+                <Text style={styles.label}>Ticket No: {ticket?.ticket_number || "PENDING"}</Text>
+                <Text style={styles.cabinClass}>{getCabinClassLabel(booking.cabin_class)}</Text>
+              </View>
+
+            </View>
+
+            {/* Stub Section */}
+            <View style={styles.stubTicket}>
+              <View style={styles.stubHeader}>
+                <Text style={styles.brandText}>SL</Text>
+              </View>
+              <View style={styles.stubBody}>
+                <View>
+                  <Text style={styles.label}>Passenger</Text>
+                  <Text style={styles.value}>{p.first_name} {p.last_name}</Text>
+                </View>
+                <View>
+                  <Text style={styles.label}>Route</Text>
+                  <Text style={styles.stubAirport}>{booking.origin_code} - {booking.destination_code}</Text>
+                </View>
+                <View>
+                  <Text style={styles.label}>Flight</Text>
+                  <Text style={styles.valueRed}>{flightNum}</Text>
+                </View>
+                <View>
+                  <Text style={styles.label}>Seat</Text>
+                  <Text style={styles.value}>{seatNum}</Text>
+                </View>
+                <View>
+                  <Text style={styles.label}>Date</Text>
+                  <Text style={styles.value}>{booking.departure_date}</Text>
+                </View>
+              </View>
+            </View>
+
+          </View>
+        )
+      })}
+
       <View style={styles.footer}>
-        <View>
-          <Text style={styles.footerText}>Issued Date: {new Date(booking.created_at).toLocaleDateString()}</Text>
-          <Text style={styles.footerText}>This is an electronically generated ticket.</Text>
-        </View>
-        <View style={{ alignItems: "flex-end" }}>
-          <Text style={styles.pnrLabel}>Total Amount Settled</Text>
-          <Text style={styles.totalPrice}>৳{Number(booking.total_amount).toFixed(2)}</Text>
-        </View>
+        <Text style={styles.footerText}>Issued Date: {new Date(booking.created_at).toLocaleDateString()}</Text>
+        <Text style={styles.footerText}>Total Amount Paid: ৳{Number(booking.total_amount).toFixed(2)}</Text>
       </View>
 
     </Page>
