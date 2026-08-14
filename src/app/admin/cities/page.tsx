@@ -53,11 +53,6 @@ function AdminCitiesContent() {
 
           <div className="space-y-6 p-4 sm:p-6 lg:p-8">
             <div className="space-y-4">
-              <SectionHeading
-                eyebrow="Content Management"
-                title="Cities Directory"
-                description="Global cities database synchronized with AirLabs."
-              />
               <CitiesDirectoryTable />
             </div>
           </div>

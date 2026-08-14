@@ -60,18 +60,6 @@ export default function AdminFleetsPage() {
           <AdminMobileNav activeSection="fleets" onSectionChange={handleSectionChange} />
 
           <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-            <div className="space-y-1">
-              <span className="text-[11px] font-[600] uppercase tracking-wider text-delta-red">
-                Content Management
-              </span>
-              <h1 className="text-xl font-[700] tracking-tight text-delta-navy sm:text-2xl">
-                Aircraft Fleet Directory & Sync
-              </h1>
-              <p className="text-xs text-delta-ink-muted">
-                Manage global aircraft fleet database, sync data from AirLabs API into MariaDB.
-              </p>
-            </div>
-
             <AircraftDirectoryTable />
           </div>
         </main>

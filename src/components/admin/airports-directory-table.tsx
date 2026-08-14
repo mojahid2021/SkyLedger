@@ -170,23 +170,20 @@ export function AirportsDirectoryTable() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner / Sync Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-[4px] border border-delta-navy/15 bg-white p-5 shadow-xs">
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[4px] bg-delta-navy text-white">
-            <Plane className="h-6 w-6 text-delta-red" />
-          </div>
-          <div>
-            <h2 className="text-base font-[700] text-delta-navy flex items-center gap-2">
-              Airports Management & AirLabs Sync
-              <Badge className="bg-delta-navy-mid text-white text-[10px] font-[600]">
-                MariaDB Engine
-              </Badge>
-            </h2>
-            <p className="text-xs text-delta-ink-muted mt-0.5">
-              Synchronize global flight origin & destination airports from AirLabs API into MariaDB.
-            </p>
-          </div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <span className="text-[11px] font-[600] uppercase tracking-wider text-delta-red">
+            Content Management
+          </span>
+          <h1 className="text-xl font-[700] tracking-tight text-delta-navy sm:text-2xl flex items-center gap-2">
+            Airports Directory & Sync
+            <Badge className="bg-delta-navy-mid text-white text-[10px] font-[600]">
+              MariaDB Engine
+            </Badge>
+          </h1>
+          <p className="text-xs text-delta-ink-muted">
+            Manage global airport codes, coordinates, and sync data from AirLabs API into MariaDB.
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">

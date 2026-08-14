@@ -60,18 +60,6 @@ export default function AdminAirportsPage() {
           <AdminMobileNav activeSection="airports" onSectionChange={handleSectionChange} />
 
           <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-            <div className="space-y-1">
-              <span className="text-[11px] font-[600] uppercase tracking-wider text-delta-red">
-                Content Management
-              </span>
-              <h1 className="text-xl font-[700] tracking-tight text-delta-navy sm:text-2xl">
-                Airports Directory & Sync
-              </h1>
-              <p className="text-xs text-delta-ink-muted">
-                Manage global airport codes, coordinates, and sync data from AirLabs API into MariaDB.
-              </p>
-            </div>
-
             <AirportsDirectoryTable />
           </div>
         </main>
