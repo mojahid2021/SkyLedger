@@ -234,6 +234,16 @@ export async function initMySQLDatabase() {
       );
     `)
 
+    // Create flight_deals table
+    await p.execute(`
+      CREATE TABLE IF NOT EXISTS flight_deals (
+        flight_id INT PRIMARY KEY,
+        tag VARCHAR(50) NOT NULL DEFAULT 'Low fare',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (flight_id) REFERENCES flights(id) ON DELETE CASCADE
+      );
+    `)
+
     // Create bookings table
     await p.execute(`
       CREATE TABLE IF NOT EXISTS bookings (

@@ -1,3 +1,6 @@
+"use client"
+
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import {
   Plane,
@@ -12,32 +15,31 @@ import {
   ArrowRight,
 } from "lucide-react"
 import { FlightSearchWidget } from "@/components/flight/flight-search-widget"
+import { cn } from "@/lib/utils"
 
 const NAV_LINKS = ["Book", "Check-in", "My Trips", "Travel Info", "Loyalty"]
 
-const DEALS = [
-  {
-    city: "New York",
-    route: "ATL → JFK",
-    price: "৳9,800",
-    time: "One-way",
-    tag: "Low fare",
-  },
-  {
-    city: "Los Angeles",
-    route: "ATL → LAX",
-    price: "৳14,900",
-    time: "One-way",
-    tag: "Popular",
-  },
-  {
-    city: "London",
-    route: "JFK → LHR",
-    price: "৳41,200",
-    time: "Round trip",
-    tag: "Best deal",
-  },
-]
+function getCityFromAirport(name: string, iata: string): string {
+  const mappings: Record<string, string> = {
+    JFK: "New York",
+    LAX: "Los Angeles",
+    LHR: "London",
+    DAC: "Dhaka",
+    CGP: "Chittagong",
+    CXB: "Cox's Bazar",
+    DXB: "Dubai",
+    SIN: "Singapore",
+    BKK: "Bangkok",
+    KUL: "Kuala Lumpur",
+    ATL: "Atlanta",
+  }
+  if (mappings[iata]) return mappings[iata]
+  let clean = name.replace(/(International|Airport|Regional|Intercontinental|Municipal|Field|Aero)/gi, "").trim()
+  if (clean.includes(",")) {
+    clean = clean.split(",")[0].trim()
+  }
+  return clean || name
+}
 
 const BENEFITS = [
   {
@@ -77,6 +79,22 @@ const FOOTER_COLUMNS = [
 ]
 
 export default function RootPage() {
+  const [dbDeals, setDbDeals] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch("/api/flights/deals")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.deals) {
+          setDbDeals(data.deals)
+        }
+      })
+      .catch((err) => console.error("Error loading deals:", err))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const categories = Array.from(new Set(dbDeals.map((d: any) => d.tag)))
   return (
     <div className="min-h-screen bg-delta-canvas text-delta-ink font-delta">
       {/* ===== Top Nav — navy #003366, 56px, no radius ===== */}
@@ -146,56 +164,86 @@ export default function RootPage() {
       {/* ===== Deals — deal cards, hairline borders, red price tags ===== */}
       <section className="bg-delta-canvas">
         <div className="mx-auto max-w-[1280px] px-4 sm:px-8 py-14 sm:py-20">
-          <div className="flex items-end justify-between">
+          <div className="border-b border-delta-hairline pb-4">
+            <p className="text-[11px] font-[600] uppercase tracking-wider text-delta-red">
+              Flight Offers
+            </p>
             <h2 className="text-[24px] font-[700] leading-[32px] text-delta-navy">
               Today&apos;s deals
             </h2>
-            <button
-              type="button"
-              className="flex items-center gap-1.5 rounded-[4px] border border-delta-navy px-4 py-2 text-[16px] font-[700] text-delta-navy hover:bg-delta-surface-1 transition-colors"
-            >
-              View all offers
-            </button>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            {DEALS.map((deal) => (
-              <div
-                key={deal.city}
-                className="rounded-[4px] border border-delta-hairline bg-delta-canvas p-4"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[12px] font-[500] uppercase tracking-wide text-delta-ink-muted">
-                    {deal.tag}
-                  </span>
-                  <span className="flex items-center gap-1 rounded-full bg-delta-surface-1 px-2.5 py-0.5 text-[12px] text-delta-navy">
-                    <MapPin className="h-3 w-3" />
-                    {deal.route}
-                  </span>
-                </div>
-                <h3 className="mt-3 text-[24px] font-[700] leading-[32px] text-delta-navy">
-                  {deal.city}
-                </h3>
-                <p className="mt-1 text-[13px] text-delta-ink-muted">
-                  {deal.time} from Atlanta, GA
-                </p>
-                <div className="mt-4 flex items-center justify-between border-t border-delta-hairline-light pt-4">
-                  <div>
-                    <span className="text-[12px] text-delta-ink-muted">Fare from</span>
-                    <div className="text-[24px] font-[700] leading-[32px] text-delta-red">
-                      {deal.price}
+          {loading ? (
+            <div className="flex h-48 items-center justify-center text-xs text-delta-ink-muted">
+              Loading featured deals...
+            </div>
+          ) : dbDeals.length === 0 ? (
+            <div className="mt-6 rounded-[4px] border border-delta-hairline bg-delta-surface-1 p-8 text-center text-delta-ink-muted text-xs font-bold uppercase tracking-wider">
+              No deals currently featured.
+            </div>
+          ) : (
+            <div className="space-y-12 mt-8">
+              {categories.map((category) => {
+                const categoryDeals = dbDeals.filter((deal) => deal.tag === category)
+                return (
+                  <div key={category} className="space-y-4">
+                    <div className="flex items-center gap-2 border-b border-delta-hairline pb-2">
+                      <span className="h-2 w-2 rounded-full bg-delta-red" />
+                      <h3 className="text-[16px] font-[700] uppercase tracking-wider text-delta-navy">
+                        {category} Deals
+                      </h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {categoryDeals.map((deal) => {
+                        const destCity = getCityFromAirport(deal.destination_name, deal.destination_iata)
+                        const origCity = getCityFromAirport(deal.origin_name, deal.origin_iata)
+                        const routeStr = `${deal.origin_iata} → ${deal.destination_iata}`
+                        const fareStr = `৳${Number(deal.price).toLocaleString("en-US", { maximumFractionDigits: 0 })}`
+                        const tripTypeStr = deal.flight_type === "direct" ? "One-way" : "Round trip"
+
+                        return (
+                          <div
+                            key={deal.flight_id}
+                            className="rounded-[4px] border border-delta-hairline bg-delta-canvas p-4 shadow-xs hover:border-delta-navy/30 transition-all duration-200"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-[12px] font-[500] uppercase tracking-wide text-delta-ink-muted">
+                                {deal.tag}
+                              </span>
+                              <span className="flex items-center gap-1 rounded-full bg-delta-surface-1 px-2.5 py-0.5 text-[12px] text-delta-navy">
+                                <MapPin className="h-3 w-3" />
+                                {routeStr}
+                              </span>
+                            </div>
+                            <h3 className="mt-3 text-[24px] font-[700] leading-[32px] text-delta-navy">
+                              {destCity}
+                            </h3>
+                            <p className="mt-1 text-[13px] text-delta-ink-muted">
+                              {tripTypeStr} from {origCity}
+                            </p>
+                            <div className="mt-4 flex items-center justify-between border-t border-delta-hairline-light pt-4">
+                              <div>
+                                <span className="text-[12px] text-delta-ink-muted">Fare from</span>
+                                <div className="text-[24px] font-[700] leading-[32px] text-delta-red">
+                                  {fareStr}
+                                </div>
+                              </div>
+                              <Link
+                                href={`/booking?offerId=${deal.flight_id}`}
+                                className="rounded-[4px] border border-delta-navy px-4 py-2 text-[14px] font-[700] text-delta-navy hover:bg-delta-surface-1 transition-colors inline-block"
+                              >
+                                Book now
+                              </Link>
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    className="rounded-[4px] border border-delta-navy px-4 py-2 text-[14px] font-[700] text-delta-navy hover:bg-delta-surface-1 transition-colors"
-                  >
-                    Book now
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       </section>
 

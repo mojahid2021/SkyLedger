@@ -30,12 +30,15 @@ export async function GET(request: Request) {
         dest.name as destination_name,
         dest.iata_code as destination_iata,
         ac.model as aircraft_model,
-        ac.reg_number as aircraft_reg
+        ac.reg_number as aircraft_reg,
+        fd.tag as deal_tag,
+        (CASE WHEN fd.flight_id IS NOT NULL THEN 1 ELSE 0 END) as is_deal
       FROM flights f
       INNER JOIN airlines a ON f.airline_id = a.id
       INNER JOIN airports orig ON f.origin_airport_id = orig.id
       INNER JOIN airports dest ON f.destination_airport_id = dest.id
       LEFT JOIN aircraft ac ON f.aircraft_id = ac.id
+      LEFT JOIN flight_deals fd ON f.id = fd.flight_id
     `
     const params: any[] = []
 

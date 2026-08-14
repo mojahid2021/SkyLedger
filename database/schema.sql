@@ -218,6 +218,14 @@ CREATE TABLE IF NOT EXISTS flights (
   FOREIGN KEY (aircraft_id) REFERENCES aircraft(id)
 );
 
+-- 10. Flight Deals Table (For Homepage Offers)
+CREATE TABLE IF NOT EXISTS flight_deals (
+  flight_id INT PRIMARY KEY,
+  tag VARCHAR(50) NOT NULL DEFAULT 'Low fare',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (flight_id) REFERENCES flights(id) ON DELETE CASCADE
+);
+
 -- Seed Admin Login (inserted only if not already present)
 INSERT IGNORE INTO users (first_name, last_name, email, phone, date_of_birth, password_hash, role)
 VALUES

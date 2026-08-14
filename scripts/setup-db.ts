@@ -303,6 +303,16 @@ async function run() {
     `)
     console.log("✓ created 'bookings', 'booking_passengers', 'booking_tickets', and 'flights' tables")
 
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS flight_deals (
+        flight_id INT PRIMARY KEY,
+        tag VARCHAR(50) NOT NULL DEFAULT 'Low fare',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (flight_id) REFERENCES flights(id) ON DELETE CASCADE
+      )
+    `)
+    console.log("✓ created 'flight_deals' table")
+
     console.log("\\nConfiguring Triggers...")
     // Trigger to auto-create wallets
     await connection.query("DROP TRIGGER IF EXISTS after_user_insert")
@@ -327,6 +337,67 @@ async function run() {
       ('Md', 'Mojahid', 'aammojahid@gmail.com', '+8801736345525', '1985-03-14', 'admin123', 'admin')
     `)
     console.log("✓ seeded Admin user (aammojahid@gmail.com)")
+
+    // Seed airports
+    await connection.query(`
+      INSERT IGNORE INTO airports (id, name, iata_code, icao_code, lat, lng, country_code) VALUES
+      (1, 'Hartsfield-Jackson Atlanta International Airport', 'ATL', 'KATL', 33.6407, -84.4277, 'US'),
+      (2, 'John F Kennedy International Airport', 'JFK', 'KJFK', 40.6398, -73.7789, 'US'),
+      (3, 'Los Angeles International Airport', 'LAX', 'KLAX', 33.9416, -118.4085, 'US'),
+      (4, 'London Heathrow Airport', 'LHR', 'EGLL', 51.4700, -0.4543, 'GB'),
+      (5, 'Hazrat Shahjalal International Airport', 'DAC', 'VGHS', 23.8433, 90.3978, 'BD')
+    `)
+    console.log("✓ seeded initial airports (ATL, JFK, LAX, LHR, DAC)")
+
+    // Seed airlines
+    await connection.query(`
+      INSERT IGNORE INTO airlines (id, name, iata_code, icao_code, country_code) VALUES
+      (1, 'Delta Air Lines', 'DL', 'DAL', 'US'),
+      (2, 'Biman Bangladesh Airlines', 'BG', 'BBC', 'BD'),
+      (3, 'US-Bangla Airlines', 'BS', 'UBG', 'BD')
+    `)
+    console.log("✓ seeded initial airlines (Delta, Biman, US-Bangla)")
+
+    // Seed aircraft
+    await connection.query(`
+      INSERT IGNORE INTO aircraft (id, model, iata, icao, reg_number, flag, airline_iata) VALUES
+      (1, 'Boeing 737-800', '73H', 'B738', 'S2-AHV', 'BD', 'BG')
+    `)
+    console.log("✓ seeded initial aircraft (Boeing 737-800)")
+
+    // Seed flights (departure 2, 3, 4 days from now)
+    const formatMySQLDate = (d: Date) => d.toISOString().slice(0, 19).replace('T', ' ')
+    const now = new Date()
+    
+    const dep1 = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000)
+    const arr1 = new Date(dep1.getTime() + 2.5 * 60 * 60 * 1000)
+    
+    const dep2 = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000)
+    const arr2 = new Date(dep2.getTime() + 4 * 60 * 60 * 1000)
+
+    const dep3 = new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000)
+    const arr3 = new Date(dep3.getTime() + 7 * 60 * 60 * 1000)
+
+    await connection.query(`
+      INSERT IGNORE INTO flights (id, flight_number, airline_id, origin_airport_id, destination_airport_id, aircraft_id, is_direct, flight_type, departure_time, arrival_time, price, status) VALUES
+      (1, 'DL 101', 1, 1, 2, 1, 1, 'direct', ?, ?, 9800.00, 'scheduled'),
+      (2, 'DL 202', 1, 1, 3, 1, 1, 'direct', ?, ?, 14900.00, 'scheduled'),
+      (3, 'DL 303', 1, 2, 4, 1, 1, 'direct', ?, ?, 41200.00, 'scheduled')
+    `, [
+      formatMySQLDate(dep1), formatMySQLDate(arr1),
+      formatMySQLDate(dep2), formatMySQLDate(arr2),
+      formatMySQLDate(dep3), formatMySQLDate(arr3)
+    ])
+    console.log("✓ seeded initial flights")
+
+    // Seed flight deals
+    await connection.query(`
+      INSERT IGNORE INTO flight_deals (flight_id, tag) VALUES
+      (1, 'Low fare'),
+      (2, 'Popular'),
+      (3, 'Best deal')
+    `)
+    console.log("✓ seeded initial flight deals")
 
     // Clean up empty wallets for existing users (in case trigger missed any pre-existing)
     await connection.query(`

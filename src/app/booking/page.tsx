@@ -43,7 +43,20 @@ function BookingContent() {
       }
     } catch {}
 
-    setLoadingOffer(false)
+    if (offerIdParam) {
+      setLoadingOffer(true)
+      fetch(`/api/flights/offer?id=${offerIdParam}`)
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.success && json.offer) {
+            setOffer(json.offer)
+          }
+        })
+        .catch((err) => console.error("Failed to fetch offer:", err))
+        .finally(() => setLoadingOffer(false))
+    } else {
+      setLoadingOffer(false)
+    }
   }, [user, isLoading, router, offerIdParam])
 
   if (isLoading || loadingOffer) {

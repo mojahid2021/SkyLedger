@@ -37,6 +37,38 @@ function AdminFlightsContent() {
       .finally(() => setLoading(false))
   }
 
+  const handleAddDeal = (flightId: number, tag: string) => {
+    fetch("/api/admin/flights/deal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ flightId, tag }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          fetchFlights()
+        } else {
+          alert("Failed to add deal: " + data.error)
+        }
+      })
+      .catch((err) => console.error("Error adding deal:", err))
+  }
+
+  const handleRemoveDeal = (flightId: number) => {
+    fetch(`/api/admin/flights/deal?flightId=${flightId}`, {
+      method: "DELETE",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          fetchFlights()
+        } else {
+          alert("Failed to remove deal: " + data.error)
+        }
+      })
+      .catch((err) => console.error("Error removing deal:", err))
+  }
+
   useEffect(() => {
     if (isLoading) return
     if (!user) {
@@ -156,6 +188,7 @@ function AdminFlightsContent() {
                         <th className="px-4 py-3">Routing</th>
                         <th className="px-4 py-3">Schedule</th>
                         <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3 text-center">Today's Deal</th>
                         <th className="px-4 py-3 text-right">Base Fare</th>
                       </tr>
                     </thead>
@@ -234,6 +267,41 @@ function AdminFlightsContent() {
                             >
                               {flight.status}
                             </span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            {flight.is_deal ? (
+                              <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5">
+                                <Badge className="bg-delta-red text-white uppercase text-[9px] font-bold tracking-wider">{flight.deal_tag || "Low Fare"}</Badge>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleRemoveDeal(flight.id)}
+                                  className="h-6 px-2 text-[10px] text-delta-red hover:bg-rose-50 border border-rose-100 rounded-[3px] font-[700]"
+                                >
+                                  Remove
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-center">
+                                <select
+                                  defaultValue=""
+                                  onChange={(e) => {
+                                    if (e.target.value) {
+                                      handleAddDeal(flight.id, e.target.value)
+                                      e.target.value = "" // Reset selector
+                                    }
+                                  }}
+                                  className="h-7 rounded-[4px] border border-delta-hairline bg-white text-[10px] px-1 font-bold text-delta-navy focus:outline-none focus:border-delta-navy cursor-pointer"
+                                >
+                                  <option value="">+ Add Deal...</option>
+                                  <option value="Low fare">Low fare</option>
+                                  <option value="Popular">Popular</option>
+                                  <option value="Best deal">Best deal</option>
+                                  <option value="Hot Deal">Hot Deal</option>
+                                  <option value="Last Minute">Last Minute</option>
+                                </select>
+                              </div>
+                            )}
                           </td>
                           <td className="px-4 py-3 text-right font-mono text-xs font-[700] text-delta-navy">
                             ৳{Number(flight.price).toFixed(2)}
