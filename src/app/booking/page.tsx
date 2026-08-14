@@ -78,7 +78,7 @@ function StepProgress({ currentStep }: { currentStep: BookingStep }) {
   )
 }
 
-function FlightSummaryCard({ offer, currentStep }: { offer: any; currentStep: BookingStep }) {
+function FlightSummaryCard({ offer, currentStep, selectedSeats = [] }: { offer: any; currentStep: BookingStep; selectedSeats?: SelectedSeatChoice[] }) {
   const slices = offer.slices || []
   const firstSlice = slices[0]
   const firstSeg = firstSlice?.segments?.[0]
@@ -96,7 +96,23 @@ function FlightSummaryCard({ offer, currentStep }: { offer: any; currentStep: Bo
   const cabinClass = firstSeg?.passengers?.[0]?.cabin_class || "economy"
   const paxCount = offer.passengers?.length || 1
   const isRoundTrip = slices.length > 1
-  const totalAmount = parseFloat(offer.total_amount || "0")
+  
+  // Detailed Fare calculation matching CheckoutInline
+  const baseFarePerPax = parseFloat(offer.total_amount || "0") / paxCount
+  let adjustedBase = 0
+  Array.from({ length: paxCount }).forEach((_, idx) => {
+    let mult = 1.0
+    selectedSeats.filter((s) => s.passengerIndex === idx).forEach((s) => {
+      const m = s.cabinClass === "first" ? 3.0 : s.cabinClass === "business" ? 2.2 : s.cabinClass === "premium_economy" ? 1.35 : 1.0
+      if (m > mult) mult = m
+    })
+    adjustedBase += baseFarePerPax * mult
+  })
+  
+  const taxPercentage = offer.tax_percentage || 0
+  const totalSeatFee = selectedSeats.reduce((sum, s) => sum + (s.totalAmount || 0), 0)
+  const totalSeatFeeWithTax = totalSeatFee + (totalSeatFee * (taxPercentage / 100))
+  const finalTotalAmount = adjustedBase + totalSeatFeeWithTax
 
   const cabinLabel = cabinClass === "premium_economy" ? "Premium Economy"
     : cabinClass === "business" ? "Business"
@@ -149,10 +165,24 @@ function FlightSummaryCard({ offer, currentStep }: { offer: any; currentStep: Bo
           <Armchair className="h-3.5 w-3.5 text-delta-ink-muted shrink-0" />
           <span className="text-xs text-delta-ink-muted font-medium">{cabinLabel}</span>
         </div>
-        <div className="pt-2 border-t border-delta-hairline-light">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-delta-ink-muted mb-1">Base Fare</p>
-          <p className="text-xl font-bold text-delta-red">৳{totalAmount.toFixed(2)}</p>
-          <p className="text-[10px] text-delta-ink-muted mt-0.5">+ applicable seat fees</p>
+        
+        {/* Receipt-style fare breakdown */}
+        <div className="pt-3 mt-2 border-t border-delta-hairline-light">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-delta-navy mb-2">Fare Breakdown</p>
+          <div className="flex items-center justify-between text-xs mb-1.5">
+            <span className="text-delta-ink-muted font-medium">Base Fare ({paxCount} pax)</span>
+            <span className="font-mono font-bold text-delta-ink">৳{adjustedBase.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          </div>
+          {totalSeatFee > 0 && (
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="text-delta-ink-muted font-medium">Seat Selection Fee</span>
+              <span className="font-mono font-bold text-delta-ink">৳{totalSeatFeeWithTax.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-between mt-2 border-t border-dashed border-delta-hairline-light pt-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-delta-navy">Total Amount Due</span>
+            <span className="text-xl font-bold text-delta-red">৳{finalTotalAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          </div>
         </div>
       </div>
 
@@ -389,7 +419,7 @@ function BookingContent() {
             {/* Sidebar */}
             <div className="lg:w-64 xl:w-72 shrink-0">
               <div className="sticky top-6">
-                <FlightSummaryCard offer={offer} currentStep={currentStep} />
+                <FlightSummaryCard offer={offer} currentStep={currentStep} selectedSeats={selectedSeats} />
               </div>
             </div>
           </div>
