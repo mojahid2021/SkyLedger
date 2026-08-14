@@ -258,7 +258,7 @@ export function FlightSearchWidget({
           {/* Travelers Popover trigger */}
           <div ref={popoverRef} className="relative space-y-1.5 w-full sm:w-[260px]">
             <label className="text-[12px] font-[500] text-delta-navy uppercase tracking-wide block">
-              Travelers & Class
+              Travelers
             </label>
             <button
               type="button"
@@ -268,7 +268,7 @@ export function FlightSearchWidget({
               <span className="flex items-center gap-2 truncate">
                 <Users className="h-4 w-4 text-delta-ink-muted shrink-0" />
                 <span className="truncate text-delta-navy font-[550]">
-                  {passengers} {passengers === 1 ? "Traveler" : "Travelers"} · {cabin}
+                  {passengers} {passengers === 1 ? "Traveler" : "Travelers"}
                 </span>
               </span>
               <ChevronDown className="h-4 w-4 text-delta-ink-muted shrink-0" />
@@ -296,27 +296,6 @@ export function FlightSearchWidget({
                     >
                       <Plus className="h-3.5 w-3.5" />
                     </button>
-                  </div>
-                </div>
-
-                <div className="mt-5 space-y-2">
-                  <span className="text-[13px] font-[600] text-delta-ink block">Cabin Class</span>
-                  <div className="flex flex-col gap-1">
-                    {CABIN_CLASSES.map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => setCabin(c)}
-                        className={cn(
-                          "rounded-[3px] px-2.5 py-1.5 text-left text-[13px] transition-colors cursor-pointer",
-                          cabin === c
-                            ? "bg-delta-navy text-white font-[600]"
-                            : "text-delta-ink hover:bg-delta-surface-2"
-                        )}
-                      >
-                        {c}
-                      </button>
-                    ))}
                   </div>
                 </div>
               </div>

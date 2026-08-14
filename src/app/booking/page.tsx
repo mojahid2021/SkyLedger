@@ -100,10 +100,10 @@ function BookingContent() {
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col text-delta-ink">
+    <div className="min-h-screen bg-delta-surface-1 flex flex-col text-delta-ink font-sans">
       <UserNavbar />
 
-      <main className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+      <main className="flex-1 w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
         {/* Top Header & Breadcrumb */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-delta-hairline pb-4">
           <div>
@@ -112,27 +112,27 @@ function BookingContent() {
                 variant="ghost"
                 size="sm"
                 onClick={() => router.push("/")}
-                className="h-8 px-2 text-delta-navy hover:bg-slate-200 text-xs gap-1"
+                className="h-8 px-3 text-delta-navy hover:bg-delta-surface-2 text-xs font-bold gap-1 border border-delta-hairline bg-delta-canvas rounded-sm cursor-pointer select-none"
               >
                 <ArrowLeft className="h-4 w-4" /> Search Results
               </Button>
-              <span className="text-slate-300">/</span>
-              <span className="text-xs font-bold text-delta-red uppercase tracking-wider">
+              <span className="text-delta-hairline">/</span>
+              <span className="text-xs font-bold text-delta-red uppercase tracking-wider select-none">
                 Flight Reservation
               </span>
             </div>
-            <h1 className="text-xl font-extrabold text-delta-navy tracking-tight uppercase mt-1">
+            <h1 className="text-2xl font-bold text-delta-navy tracking-tight uppercase mt-2 select-none">
               {firstSlice?.origin?.iata_code || "JFK"} to {firstSlice?.destination?.iata_code || "LAX"} · {ownerName} ({carrierCode} {flightNumber})
             </h1>
           </div>
 
-          <Badge className="bg-delta-navy text-white text-xs uppercase px-3 py-1 font-mono font-bold">
+          <Badge className="bg-delta-navy text-white text-xs uppercase px-3 py-1.5 font-mono font-bold rounded-sm border border-delta-navy-mid select-none shadow-none">
             Fare: ৳{parseFloat(offer.total_amount || "0").toFixed(2)} BDT
           </Badge>
         </div>
 
         {/* Step Progress Bar */}
-        <div className="bg-white border border-delta-hairline rounded-[6px] p-2 sm:p-3 shadow-xs">
+        <div className="bg-delta-canvas border border-delta-hairline rounded-sm p-3 shadow-none">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {steps.map((s, idx) => {
               const Icon = s.icon
@@ -145,12 +145,12 @@ function BookingContent() {
               return (
                 <div
                   key={s.id}
-                  className={`flex items-center justify-center gap-2 p-2.5 rounded-[4px] border text-xs font-bold transition-all ${
+                  className={`flex items-center justify-center gap-2 p-2.5 rounded-sm border text-xs font-bold transition-all select-none ${
                     isCurrent
-                      ? "bg-delta-navy text-white border-delta-navy shadow-sm"
+                      ? "bg-delta-red text-white border-delta-red shadow-none"
                       : isCompleted
-                      ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                      : "bg-slate-50 text-slate-400 border-delta-hairline-light"
+                      ? "bg-delta-surface-2 text-delta-navy border-delta-hairline"
+                      : "bg-delta-canvas text-delta-ink-muted border-delta-hairline-light opacity-60"
                   }`}
                 >
                   <Icon className="h-4 w-4 shrink-0" />

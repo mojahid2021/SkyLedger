@@ -62,7 +62,7 @@ export default function UserDashboardPage() {
   const netBalance = totalCredit - totalDebit
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-background font-sans text-slate-900">
+    <div className="flex h-dvh flex-col overflow-hidden bg-delta-canvas font-sans text-delta-ink">
       <UserNavbar />
 
       <div className="flex min-h-0 flex-1">
@@ -76,33 +76,46 @@ export default function UserDashboardPage() {
           }} 
         />
 
-        <main className="min-w-0 flex-1 overflow-y-auto bg-white">
-          <div className="max-w-5xl mx-auto px-6 py-12 md:py-20 lg:px-12">
+        <main className="min-w-0 flex-1 overflow-y-auto bg-delta-canvas font-sans">
+          <div className="w-full mx-auto px-6 py-12 md:py-16 lg:px-12">
             
-            <section className="mb-24">
-              <header className="mb-16">
-                <h1 className="text-5xl md:text-6xl tracking-tight font-medium text-slate-900 mb-4">
+            <section className="mb-16">
+              <header className="mb-12 border-b border-delta-hairline pb-8">
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-delta-navy mb-2">
                   Welcome, {user.first_name}
                 </h1>
+                <p className="text-delta-ink-muted text-sm font-medium">Manage your loyalty profile, transactions, and confirmed flight reservations.</p>
               </header>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-slate-100 pt-16">
-                 <div>
-                   <span className="block text-sm font-medium text-slate-400 mb-3 tracking-tight">Net Treasury</span>
-                   <div className="text-4xl md:text-5xl font-semibold tracking-tight text-slate-900">
-                     {loadingTxns ? <div className="h-12 w-32 bg-slate-50 animate-pulse rounded" /> : `৳${netBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                 <div className="bg-delta-canvas border border-delta-hairline rounded-sm p-6 shadow-none">
+                   <span className="block text-[11px] font-bold text-delta-navy mb-3 uppercase tracking-wider select-none">Net Treasury Balance</span>
+                   <div className="text-3xl md:text-4xl font-bold tracking-tight text-delta-navy">
+                     {loadingTxns ? (
+                       <div className="h-10 w-32 bg-delta-surface-1 animate-pulse rounded-sm" />
+                     ) : (
+                       `৳${netBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}`
+                     )}
                    </div>
                  </div>
-                 <div>
-                   <span className="block text-sm font-medium text-slate-400 mb-3 tracking-tight">Total Inflow</span>
-                   <div className="text-3xl md:text-4xl font-medium tracking-tight text-emerald-600/80">
-                     {loadingTxns ? <div className="h-10 w-28 bg-slate-50 animate-pulse rounded" /> : `৳${totalCredit.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+                 <div className="bg-delta-canvas border border-delta-hairline rounded-sm p-6 shadow-none">
+                   <span className="block text-[11px] font-bold text-delta-navy mb-3 uppercase tracking-wider select-none">Total Lifetime Inflow</span>
+                   <div className="text-3xl md:text-4xl font-bold tracking-tight text-delta-success">
+                     {loadingTxns ? (
+                       <div className="h-10 w-28 bg-delta-surface-1 animate-pulse rounded-sm" />
+                     ) : (
+                       `৳${totalCredit.toLocaleString("en-US", { minimumFractionDigits: 2 })}`
+                     )}
                    </div>
                  </div>
-                 <div>
-                   <span className="block text-sm font-medium text-slate-400 mb-3 tracking-tight">Total Outflow</span>
-                   <div className="text-3xl md:text-4xl font-medium tracking-tight text-slate-300">
-                     {loadingTxns ? <div className="h-10 w-28 bg-slate-50 animate-pulse rounded" /> : `৳${totalDebit.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+                 <div className="bg-delta-canvas border border-delta-hairline rounded-sm p-6 shadow-none">
+                   <span className="block text-[11px] font-bold text-delta-navy mb-3 uppercase tracking-wider select-none">Total Lifetime Outflow</span>
+                   <div className="text-3xl md:text-4xl font-bold tracking-tight text-delta-ink-muted">
+                     {loadingTxns ? (
+                       <div className="h-10 w-28 bg-delta-surface-1 animate-pulse rounded-sm" />
+                     ) : (
+                       `৳${totalDebit.toLocaleString("en-US", { minimumFractionDigits: 2 })}`
+                     )}
                    </div>
                  </div>
               </div>

@@ -60,16 +60,13 @@ export default function StandaloneTicketPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-slate-100 font-sans relative overflow-x-hidden flex flex-col selection:bg-slate-900 selection:text-white">
-      {/* Immersive Background Meshes */}
-      <div className="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 w-[800px] h-[800px] bg-blue-300/20 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-[600px] h-[600px] bg-emerald-400/10 blur-[120px] rounded-full pointer-events-none" />
+    <div className="min-h-dvh bg-delta-surface-1 font-sans relative overflow-x-hidden flex flex-col selection:bg-delta-navy selection:text-white">
       
-      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-8 py-8 sm:py-16">
+      <div className="relative z-10 w-full mx-auto px-4 sm:px-8 py-8 sm:py-16">
         <div className="mb-10 print:hidden flex items-center justify-between">
           <button 
             onClick={() => router.push("/user/trips")}
-            className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors bg-white/50 px-4 py-2 rounded-full border border-slate-200/60 backdrop-blur-md shadow-sm"
+            className="flex items-center gap-2 text-sm font-bold text-delta-navy hover:bg-delta-surface-2 transition-colors bg-delta-canvas px-4 py-2 rounded-sm border border-delta-hairline cursor-pointer select-none"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Trips

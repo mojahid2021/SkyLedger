@@ -182,7 +182,7 @@ function WalletContent() {
   const withdrawPresets = [25, 50, 100, 250, 500, 1000]
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-background font-sans text-slate-900">
+    <div className="flex h-dvh flex-col overflow-hidden bg-delta-canvas font-sans text-delta-ink">
       <UserNavbar />
 
       <div className="flex min-h-0 flex-1">
@@ -195,20 +195,20 @@ function WalletContent() {
           }} 
         />
 
-        <main className="min-w-0 flex-1 overflow-y-auto bg-white">
-          <div className="max-w-3xl mx-auto px-6 py-12 md:py-24 lg:px-8">
+        <main className="min-w-0 flex-1 overflow-y-auto bg-delta-canvas">
+          <div className="w-full mx-auto px-6 py-12 md:py-16 lg:px-8">
             
-            <header className="mb-12">
-               <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <header className="mb-12 border-b border-delta-hairline pb-8">
+               <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                   <div>
-                    <span className="block text-sm font-medium text-slate-500 mb-3 tracking-tight">Available Balance</span>
+                    <span className="block text-[11px] font-bold text-delta-navy-mid mb-3 uppercase tracking-wider select-none">Available Balance</span>
                     {loadingBalance ? (
-                      <div className="animate-pulse h-16 w-48 bg-slate-100 rounded-md"></div>
+                      <div className="animate-pulse h-16 w-48 bg-delta-surface-1 rounded-sm"></div>
                     ) : (
-                      <div className="flex flex-col sm:flex-row sm:items-baseline gap-4">
-                        <h1 className="text-6xl md:text-8xl tracking-[-0.04em] font-semibold text-slate-900 leading-none">
+                      <div className="flex flex-col sm:flex-row sm:items-baseline gap-2">
+                        <h1 className="text-6xl md:text-8xl tracking-[-0.04em] font-bold text-delta-navy leading-none">
                           ৳{walletBalance !== null ? Math.floor(walletBalance).toString() : "0"}
-                          <span className="text-4xl md:text-6xl text-slate-300">
+                          <span className="text-4xl md:text-6xl text-delta-navy-mid/60">
                             .{walletBalance !== null ? (walletBalance % 1).toFixed(2).substring(2) : "00"}
                           </span>
                         </h1>
@@ -220,14 +220,14 @@ function WalletContent() {
                      {/* Deposit Sub-view Dialog */}
                      <Dialog open={depositOpen} onOpenChange={setDepositOpen}>
                        <DialogTrigger asChild>
-                         <button className="h-10 px-6 rounded-full bg-slate-900 text-white text-sm font-medium transition-transform hover:scale-[0.98] active:scale-[0.95]">
+                         <button className="h-11 px-6 rounded-sm bg-delta-red hover:bg-delta-red-hover text-white text-sm font-bold transition-colors cursor-pointer select-none">
                            Deposit
                          </button>
                        </DialogTrigger>
-                       <DialogContent className="sm:max-w-md border-0 shadow-2xl p-6 rounded-2xl bg-white">
+                       <DialogContent className="sm:max-w-md border border-delta-hairline shadow-2xl p-6 rounded-md bg-delta-canvas">
                           <DialogHeader className="mb-4">
-                            <DialogTitle className="text-xl font-medium tracking-tight">Deposit Funds</DialogTitle>
-                            <DialogDescription>Top up your balance instantly via secure transfer.</DialogDescription>
+                            <DialogTitle className="text-xl font-bold tracking-tight text-delta-navy">Deposit Funds</DialogTitle>
+                            <DialogDescription className="text-delta-ink-muted text-sm">Top up your balance instantly via secure transfer.</DialogDescription>
                           </DialogHeader>
                           
                           <div className="space-y-6">
@@ -241,9 +241,11 @@ function WalletContent() {
                                     disabled={recharging}
                                     onClick={() => setAmountInput(amt.toString())}
                                     className={cn(
-                                      "h-12 flex items-center justify-center rounded-lg text-sm font-medium transition-colors",
-                                      isSelected ? "bg-slate-900 text-white shadow-sm" : "bg-slate-50 hover:bg-slate-100 text-slate-700",
-                                      "disabled:opacity-50 disabled:cursor-not-allowed"
+                                      "h-12 flex items-center justify-center rounded-sm text-sm font-bold transition-colors",
+                                      isSelected 
+                                        ? "bg-delta-navy text-white shadow-none" 
+                                        : "bg-delta-surface-1 hover:bg-delta-surface-2 text-delta-ink border border-delta-hairline",
+                                      "disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                     )}
                                   >
                                     ৳{amt}
@@ -254,32 +256,32 @@ function WalletContent() {
 
                             <div className="flex gap-2">
                               <div className="relative flex-1">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">৳</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-delta-ink-muted font-bold">৳</span>
                                 <Input
                                   type="number"
                                   placeholder="Custom"
                                   disabled={recharging}
                                   value={amountInput}
                                   onChange={(e) => setAmountInput(e.target.value)}
-                                  className="pl-8 h-12 bg-slate-50 border-0 focus-visible:ring-1 focus-visible:ring-slate-300 text-base font-medium rounded-lg shadow-none"
+                                  className="pl-8 h-12 bg-delta-canvas border border-delta-hairline text-base font-bold text-delta-navy rounded-sm shadow-none focus-visible:ring-1 focus-visible:ring-delta-navy focus-visible:border-delta-navy"
                                 />
                               </div>
                               <Button
                                 disabled={recharging || !amountInput || isNaN(Number(amountInput)) || Number(amountInput) <= 0}
                                 onClick={() => handleAddFunds(Number(amountInput))}
-                                className="h-12 px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-none font-medium transition-colors"
+                                className="h-12 px-6 bg-delta-red hover:bg-delta-red-hover text-white rounded-sm shadow-none font-bold transition-colors cursor-pointer select-none"
                               >
                                 {recharging ? <Loader2 className="h-4 w-4 animate-spin" /> : "Next"}
                               </Button>
                             </div>
 
                             {rechargeSuccess && (
-                              <div className="text-sm font-medium text-emerald-700 bg-emerald-50 px-4 py-3 rounded-lg">
+                              <div className="text-sm font-bold text-delta-success bg-delta-success/10 border border-delta-success/20 px-4 py-3 rounded-sm">
                                 {rechargeSuccess}
                               </div>
                             )}
                             {rechargeError && (
-                              <div className="text-sm font-medium text-rose-700 bg-rose-50 px-4 py-3 rounded-lg">
+                              <div className="text-sm font-bold text-delta-error bg-delta-error/10 border border-delta-error/20 px-4 py-3 rounded-sm">
                                 {rechargeError}
                               </div>
                             )}
@@ -290,14 +292,14 @@ function WalletContent() {
                      {/* Withdraw Sub-view Dialog */}
                      <Dialog open={withdrawOpen} onOpenChange={setWithdrawOpen}>
                        <DialogTrigger asChild>
-                         <button className="h-10 px-6 rounded-full bg-slate-100 text-slate-900 text-sm font-medium transition-transform hover:scale-[0.98] active:scale-[0.95]">
+                         <button className="h-11 px-6 rounded-sm border border-delta-navy text-delta-navy bg-delta-canvas hover:bg-delta-surface-1 text-sm font-bold transition-colors cursor-pointer select-none">
                            Withdraw
                          </button>
                        </DialogTrigger>
-                       <DialogContent className="sm:max-w-md border-0 shadow-2xl p-6 rounded-2xl bg-white">
+                       <DialogContent className="sm:max-w-md border border-delta-hairline shadow-2xl p-6 rounded-md bg-delta-canvas">
                           <DialogHeader className="mb-4">
-                            <DialogTitle className="text-xl font-medium tracking-tight">Withdraw Funds</DialogTitle>
-                            <DialogDescription>Transfer funds back to your primary bank account.</DialogDescription>
+                            <DialogTitle className="text-xl font-bold tracking-tight text-delta-navy">Withdraw Funds</DialogTitle>
+                            <DialogDescription className="text-delta-ink-muted text-sm">Transfer funds back to your primary bank account.</DialogDescription>
                           </DialogHeader>
 
                           <div className="space-y-6">
@@ -312,9 +314,11 @@ function WalletContent() {
                                     disabled={isDisabled}
                                     onClick={() => setWithdrawAmount(amt.toString())}
                                     className={cn(
-                                      "h-12 flex items-center justify-center rounded-lg text-sm font-medium transition-colors",
-                                      isSelected ? "bg-slate-900 text-white shadow-sm" : "bg-slate-50 hover:bg-slate-100 text-slate-700",
-                                      isDisabled && "opacity-50 hover:bg-slate-50 cursor-not-allowed text-slate-400"
+                                      "h-12 flex items-center justify-center rounded-sm text-sm font-bold transition-colors",
+                                      isSelected 
+                                        ? "bg-delta-navy text-white shadow-none" 
+                                        : "bg-delta-surface-1 hover:bg-delta-surface-2 text-delta-ink border border-delta-hairline",
+                                      isDisabled && "opacity-50 hover:bg-delta-surface-1 cursor-not-allowed text-delta-ink-muted border-delta-hairline/50"
                                     )}
                                   >
                                     ৳{amt}
@@ -325,32 +329,32 @@ function WalletContent() {
 
                             <div className="flex gap-2">
                               <div className="relative flex-1">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">৳</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-delta-ink-muted font-bold">৳</span>
                                 <Input
                                   type="number"
                                   placeholder="Custom"
                                   disabled={withdrawing}
                                   value={withdrawAmount}
                                   onChange={(e) => setWithdrawAmount(e.target.value)}
-                                  className="pl-8 h-12 bg-slate-50 border-0 focus-visible:ring-1 focus-visible:ring-slate-300 text-base font-medium rounded-lg shadow-none"
+                                  className="pl-8 h-12 bg-delta-canvas border border-delta-hairline text-base font-bold text-delta-navy rounded-sm shadow-none focus-visible:ring-1 focus-visible:ring-delta-navy focus-visible:border-delta-navy"
                                 />
                               </div>
                               <Button
                                 disabled={withdrawing || !withdrawAmount || isNaN(Number(withdrawAmount)) || Number(withdrawAmount) <= 0 || (walletBalance !== null && walletBalance < Number(withdrawAmount))}
                                 onClick={() => handleWithdraw(Number(withdrawAmount))}
-                                className="h-12 px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-none font-medium transition-colors"
+                                className="h-12 px-6 bg-delta-red hover:bg-delta-red-hover text-white rounded-sm shadow-none font-bold transition-colors cursor-pointer select-none"
                               >
                                 {withdrawing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Next"}
                               </Button>
                             </div>
 
                             {withdrawSuccess && (
-                              <div className="text-sm font-medium text-emerald-700 bg-emerald-50 px-4 py-3 rounded-lg">
+                              <div className="text-sm font-bold text-delta-success bg-delta-success/10 border border-delta-success/20 px-4 py-3 rounded-sm">
                                 {withdrawSuccess}
                               </div>
                             )}
                             {withdrawError && (
-                              <div className="text-sm font-medium text-rose-700 bg-rose-50 px-4 py-3 rounded-lg">
+                              <div className="text-sm font-bold text-delta-error bg-delta-error/10 border border-delta-error/20 px-4 py-3 rounded-sm">
                                 {withdrawError}
                               </div>
                             )}
@@ -362,38 +366,44 @@ function WalletContent() {
             </header>
 
             {/* Transactions Feed */}
-            <section className="pt-16 border-t border-slate-100">
-              <h2 className="text-lg font-medium tracking-tight mb-8 text-slate-900">Recent Activity</h2>
+            <section className="pt-8">
+              <h2 className="text-lg font-bold tracking-tight mb-8 text-delta-navy select-none">Recent Activity</h2>
               
               {loadingTxs ? (
-                 <div className="space-y-6">
-                   {[1, 2, 3].map(i => <div key={i} className="h-12 bg-slate-50 animate-pulse rounded-lg" />)}
+                 <div className="space-y-4">
+                   {[1, 2, 3].map(i => <div key={i} className="h-12 bg-delta-surface-1 animate-pulse border border-delta-hairline rounded-sm" />)}
                  </div>
               ) : transactions.length === 0 ? (
-                 <p className="text-sm text-slate-400">No recent transactions.</p>
+                 <p className="text-sm font-medium text-delta-ink-muted">No recent transactions.</p>
               ) : (
-                 <div className="flex flex-col gap-6">
-                   {transactions.map(tx => (
-                     <div key={tx.id} className="flex items-center justify-between group">
+                 <div className="flex flex-col border border-delta-hairline rounded-sm overflow-hidden bg-delta-canvas">
+                   {transactions.map((tx, index) => (
+                     <div 
+                       key={tx.id} 
+                       className={cn(
+                         "flex items-center justify-between p-4 border-b border-delta-hairline last:border-0",
+                         index % 2 === 0 ? "bg-delta-canvas" : "bg-delta-surface-1/50"
+                       )}
+                     >
                        <div className="flex items-center gap-4">
                          <div className={cn(
                            "flex h-10 w-10 items-center justify-center rounded-full shrink-0",
-                           tx.type === "credit" ? "bg-emerald-50 text-emerald-600" : "bg-slate-50 text-slate-600"
+                           tx.type === "credit" ? "bg-delta-success/10 text-delta-success" : "bg-delta-surface-2 text-delta-navy"
                          )}>
                            {tx.type === "credit" ? <ArrowDownLeft className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}
                          </div>
                          <div>
-                           <p className="text-sm font-medium text-slate-900">{tx.description}</p>
-                           <p className="text-xs text-slate-400 mt-0.5">{tx.date} &middot; {tx.reference}</p>
+                           <p className="text-sm font-bold text-delta-navy">{tx.description}</p>
+                           <p className="text-[10px] font-bold text-delta-ink-muted mt-0.5 uppercase tracking-widest">{tx.date} &middot; {tx.reference}</p>
                          </div>
                        </div>
                        <div className={cn(
-                         "text-sm font-medium tabular-nums text-right",
-                         tx.type === "credit" ? "text-emerald-600" : "text-slate-900"
+                         "text-sm font-bold tabular-nums text-right",
+                         tx.type === "credit" ? "text-delta-success" : "text-delta-navy"
                        )}>
                          {tx.type === "credit" ? "+" : "-"}৳{Number(tx.amount).toFixed(2)}
-                         {tx.status === "pending" && <span className="block text-[10px] text-amber-500 uppercase tracking-wider mt-0.5">Pending</span>}
-                         {tx.status === "failed" && <span className="block text-[10px] text-rose-500 uppercase tracking-wider mt-0.5">Failed</span>}
+                         {tx.status === "pending" && <span className="block text-[10px] text-delta-warning font-bold uppercase tracking-wider mt-0.5">Pending</span>}
+                         {tx.status === "failed" && <span className="block text-[10px] text-delta-error font-bold uppercase tracking-wider mt-0.5">Failed</span>}
                        </div>
                      </div>
                    ))}

@@ -106,4 +106,5 @@ export interface SelectedSeatChoice {
   totalAmount: number
   totalCurrency: string
   disclosures?: string[]
+  cabinClass?: string
 }

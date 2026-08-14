@@ -74,7 +74,7 @@ export default function UserTransactionsPage() {
   const paginatedTxns = transactions.slice(startIndex, endIndex)
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-background font-sans text-slate-900">
+    <div className="flex h-dvh flex-col overflow-hidden bg-delta-canvas font-sans text-delta-ink">
       <UserNavbar />
 
       <div className="flex min-h-0 flex-1">
@@ -87,24 +87,24 @@ export default function UserTransactionsPage() {
           }} 
         />
 
-        <main className="min-w-0 flex-1 overflow-y-auto bg-white">
-          <div className="max-w-5xl mx-auto px-6 py-12 md:py-20 lg:px-12">
+        <main className="min-w-0 flex-1 overflow-y-auto bg-delta-canvas font-sans">
+          <div className="w-full mx-auto px-6 py-12 md:py-16 lg:px-12">
             
-            <header className="mb-16">
-              <span className="block text-sm font-medium text-slate-500 mb-4 tracking-tight">Ledger Activity</span>
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <header className="mb-12 border-b border-delta-hairline pb-8">
+              <span className="block text-[11px] font-bold text-delta-navy-mid mb-3 uppercase tracking-wider select-none">Ledger Activity</span>
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                  <h1 className="text-4xl md:text-5xl tracking-tight font-medium text-slate-900 mb-2">
+                  <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-delta-navy mb-2">
                     Transactions
                   </h1>
-                  <p className="text-slate-500 text-sm max-w-md leading-relaxed">
-                    A chronological feed of all synchronised accounting events, wallet recharges, and purchases.
+                  <p className="text-delta-ink-muted text-sm font-medium max-w-md leading-relaxed">
+                    A chronological feed of all synchronized accounting events, wallet recharges, and purchases.
                   </p>
                 </div>
                 
                 <button 
                   onClick={fetchTransactions} 
-                  className="text-sm font-medium text-slate-400 hover:text-slate-900 transition-colors shrink-0"
+                  className="text-sm font-bold text-delta-navy-mid hover:text-delta-navy transition-colors shrink-0 cursor-pointer select-none"
                 >
                    Refresh Feed
                 </button>
@@ -113,45 +113,51 @@ export default function UserTransactionsPage() {
 
             <section>
               {loadingTxns ? (
-                 <div className="space-y-4">
-                   {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-16 bg-slate-50 rounded-lg animate-pulse" />)}
+                 <div className="space-y-3">
+                   {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-14 bg-delta-surface-1 border border-delta-hairline rounded-sm animate-pulse" />)}
                  </div>
               ) : transactions.length === 0 ? (
                  <div className="pt-8 pb-16">
-                   <p className="text-sm text-slate-400">No transactions recorded.</p>
+                   <p className="text-sm font-medium text-delta-ink-muted">No transactions recorded.</p>
                  </div>
               ) : (
-                 <div className="flex flex-col">
-                   {paginatedTxns.map((txn) => {
-                     const isCredit = txn.type === "credit"
-                     const val = typeof txn.amount === "number" ? txn.amount : parseFloat(txn.amount) || 0
-                     return (
-                       <div key={txn.id} className="flex items-start md:items-center justify-between py-6 border-b border-slate-50 group">
-                         <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8 lg:gap-16">
-                           <div className="text-sm font-medium w-32 tracking-tight text-slate-500">{txn.date}</div>
-                           <div>
-                             <div className="text-base font-medium text-slate-900">{txn.description}</div>
-                             <div className="text-xs font-medium text-slate-400 mt-1.5 uppercase tracking-widest">{txn.category} &middot; {txn.reference}</div>
-                           </div>
-                         </div>
-                         <div className="flex flex-col items-end pl-4 shrink-0">
-                           <div className={cn("text-base font-medium tracking-tight tabular-nums", isCredit ? "text-slate-900" : "text-slate-400")}>
-                             {isCredit ? "+" : "-"}৳{val.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                           </div>
-                           {txn.status === "pending" && <span className="text-[10px] text-amber-500 uppercase tracking-widest mt-1">Pending</span>}
-                           {txn.status === "failed" && <span className="text-[10px] text-rose-500 uppercase tracking-widest mt-1">Failed</span>}
-                         </div>
-                       </div>
-                     )
-                   })}
+                 <div className="border border-delta-hairline rounded-sm overflow-hidden bg-delta-canvas">
+                    {paginatedTxns.map((txn, index) => {
+                      const isCredit = txn.type === "credit"
+                      const val = typeof txn.amount === "number" ? txn.amount : parseFloat(txn.amount) || 0
+                      return (
+                        <div 
+                          key={txn.id} 
+                          className={cn(
+                            "flex items-start md:items-center justify-between py-4 px-5 border-b border-delta-hairline transition-colors last:border-0",
+                            index % 2 === 0 ? "bg-delta-canvas" : "bg-delta-surface-1/50"
+                          )}
+                        >
+                          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8 lg:gap-16">
+                            <div className="text-xs font-bold w-32 tracking-tight text-delta-ink-muted">{txn.date}</div>
+                            <div>
+                              <div className="text-base font-bold text-delta-navy">{txn.description}</div>
+                              <div className="text-[10px] font-bold text-delta-ink-muted mt-1 uppercase tracking-widest">{txn.category} &middot; {txn.reference}</div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end pl-4 shrink-0">
+                            <div className={cn("text-base font-bold tracking-tight tabular-nums", isCredit ? "text-delta-success" : "text-delta-navy")}>
+                              {isCredit ? "+" : "-"}৳{val.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                            </div>
+                            {txn.status === "pending" && <span className="text-[10px] text-delta-warning font-bold uppercase tracking-widest mt-1">Pending</span>}
+                            {txn.status === "failed" && <span className="text-[10px] text-delta-error font-bold uppercase tracking-widest mt-1">Failed</span>}
+                          </div>
+                        </div>
+                      )
+                    })}
                  </div>
               )}
 
               {/* Pagination Controls */}
               {transactions.length > 0 && (
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-8 pt-8 text-sm text-slate-400">
-                  <div className="mb-4 sm:mb-0">
-                    Showing <span className="font-medium text-slate-900">{startIndex + 1}</span> to <span className="font-medium text-slate-900">{endIndex}</span> of <span className="font-medium text-slate-900">{transactions.length}</span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-8 pt-6 border-t border-delta-hairline text-sm text-delta-ink-muted">
+                  <div className="mb-4 sm:mb-0 font-medium">
+                    Showing <span className="font-bold text-delta-navy">{startIndex + 1}</span> to <span className="font-bold text-delta-navy">{endIndex}</span> of <span className="font-bold text-delta-navy">{transactions.length}</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <select
@@ -161,29 +167,29 @@ export default function UserTransactionsPage() {
                         setManualPageSize(val === "auto" ? "auto" : Number(val))
                         setCurrentPage(1)
                       }}
-                      className="bg-slate-50 border-0 h-9 px-3 rounded-lg text-sm font-medium text-slate-600 focus:ring-1 focus:ring-slate-200"
+                      className="bg-delta-surface-1 border border-delta-hairline h-9 px-3 rounded-sm text-xs font-bold text-delta-navy focus:outline-none cursor-pointer"
                     >
-                     <option value="auto">Auto ({autoPageSize})</option>
-                     <option value={5}>5 Rows</option>
-                     <option value={10}>10 Rows</option>
-                     <option value={20}>20 Rows</option>
+                      <option value="auto">Auto ({autoPageSize})</option>
+                      <option value={5}>5 Rows</option>
+                      <option value={10}>10 Rows</option>
+                      <option value={20}>20 Rows</option>
                     </select>
                     
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                        disabled={validPage <= 1}
-                        className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-100 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
-                      >
-                        <ArrowLeft className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                        disabled={validPage >= totalPages}
-                        className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-100 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
-                      >
-                        <ArrowRight className="h-4 w-4" />
-                      </button>
+                       <button
+                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                         disabled={validPage <= 1}
+                         className="h-9 w-9 flex items-center justify-center rounded-sm border border-delta-hairline bg-delta-canvas text-delta-navy hover:bg-delta-surface-1 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                       >
+                         <ArrowLeft className="h-4 w-4" />
+                       </button>
+                       <button
+                         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                         disabled={validPage >= totalPages}
+                         className="h-9 w-9 flex items-center justify-center rounded-sm border border-delta-hairline bg-delta-canvas text-delta-navy hover:bg-delta-surface-1 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                       >
+                         <ArrowRight className="h-4 w-4" />
+                       </button>
                     </div>
                   </div>
                 </div>

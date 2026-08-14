@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Plane, CreditCard, ShieldCheck, AlertCircle, Loader2, ArrowRight, ArrowLeft, User } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/context/auth-context"
+import { cn } from "@/lib/utils"
 import { PassengerDetail } from "@/components/flight/passenger-info-inline"
 import { SelectedSeatChoice } from "@/types/seat-map"
 
@@ -68,7 +69,28 @@ export function CheckoutInline({
 
   if (!offer) return null
 
-  const baseFare = parseFloat(offer.total_amount || "0")
+  // Dynamic base fare adjustment based on selected seat's cabin class
+  const baseFarePerPassenger = parseFloat(offer.total_amount || "0") / (passengers.length || 1)
+  let adjustedBaseFare = 0
+  
+  passengers.forEach((p, idx) => {
+    const passSeatChoices = selectedSeats.filter((s) => s.passengerIndex === idx)
+    let passengerMultiplier = 1.0 // default multiplier is 1.0 since searches default to Economy
+    
+    passSeatChoices.forEach((s) => {
+      let m = 1.0
+      if (s.cabinClass === "premium_economy") m = 1.35
+      else if (s.cabinClass === "business") m = 2.20
+      else if (s.cabinClass === "first") m = 3.00
+      if (m > passengerMultiplier) {
+        passengerMultiplier = m
+      }
+    })
+    
+    adjustedBaseFare += baseFarePerPassenger * passengerMultiplier
+  })
+
+  const baseFare = adjustedBaseFare
   const totalSeatFee = selectedSeats.reduce((sum, s) => sum + (s.totalAmount || 0), 0)
   const finalTotalAmount = (baseFare + totalSeatFee).toFixed(2)
   const totalNum = parseFloat(finalTotalAmount)
@@ -110,6 +132,13 @@ export function CheckoutInline({
         }
       })
 
+      let highestCabin = routeInfo.cabinClass || "economy"
+      selectedSeats.forEach((s: any) => {
+        if (s.cabinClass === "first") highestCabin = "first"
+        else if (s.cabinClass === "business" && highestCabin !== "first") highestCabin = "business"
+        else if (s.cabinClass === "premium_economy" && highestCabin !== "first" && highestCabin !== "business") highestCabin = "premium_economy"
+      })
+
       const payload = {
         userId: user.id,
         flightId: offer.id,
@@ -117,7 +146,7 @@ export function CheckoutInline({
         destinationCode: routeInfo.destination,
         departureDate: routeInfo.departureDate,
         returnDate: routeInfo.returnDate,
-        cabinClass: routeInfo.cabinClass || "economy",
+        cabinClass: highestCabin,
         totalAmount: totalNum,
         currency,
         flightNumber,
@@ -142,7 +171,7 @@ export function CheckoutInline({
           destination_code: routeInfo.destination,
           departure_date: routeInfo.departureDate,
           return_date: routeInfo.returnDate,
-          cabin_class: routeInfo.cabinClass || "economy",
+          cabin_class: highestCabin,
           total_amount: totalNum,
           currency,
           status: "confirmed",
@@ -177,18 +206,18 @@ export function CheckoutInline({
   }
 
   return (
-    <div className="w-full bg-white border border-delta-hairline rounded-[6px] overflow-hidden shadow-sm my-4">
+    <div className="w-full bg-delta-canvas border border-delta-hairline rounded-sm overflow-hidden shadow-none my-4 font-sans text-delta-ink">
       {/* Header Bar */}
-      <div className="bg-delta-navy text-white p-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-delta-navy text-white p-4 flex flex-wrap items-center justify-between gap-3 select-none">
         <div className="flex items-center gap-2.5">
-          <div className="bg-delta-red p-1.5 rounded-[3px] text-white">
+          <div className="bg-delta-red p-1.5 rounded-sm text-white">
             <CreditCard className="h-5 w-5" />
           </div>
           <div>
             <h3 className="text-base font-bold text-white tracking-wide uppercase">
               CHECKOUT & WALLET PAYMENT (STEP 3 OF 3)
             </h3>
-            <p className="text-xs text-slate-300">
+            <p className="text-xs text-white/70">
               Review itinerary breakdown and complete double-entry ledger settlement.
             </p>
           </div>
@@ -198,31 +227,31 @@ export function CheckoutInline({
       {/* Body */}
       <div className="p-5 space-y-5">
         {/* Flight Summary Card */}
-        <div className="bg-slate-50 border border-delta-hairline rounded-[4px] p-4 space-y-3">
-          <div className="flex items-center justify-between border-b border-delta-hairline pb-2">
+        <div className="bg-delta-surface-1 border border-delta-hairline rounded-sm p-4 space-y-3">
+          <div className="flex items-center justify-between border-b border-delta-hairline pb-2 select-none">
             <span className="text-xs font-bold uppercase tracking-wider text-delta-navy flex items-center gap-1.5">
               <Plane className="h-4 w-4 text-delta-red" />
               {ownerName} · {carrierCode} {flightNumber}
             </span>
-            <Badge className="bg-delta-navy text-white text-[10px] uppercase tracking-wider">
+            <Badge className="bg-delta-navy text-white border border-delta-navy-mid rounded-sm text-[10px] uppercase tracking-wider px-2 py-0.5">
               {routeInfo.cabinClass || "Economy"}
             </Badge>
           </div>
 
-          <div className="flex items-center justify-between text-sm font-bold text-delta-navy">
+          <div className="flex items-center justify-between text-sm font-bold text-delta-navy select-none">
             <div>
-              <span className="text-xl">{routeInfo.origin}</span>
-              <span className="text-xs text-delta-ink-muted block font-normal">{routeInfo.departureDate}</span>
+              <span className="text-xl uppercase">{routeInfo.origin}</span>
+              <span className="text-xs text-delta-ink-muted block font-bold mt-1">{routeInfo.departureDate}</span>
             </div>
-            <div className="flex items-center gap-2 text-xs font-normal text-delta-ink-muted">
+            <div className="flex items-center gap-2 text-xs font-bold text-delta-ink-muted">
               <div className="h-[1px] w-12 bg-delta-hairline" />
               <Plane className="h-4 w-4 rotate-90 text-delta-navy" />
               <div className="h-[1px] w-12 bg-delta-hairline" />
             </div>
             <div className="text-right">
-              <span className="text-xl">{routeInfo.destination}</span>
+              <span className="text-xl uppercase">{routeInfo.destination}</span>
               {routeInfo.returnDate && (
-                <span className="text-xs text-delta-ink-muted block font-normal">Return: {routeInfo.returnDate}</span>
+                <span className="text-xs text-delta-ink-muted block font-bold mt-1">Return: {routeInfo.returnDate}</span>
               )}
             </div>
           </div>
@@ -230,32 +259,38 @@ export function CheckoutInline({
 
         {/* Passengers & Assigned Seats Summary */}
         <div className="space-y-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-delta-navy flex items-center gap-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-delta-navy flex items-center gap-1.5 select-none">
             <User className="h-3.5 w-3.5 text-delta-red" />
-            Ticketed Passengers & Assigned Seats ({passengers.length})
+            Ticketed Travelers & Assigned Seats ({passengers.length})
           </span>
-          <div className="border border-delta-hairline rounded-[4px] divide-y divide-delta-hairline bg-white">
+          <div className="border border-delta-hairline rounded-sm overflow-hidden bg-delta-canvas">
             {passengers.map((p, idx) => {
               const passSeatChoices = selectedSeats.filter((s) => s.passengerIndex === idx)
               return (
-                <div key={idx} className="p-3 flex items-center justify-between text-xs">
+                <div 
+                  key={idx} 
+                  className={cn(
+                    "p-3.5 flex items-center justify-between text-xs border-b border-delta-hairline last:border-0",
+                    idx % 2 === 0 ? "bg-delta-canvas" : "bg-delta-surface-1/50"
+                  )}
+                >
                   <div>
                     <span className="font-bold text-delta-navy uppercase">
                       {p.firstName} {p.lastName}
                     </span>
-                    <span className="text-delta-ink-muted block text-[11px]">{p.email}</span>
+                    <span className="text-delta-ink-muted block text-[11px] font-medium mt-0.5">{p.email}</span>
                   </div>
                   <div className="text-right">
                     {passSeatChoices.length > 0 ? (
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 select-none">
                         {passSeatChoices.map((s, sIdx) => (
-                          <span key={sIdx} className="bg-delta-navy text-white px-2 py-0.5 rounded font-mono text-[10px] font-bold">
+                          <span key={sIdx} className="bg-delta-navy text-white px-2 py-0.5 rounded-sm font-mono text-[10px] font-bold">
                             Seat {s.seatDesignator}
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <span className="text-slate-400 italic">Standard Seating</span>
+                      <span className="text-delta-ink-muted font-bold italic select-none">Standard Seating</span>
                     )}
                   </div>
                 </div>
@@ -266,55 +301,56 @@ export function CheckoutInline({
 
         {/* Price Breakdown */}
         <div className="space-y-2 border-t border-delta-hairline pt-4">
-          <span className="text-xs font-bold uppercase tracking-wider text-delta-navy">
+          <span className="text-xs font-bold uppercase tracking-wider text-delta-navy select-none">
             Fare & Fee Calculation Summary
           </span>
-          <div className="space-y-1 text-xs">
+          <div className="space-y-2.5 text-xs">
             <div className="flex justify-between text-delta-ink">
-              <span>Base Flight Fare ({passengers.length} Traveler{passengers.length > 1 ? "s" : ""})</span>
-              <span className="font-mono font-bold">৳{baseFare.toFixed(2)}</span>
+              <span className="font-medium text-delta-ink-muted">Base Flight Fare ({passengers.length} Traveler{passengers.length > 1 ? "s" : ""})</span>
+              <span className="font-mono font-bold text-delta-navy">৳{baseFare.toFixed(2)}</span>
             </div>
             {totalSeatFee > 0 && (
               <div className="flex justify-between text-delta-ink">
-                <span>Selected Preferred Seats</span>
-                <span className="font-mono font-bold">৳{totalSeatFee.toFixed(2)}</span>
+                <span className="font-medium text-delta-ink-muted">Preferred Seat Selection Fee</span>
+                <span className="font-mono font-bold text-delta-navy">৳{totalSeatFee.toFixed(2)}</span>
               </div>
             )}
-            <div className="flex justify-between text-delta-navy font-bold text-sm border-t border-delta-hairline pt-2 mt-2">
+            <div className="flex justify-between text-delta-navy font-bold text-sm border-t border-delta-hairline pt-3 mt-2 select-none">
               <span>Total Amount Due</span>
-              <span className="font-mono text-delta-red font-black text-lg">৳{finalTotalAmount} {currency}</span>
+              <span className="font-sans text-delta-red font-bold text-xl">৳{finalTotalAmount} {currency}</span>
             </div>
           </div>
         </div>
 
         {/* Ledger Wallet Settlement Check */}
-        <div className="bg-slate-50 border border-delta-hairline rounded-[4px] p-4 space-y-3">
+        <div className="bg-delta-surface-1 border border-delta-hairline rounded-sm p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-delta-navy flex items-center gap-1.5">
-              <CreditCard className="h-4 w-4 text-delta-navy" />
+            <span className="text-xs font-bold uppercase tracking-wider text-delta-navy flex items-center gap-1.5 select-none">
+              <CreditCard className="h-4 w-4 text-delta-navy-mid" />
               Settlement Method: SkyLedger Asset Wallet
             </span>
             {loadingBalance ? (
               <Loader2 className="h-4 w-4 animate-spin text-delta-navy" />
             ) : (
-              <span className="text-xs font-bold text-delta-navy">
-                Available Wallet: <strong className="font-mono text-sm text-emerald-700">৳{(walletBalance || 0).toFixed(2)}</strong>
+              <span className="text-xs font-bold text-delta-navy select-none">
+                Available Balance: <strong className="font-mono text-sm text-delta-success bg-delta-success/10 border border-delta-success/20 px-2 py-0.5 rounded-sm">৳{(walletBalance || 0).toFixed(2)}</strong>
               </span>
             )}
           </div>
 
           {!loadingBalance && !canAfford && (
-            <div className="bg-rose-50 border border-rose-200 text-rose-800 p-3 rounded-[4px] text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="bg-delta-error/10 border border-delta-error/25 text-delta-error p-4 rounded-sm text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
+                <AlertCircle className="h-4 w-4 text-delta-error shrink-0 mt-0.5 animate-pulse" />
                 <div>
-                  <strong className="block">Insufficient Ledger Wallet Balance!</strong> You need an additional{" "}
-                  <strong className="font-mono">৳{(totalNum - (walletBalance || 0)).toFixed(2)}</strong> to settle this flight reservation.
+                  <strong className="block font-bold">Insufficient Ledger Balance!</strong>
+                  <span>You need an additional </span>
+                  <strong className="font-mono font-bold">৳{(totalNum - (walletBalance || 0)).toFixed(2)}</strong> to settle this reservation.
                 </div>
               </div>
               <Button 
                 onClick={() => router.push("/user/wallet")}
-                className="bg-delta-navy hover:bg-delta-navy-dark text-white text-[11px] uppercase tracking-wider font-bold h-8 shrink-0"
+                className="bg-delta-red hover:bg-delta-red-hover text-white text-[11px] uppercase tracking-wider font-bold h-9 px-4 rounded-sm shrink-0 cursor-pointer shadow-none select-none"
               >
                 Recharge Wallet
               </Button>
@@ -322,29 +358,29 @@ export function CheckoutInline({
           )}
 
           {!loadingBalance && canAfford && (
-            <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-2.5 rounded-[4px] text-xs flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-              <span>Double-entry ledger wallet settlement verified. Balance remaining after reservation: <strong className="font-mono">৳{((walletBalance || 0) - totalNum).toFixed(2)}</strong></span>
+            <div className="bg-delta-success/10 border border-delta-success/25 text-delta-success p-3 rounded-sm text-xs flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-delta-success shrink-0" />
+              <span className="font-bold">Double-entry ledger wallet settlement verified. Balance remaining after reservation: <strong className="font-mono">৳{((walletBalance || 0) - totalNum).toFixed(2)}</strong></span>
             </div>
           )}
         </div>
 
         {error && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-800 p-3 rounded-[4px] text-xs flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
-            <span>{error}</span>
+          <div className="bg-delta-error/10 border border-delta-error/25 text-delta-error p-3 rounded-sm text-xs flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 text-delta-error shrink-0" />
+            <span className="font-bold">{error}</span>
           </div>
         )}
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-delta-hairline">
+        <div className="flex items-center justify-between pt-4 border-t border-delta-hairline">
           {onBack && (
             <Button
               variant="outline"
               size="sm"
               onClick={onBack}
               disabled={submitting}
-              className="text-xs font-bold uppercase gap-1"
+              className="border border-delta-navy text-delta-navy bg-delta-canvas hover:bg-delta-surface-1 rounded-sm text-xs font-bold px-4 py-2 cursor-pointer transition-colors select-none"
             >
               <ArrowLeft className="h-4 w-4" /> Back to Passenger Info
             </Button>
@@ -353,7 +389,7 @@ export function CheckoutInline({
           <Button
             onClick={handleConfirmPayment}
             disabled={!canAfford || submitting || loadingBalance}
-            className="bg-delta-red hover:bg-red-700 text-white text-xs font-bold uppercase tracking-wider px-6 h-10 rounded-[4px] flex items-center gap-2 ml-auto"
+            className="bg-delta-red hover:bg-delta-red-hover text-white text-xs font-bold uppercase tracking-wider px-6 h-11 rounded-sm flex items-center gap-2 cursor-pointer transition-colors shadow-none select-none disabled:opacity-50 disabled:cursor-not-allowed ml-auto"
           >
             {submitting ? (
               <>
@@ -362,7 +398,7 @@ export function CheckoutInline({
               </>
             ) : (
               <>
-                 <span>Confirm & Settle ৳{finalTotalAmount}</span>
+                <span>Confirm & Settle ৳{finalTotalAmount}</span>
                 <ArrowRight className="h-4 w-4" />
               </>
             )}
