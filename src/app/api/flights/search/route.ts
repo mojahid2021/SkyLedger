@@ -91,7 +91,7 @@ function mapLocalFlightToDuffelOffer(flight: any, passengersCount: number, cabin
             duration: durationStr,
             aircraft: {
               name: flight.aircraft_model || "Aircraft",
-              iata_code: "738",
+              iata_code: flight.aircraft_iata || "738",
             },
           },
         ],
@@ -147,7 +147,9 @@ export async function GET(request: Request) {
         dest.name as destination_name,
         dest.iata_code as destination_iata,
         ac.model as aircraft_model,
-        ac.reg_number as aircraft_reg
+        ac.reg_number as aircraft_reg,
+        ac.iata as aircraft_iata,
+        ac.icao as aircraft_icao
       FROM flights f
       INNER JOIN airlines a ON f.airline_id = a.id
       INNER JOIN airports orig ON f.origin_airport_id = orig.id

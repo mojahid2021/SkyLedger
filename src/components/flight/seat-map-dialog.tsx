@@ -194,7 +194,7 @@ export function SeatMapDialog({
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-3 text-slate-600 min-h-[350px]">
             <Loader2 className="w-9 h-9 animate-spin text-[#003366]" />
-            <p className="text-sm font-medium">Loading aircraft seat layout from Duffel...</p>
+            <p className="text-sm font-medium">Loading aircraft seat layout...</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-20 px-6 text-center gap-4 min-h-[350px]">
