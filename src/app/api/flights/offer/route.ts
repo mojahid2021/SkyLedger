@@ -60,6 +60,8 @@ export async function GET(request: Request) {
         f.departure_time,
         f.arrival_time,
         f.price,
+        f.tax_percentage,
+        f.seat_selection_fee,
         f.status,
         a.name as airline_name,
         a.iata_code as airline_iata,
@@ -95,16 +97,21 @@ export async function GET(request: Request) {
     const multiplier = getCabinPriceMultiplier(cabinClass)
     const basePrice = parseFloat(flight.price) * multiplier
 
-    const totalAmount = (basePrice * passengersCount).toFixed(2)
-    const baseAmount = (basePrice * passengersCount * 0.9).toFixed(2)
-    const taxAmount = (basePrice * passengersCount * 0.1).toFixed(2)
+    const taxPercentage = flight.tax_percentage ? parseFloat(flight.tax_percentage) : 0
+    const seatFee = flight.seat_selection_fee ? parseFloat(flight.seat_selection_fee) : 0
+
+    const baseAmount = (basePrice * passengersCount).toFixed(2)
+    const taxAmount = (parseFloat(baseAmount) * (taxPercentage / 100)).toFixed(2)
+    const totalAmount = (parseFloat(baseAmount) + parseFloat(taxAmount)).toFixed(2)
 
     const offer = {
-      id: flight.id,
+      id: flight.id.toString(),
       total_amount: totalAmount,
       total_currency: "BDT",
       base_amount: baseAmount,
       tax_amount: taxAmount,
+      tax_percentage: taxPercentage,
+      seat_selection_fee: flight.seat_selection_fee,
       total_emissions_kg: "85",
       owner: {
         name: flight.airline_name,

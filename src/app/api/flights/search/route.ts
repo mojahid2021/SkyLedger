@@ -55,9 +55,12 @@ function mapLocalFlightToOffer(flight: any, passengersCount: number, cabinClass:
   const multiplier = getCabinPriceMultiplier(cabinClass)
   const basePrice = parseFloat(flight.price) * multiplier
 
-  const totalAmount = (basePrice * passengersCount).toFixed(2)
-  const baseAmount = (basePrice * passengersCount * 0.9).toFixed(2)
-  const taxAmount = (basePrice * passengersCount * 0.1).toFixed(2)
+  const taxPercentage = flight.tax_percentage ? parseFloat(flight.tax_percentage) : 0
+  const seatFee = flight.seat_selection_fee ? parseFloat(flight.seat_selection_fee) : 0
+
+  const baseAmount = (basePrice * passengersCount).toFixed(2)
+  const taxAmount = (parseFloat(baseAmount) * (taxPercentage / 100)).toFixed(2)
+  const totalAmount = (parseFloat(baseAmount) + parseFloat(taxAmount)).toFixed(2)
 
   return {
     id: flight.id,
@@ -170,6 +173,8 @@ export async function GET(request: Request) {
         f.departure_time,
         f.arrival_time,
         f.price,
+        f.tax_percentage,
+        f.seat_selection_fee,
         f.status,
         f.created_at,
         a.name as airline_name,

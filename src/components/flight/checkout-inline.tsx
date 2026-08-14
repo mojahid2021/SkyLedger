@@ -78,8 +78,10 @@ export function CheckoutInline({
     adjustedBase += baseFarePerPax * mult
   })
 
+  const taxPercentage     = offer.tax_percentage || 0
   const totalSeatFee      = selectedSeats.reduce((sum, s) => sum + (s.totalAmount || 0), 0)
-  const finalTotalAmount  = (adjustedBase + totalSeatFee).toFixed(2)
+  const totalSeatFeeWithTax = totalSeatFee + (totalSeatFee * (taxPercentage / 100))
+  const finalTotalAmount  = (adjustedBase + totalSeatFeeWithTax).toFixed(2)
   const totalNum          = parseFloat(finalTotalAmount)
   const currency          = offer.total_currency || "BDT"
 

@@ -469,7 +469,8 @@ function generateSeatMapForFlight(
   aircraftIcao: string,
   segmentId: number,
   sliceId: number,
-  bookedSeats: Set<string>
+  bookedSeats: Set<string>,
+  dbSeatSelectionFee: number
 ) {
   const modelUpper = (aircraftModel || "").toUpperCase();
   const icaoUpper = (aircraftIcao || "").toUpperCase();
@@ -500,6 +501,7 @@ function generateSeatMapForFlight(
 
   const buildSeat = (designator: string, name: string, disclosures: string[], amount: string) => {
     const occupied = isOccupied(designator);
+    const finalAmount = dbSeatSelectionFee > 0 ? dbSeatSelectionFee.toFixed(2) : amount;
     return {
       type: "seat" as const,
       designator,
@@ -511,7 +513,7 @@ function generateSeatMapForFlight(
             {
               id: flightId * 1000 + parseInt(designator) * 10 + (designator.charCodeAt(designator.length - 1) - 64),
               passenger_id: 1,
-              total_amount: amount,
+              total_amount: finalAmount,
               total_currency: "BDT",
             },
           ],
@@ -819,10 +821,12 @@ export async function GET(request: Request) {
     let aircraftIcao = "B738"
     let flightNumber = ""
     let departureDate = ""
+    let seatSelectionFee = 0
     
     try {
       const flights = await query<any[]>(`
         SELECT f.id, f.flight_number, DATE_FORMAT(f.departure_time, '%Y-%m-%d') as departure_date,
+               f.seat_selection_fee,
                ac.model, ac.iata, ac.icao
         FROM flights f
         LEFT JOIN aircraft ac ON f.aircraft_id = ac.id
@@ -833,6 +837,7 @@ export async function GET(request: Request) {
         if (flights[0].model) aircraftModel = flights[0].model
         if (flights[0].iata) aircraftIata = flights[0].iata
         if (flights[0].icao) aircraftIcao = flights[0].icao
+        if (flights[0].seat_selection_fee) seatSelectionFee = parseFloat(flights[0].seat_selection_fee)
         flightNumber = flights[0].flight_number
         departureDate = flights[0].departure_date
       }
@@ -897,7 +902,8 @@ export async function GET(request: Request) {
       aircraftIcao,
       segmentId,
       sliceId,
-      bookedSeats
+      bookedSeats,
+      seatSelectionFee
     )
 
     return NextResponse.json({

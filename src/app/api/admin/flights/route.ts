@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
+import { generateSeatMapForFlight, countTotalSeats } from "@/lib/seat-generator"
 
 // GET /api/admin/flights — Fetch all scheduled flights with descriptive joins
 export async function GET(request: Request) {
@@ -21,6 +22,9 @@ export async function GET(request: Request) {
         DATE_FORMAT(f.departure_time, '%Y-%m-%d %H:%i') as departure_time,
         DATE_FORMAT(f.arrival_time, '%Y-%m-%d %H:%i') as arrival_time,
         f.price,
+        f.tax_percentage,
+        f.seat_selection_fee,
+        f.total_seats,
         f.status,
         DATE_FORMAT(f.created_at, '%Y-%m-%d %H:%i:%s') as created_at,
         a.name as airline_name,
@@ -73,6 +77,9 @@ export async function POST(request: Request) {
       departure_time,
       arrival_time,
       price,
+      tax_percentage,
+      seat_selection_fee,
+      total_seats,
     } = await request.json()
 
     if (!flight_number || !airline_id || !origin_airport_id || !destination_airport_id || !departure_time || !arrival_time || !price) {
@@ -98,9 +105,12 @@ export async function POST(request: Request) {
     const parsedDestinationId = parseInt(destination_airport_id, 10)
     const parsedAircraftId = aircraft_id ? parseInt(aircraft_id, 10) : null
     const parsedPrice = parseFloat(price)
+    const parsedTaxPercentage = tax_percentage ? parseFloat(tax_percentage) : 0.0
+    const parsedSeatFee = seat_selection_fee ? parseFloat(seat_selection_fee) : 0.0
+    const parsedTotalSeats = total_seats ? parseInt(total_seats, 10) : 0
 
     await query(
-      "INSERT INTO flights (flight_number, airline_id, origin_airport_id, destination_airport_id, aircraft_id, is_direct, flight_type, layover_cities, departure_time, arrival_time, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO flights (flight_number, airline_id, origin_airport_id, destination_airport_id, aircraft_id, is_direct, flight_type, layover_cities, departure_time, arrival_time, price, tax_percentage, seat_selection_fee, total_seats) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         flight_number,
         parsedAirlineId,
@@ -113,6 +123,9 @@ export async function POST(request: Request) {
         formattedDeparture,
         formattedArrival,
         parsedPrice,
+        parsedTaxPercentage,
+        parsedSeatFee,
+        parsedTotalSeats,
       ]
     )
 

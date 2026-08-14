@@ -29,6 +29,7 @@ export type AdminSection =
   | "fleets"
   | "flights"
   | "create-flight"
+  | "bookings"
   | "settings"
 
 type DbStatus = "connecting" | "connected" | "error"
@@ -135,6 +136,12 @@ const NAV_GROUPS: NavGroup[] = [
         icon: PlaneIcon,
         children: [
           {
+            id: "bookings",
+            label: "All Bookings",
+            icon: FolderKanban,
+            href: "/admin/bookings",
+          },
+          {
             id: "flights",
             label: "Flight Management",
             icon: PlaneIcon,
@@ -194,8 +201,9 @@ export function AdminSidebar({
     if (pathname === "/admin/users") return "users"
     if (pathname === "/admin/audit") return "audit"
     if (pathname === "/admin/flights") return "flights"
+    if (pathname === "/admin/bookings") return "bookings"
     if (pathname === "/admin/settings") return "settings"
-    if (pathname === "/admin/dashboard") return "overview"
+    if (pathname === "/admin/dashboard" || pathname === "/admin/overview") return "overview"
 
     return activeSection
   }
@@ -397,8 +405,9 @@ export function AdminMobileNav({ activeSection, onSectionChange }: AdminSidebarP
     if (pathname === "/admin/airports") return "airports"
     if (pathname === "/admin/cities") return "cities"
     if (pathname === "/admin/fleets") return "fleets"
+    if (pathname === "/admin/bookings") return "bookings"
 
-    if (pathname === "/admin/dashboard") {
+    if (pathname === "/admin/dashboard" || pathname === "/admin/overview") {
       const tab = searchParams?.get("tab")
       if (tab) return tab
       return "overview"

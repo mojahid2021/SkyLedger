@@ -67,11 +67,17 @@ export function UserNavbar() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-delta-hairline" />
-              <DropdownMenuItem className="gap-2 cursor-pointer hover:bg-delta-surface-1 hover:text-delta-navy focus:bg-delta-surface-1 focus:text-delta-navy rounded-none">
+              <DropdownMenuItem 
+                onClick={() => window.location.href = "/user/dashboard"}
+                className="gap-2 cursor-pointer hover:bg-delta-surface-1 hover:text-delta-navy focus:bg-delta-surface-1 focus:text-delta-navy rounded-none"
+              >
                 <LayoutDashboard className="h-4 w-4 text-delta-ink-muted" />
                 <span className="font-medium">Dashboard</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 cursor-pointer hover:bg-delta-surface-1 hover:text-delta-navy focus:bg-delta-surface-1 focus:text-delta-navy rounded-none">
+              <DropdownMenuItem 
+                onClick={() => window.location.href = "/user/profile"}
+                className="gap-2 cursor-pointer hover:bg-delta-surface-1 hover:text-delta-navy focus:bg-delta-surface-1 focus:text-delta-navy rounded-none"
+              >
                 <User className="h-4 w-4 text-delta-ink-muted" />
                 <span className="font-medium">My Profile</span>
               </DropdownMenuItem>

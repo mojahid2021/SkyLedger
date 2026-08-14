@@ -75,9 +75,20 @@ export function CheckoutDialog({
 
   if (!offer) return null
 
-  const baseFare = parseFloat(offer.total_amount || "0")
+  let adjustedBase = 0
+  const baseFarePerPax = parseFloat(offer.total_amount || "0") / (offer.passenger_totals?.length || 1)
+  
+  passengers.forEach((p) => {
+    let mult = 1
+    if (p.passengerType === "child") mult = 0.75
+    else if (p.passengerType === "infant") mult = 0.1
+    adjustedBase += baseFarePerPax * mult
+  })
+
+  const taxPercentage = offer.tax_percentage || 0
   const totalSeatFee = selectedSeats.reduce((sum, s) => sum + (s.totalAmount || 0), 0)
-  const finalTotalAmount = (baseFare + totalSeatFee).toFixed(2)
+  const totalSeatFeeWithTax = totalSeatFee + (totalSeatFee * (taxPercentage / 100))
+  const finalTotalAmount = (adjustedBase + totalSeatFeeWithTax).toFixed(2)
   const totalNum = parseFloat(finalTotalAmount)
   const currency = offer.total_currency || "BDT"
 
@@ -284,7 +295,7 @@ export function CheckoutDialog({
             <div className="space-y-1 text-xs">
               <div className="flex justify-between text-delta-ink">
                 <span>Base Flight Fare ({passengers.length} Traveler{passengers.length > 1 ? "s" : ""})</span>
-                <span className="font-mono font-bold">৳{baseFare.toFixed(2)}</span>
+                <span className="font-mono font-bold">৳{adjustedBase.toFixed(2)}</span>
               </div>
               {totalSeatFee > 0 && (
                 <div className="flex justify-between text-delta-ink">

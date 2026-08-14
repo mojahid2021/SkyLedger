@@ -11,6 +11,7 @@ import { AdminSidebar, AdminMobileNav, type AdminSection } from "@/components/ad
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
+import { generateSeatMapForFlight, countTotalSeats } from "@/lib/seat-generator"
 
 export default function CreateFlightPage() {
   const { user, role, isLoading } = useAuth()
@@ -39,6 +40,9 @@ export default function CreateFlightPage() {
     departure_time: "",
     arrival_time: "",
     price: "",
+    tax_percentage: "0",
+    seat_selection_fee: "0",
+    total_seats: "0",
   })
 
   // Separate states for selection lists
@@ -46,6 +50,8 @@ export default function CreateFlightPage() {
   const [originAirports, setOriginAirports] = useState<any[]>([])
   const [destinationAirports, setDestinationAirports] = useState<any[]>([])
   const [aircraft, setAircraft] = useState<any[]>([])
+  
+  const [autoDetectedSeats, setAutoDetectedSeats] = useState<number | null>(null)
 
   // Separate states for search inputs
   const [airlineSearch, setAirlineSearch] = useState("")
@@ -295,7 +301,7 @@ export default function CreateFlightPage() {
                       </Popover>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                       <div>
                         <label className="text-[11px] font-[700] uppercase tracking-wider text-delta-navy">
                           Flight Routing Type
@@ -329,9 +335,68 @@ export default function CreateFlightPage() {
                           step="0.01"
                         />
                       </div>
+
+                      <div>
+                        <label className="text-[11px] font-[700] uppercase tracking-wider text-delta-navy">
+                          Tax Percentage (%)
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 15.00"
+                          value={formData.tax_percentage}
+                          onChange={(e) => setFormData({ ...formData, tax_percentage: e.target.value })}
+                          className="mt-1 h-10 w-full rounded-[4px] border border-delta-hairline bg-delta-canvas px-3 text-sm text-delta-ink focus:border-delta-navy focus:outline-none"
+                          required
+                          min="0"
+                          max="100"
+                          step="0.01"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] font-[700] uppercase tracking-wider text-delta-navy">
+                          Seat Selection Fee (৳)
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="e.g. 15.00"
+                          value={formData.seat_selection_fee}
+                          onChange={(e) => setFormData({ ...formData, seat_selection_fee: e.target.value })}
+                          className="mt-1 h-10 w-full rounded-[4px] border border-delta-hairline bg-delta-canvas px-3 text-sm text-delta-ink focus:border-delta-navy focus:outline-none"
+                          required
+                          min="0"
+                          step="0.01"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Optional Manual Seats Input */}
+                {formData.aircraft_id && autoDetectedSeats === null && (
+                  <div className="rounded-[4px] border border-delta-hairline bg-delta-canvas p-6 shadow-xs space-y-4">
+                    <div className="border-b border-delta-hairline pb-3 mb-2">
+                      <h2 className="text-sm font-[700] uppercase tracking-wider text-delta-navy">Seat Configuration</h2>
+                      <p className="text-xs text-delta-ink-muted mt-0.5">
+                        Please manually input the total seats for this aircraft to generate the seat map.
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-[700] uppercase tracking-wider text-delta-navy">
+                        Total Seats
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="e.g. 150"
+                        value={formData.total_seats}
+                        onChange={(e) => setFormData({ ...formData, total_seats: e.target.value })}
+                        className="mt-1 h-10 w-full max-w-xs rounded-[4px] border border-delta-hairline bg-delta-canvas px-3 text-sm text-delta-ink focus:border-delta-navy focus:outline-none"
+                        required
+                        min="1"
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {/* 2. Route & Airports Card */}
                 <div className="rounded-[4px] border border-delta-hairline bg-delta-canvas p-6 shadow-xs space-y-4">
@@ -484,6 +549,11 @@ export default function CreateFlightPage() {
                               ? selectedAircraftName || aircraft.find((a) => String(a.id) === formData.aircraft_id)?.model || "Aircraft Selected"
                               : "Select Aircraft..."}
                           </span>
+                          {autoDetectedSeats !== null && (
+                            <span className="ml-2 rounded bg-delta-navy/10 px-2 py-0.5 text-[10px] font-bold text-delta-navy">
+                              {autoDetectedSeats} Seats
+                            </span>
+                          )}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
@@ -497,7 +567,15 @@ export default function CreateFlightPage() {
                                 <CommandItem
                                   key={a.id}
                                   onSelect={() => {
-                                    setFormData({ ...formData, aircraft_id: String(a.id) })
+                                    const seatMap = generateSeatMapForFlight(0, a.model, a.iata || "", a.icao || "", 0, 0, new Set());
+                                    const total = countTotalSeats(seatMap);
+                                    if (total > 0) {
+                                      setAutoDetectedSeats(total);
+                                      setFormData({ ...formData, aircraft_id: String(a.id), total_seats: String(total) })
+                                    } else {
+                                      setAutoDetectedSeats(null);
+                                      setFormData({ ...formData, aircraft_id: String(a.id), total_seats: "" })
+                                    }
                                     setSelectedAircraftName(`${a.model} - ${a.reg_number}`)
                                   }}
                                   className="text-sm cursor-pointer hover:bg-delta-surface-1 py-2 px-3 flex items-center"
@@ -545,6 +623,59 @@ export default function CreateFlightPage() {
                   </div>
                 </div>
               </div>
+
+              {/* 4. Dynamic Seat Map Preview */}
+              {parseInt(formData.total_seats) > 0 && (
+                <div className="rounded-[4px] border border-delta-hairline bg-delta-canvas p-6 shadow-xs space-y-4">
+                  <div className="border-b border-delta-hairline pb-3 mb-2">
+                    <h2 className="text-sm font-[700] uppercase tracking-wider text-delta-navy">Seat Map Layout</h2>
+                    <p className="text-xs text-delta-ink-muted mt-0.5">
+                      Auto-generated seating plan based on {formData.total_seats} total seats.
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-col items-center gap-3 max-h-[400px] overflow-y-auto p-6 bg-delta-surface-1/50 rounded-[4px] border border-delta-hairline">
+                    <div className="w-full max-w-[280px]">
+                      {Array.from({ length: Math.ceil(parseInt(formData.total_seats) / 6) }).map((_, r) => {
+                        const total = parseInt(formData.total_seats);
+                        const letters = ["A", "B", "C", "D", "E", "F"];
+                        const isLastRow = r === Math.ceil(total / 6) - 1;
+                        const remainder = total % 6;
+                        
+                        return (
+                          <div key={r} className="flex justify-between items-center mb-2">
+                            <div className="flex gap-1.5 w-[110px]">
+                              {letters.slice(0, 3).map((letter, i) => {
+                                const seatIndex = r * 6 + i;
+                                if (seatIndex >= total) return <div key={letter} className="w-8 h-8" />;
+                                return (
+                                  <div key={letter} className="w-8 h-8 rounded bg-white border border-delta-navy/20 flex items-center justify-center text-[10px] font-bold text-delta-navy shadow-sm">
+                                    {r + 1}{letter}
+                                  </div>
+                                )
+                              })}
+                            </div>
+                            <div className="w-6 flex items-center justify-center text-[10px] font-mono text-delta-ink-muted">
+                              {r + 1}
+                            </div>
+                            <div className="flex gap-1.5 w-[110px] justify-end">
+                              {letters.slice(3, 6).map((letter, i) => {
+                                const seatIndex = r * 6 + 3 + i;
+                                if (seatIndex >= total) return <div key={letter} className="w-8 h-8" />;
+                                return (
+                                  <div key={letter} className="w-8 h-8 rounded bg-white border border-delta-navy/20 flex items-center justify-center text-[10px] font-bold text-delta-navy shadow-sm">
+                                    {r + 1}{letter}
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Form Footer Action */}
               <div className="flex items-center justify-end gap-3 border-t border-delta-hairline pt-6">

@@ -145,7 +145,10 @@ export function AdminNavbar({ searchQuery = "", onSearchChange }: AdminNavbarPro
 
               <DropdownMenuSeparator className="-mx-1 my-1 h-px bg-delta-hairline-light" />
 
-              <DropdownMenuItem className="flex cursor-pointer items-center gap-2 rounded-[3px] px-3 py-2 text-xs font-[500] text-delta-ink hover:bg-delta-surface-1 focus:bg-delta-surface-1 focus:text-delta-navy">
+              <DropdownMenuItem 
+                onClick={() => window.location.href = "/admin/profile"}
+                className="flex cursor-pointer items-center gap-2 rounded-[3px] px-3 py-2 text-xs font-[500] text-delta-ink hover:bg-delta-surface-1 focus:bg-delta-surface-1 focus:text-delta-navy"
+              >
                 <User className="h-3.5 w-3.5 text-delta-navy" />
                 <span>Profile Settings</span>
               </DropdownMenuItem>
