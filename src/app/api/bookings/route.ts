@@ -42,29 +42,41 @@ export async function GET(request: Request) {
         b.currency,
         b.status,
         b.created_at,
-        (SELECT COUNT(*) FROM booking_passengers bp WHERE bp.booking_id = b.id) as passenger_count,
-        (SELECT JSON_ARRAYAGG(
-            JSON_OBJECT(
-              'ticketNumber', bt.ticket_number,
-              'flightNumber', bt.flight_number,
-              'airlineName', bt.airline_name,
-              'seatDesignator', bt.seat_designator,
-              'segmentType', bt.segment_type
-            )
-          ) FROM booking_tickets bt WHERE bt.booking_id = b.id
-        ) as tickets
+        (SELECT COUNT(*) FROM booking_passengers bp WHERE bp.booking_id = b.id) as passenger_count
       FROM bookings b
       WHERE b.user_id = ?
       ORDER BY b.created_at DESC`,
       [userId]
     )
+    
+    if (!bookings || bookings.length === 0) {
+      return NextResponse.json({ success: true, data: [] })
+    }
+    
+    const bookingIds = bookings.map(b => b.id)
+    const placeholders = bookingIds.map(() => '?').join(',')
+    
+    const allTickets = await query<any[]>(
+      `SELECT * FROM booking_tickets WHERE booking_id IN (${placeholders})`,
+      bookingIds
+    )
 
     // Format results
-    const formattedBookings = (bookings || []).map((b) => ({
-      ...b,
-      total_amount: Number(b.total_amount),
-      tickets: typeof b.tickets === "string" ? JSON.parse(b.tickets) : (b.tickets || []),
-    }))
+    const formattedBookings = bookings.map((b) => {
+      const tickets = (allTickets || []).filter(t => t.booking_id === b.id).map(t => ({
+        ticketNumber: t.ticket_number,
+        flightNumber: t.flight_number,
+        airlineName: t.airline_name,
+        seatDesignator: t.seat_designator,
+        segmentType: t.segment_type
+      }))
+      
+      return {
+        ...b,
+        total_amount: Number(b.total_amount),
+        tickets: tickets
+      }
+    })
 
     return NextResponse.json({ success: true, data: formattedBookings })
   } catch (error) {
