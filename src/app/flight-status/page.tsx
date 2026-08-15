@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Clock, Plane, ArrowRight, ShieldCheck, HelpCircle } from "lucide-react"
 import { Navbar } from "@/components/layout/navbar"
+import { Footer } from "@/components/layout/footer"
 import { cn } from "@/lib/utils"
 
 function getCityFromAirport(name: string, iata: string): string {
@@ -237,6 +238,7 @@ export default function FlightStatusPage() {
           </div>
         )}
       </main>
+      <Footer />
     </div>
   )
 }

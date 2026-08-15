@@ -43,6 +43,12 @@ function getCityFromAirport(name: string, iata: string): string {
   return clean || name
 }
 
+const destinationImages: Record<string, string> = {
+  CXB: "/images/dest_coxs_bazar.jpg",
+  JFK: "/images/dest_new_york.jpg",
+  DXB: "/images/dest_dubai.jpg",
+}
+
 function LandingPageContent() {
   const searchParams = useSearchParams()
   const [prefilledSearch, setPrefilledSearch] = useState<{
@@ -183,34 +189,31 @@ function LandingPageContent() {
 
       {/* Hero Content Section */}
       <main className="flex-1">
-        <section id="search-section" className="bg-delta-surface-1 relative py-20">
-          {/* Subtle background visual glows wrapper to prevent horizontal scrollbars on mobile */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[radial-gradient(circle_at_center,#003366,transparent_70%)] opacity-[0.04] -mr-40 -mt-40" />
-            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[radial-gradient(circle_at_center,#e31837,transparent_70%)] opacity-[0.02] -ml-20 -mb-20" />
-          </div>
+        <section id="search-section" className="relative py-24 bg-cover bg-center overflow-hidden" style={{ backgroundImage: "url('/images/hero_flight.jpg')" }}>
+          {/* Subtle gradient overlay to make sure text is extremely legible */}
+          <div className="absolute inset-0 bg-gradient-to-r from-delta-navy-dark/95 via-delta-navy-dark/80 to-delta-navy-dark/35 pointer-events-none" />
 
           <div className="mx-auto max-w-[1280px] px-6 sm:px-8 relative z-10">
-            <div className="max-w-[820px] mb-10">
-              <div className="inline-flex items-center gap-2 bg-delta-red/10 text-delta-red border border-delta-red/20 px-3.5 py-1.5 text-[11px] font-[800] uppercase tracking-widest rounded-full mb-5 select-none shadow-2xs">
-                <Compass className="h-3.5 w-3.5 text-delta-red" />
+            <div className="max-w-[820px] mb-10 text-shadow-sm">
+              <div className="inline-flex items-center gap-2 bg-delta-red/20 text-white border border-delta-red/30 px-3.5 py-1.5 text-[11px] font-[800] uppercase tracking-widest rounded-full mb-5 select-none shadow-md">
+                <Compass className="h-3.5 w-3.5 text-delta-red animate-spin-slow" />
                 <span>Next-Gen Flight Booking Experience</span>
               </div>
               
-              <h1 className="text-[40px] sm:text-[56px] font-[800] leading-[48px] sm:leading-[64px] tracking-[-1.5px] text-delta-navy max-w-[820px] font-delta">
-                Fly wherever you desire with <span className="text-delta-red relative inline-block whitespace-nowrap">effortless ease<span className="absolute left-0 bottom-1 w-full h-[3px] bg-delta-red/20 rounded-full" /></span>.
+              <h1 className="text-[40px] sm:text-[56px] font-[800] leading-[48px] sm:leading-[64px] tracking-[-1.5px] text-white max-w-[820px] font-delta text-shadow-md">
+                Fly wherever you desire with <span className="text-delta-red relative inline-block whitespace-nowrap">effortless ease<span className="absolute left-0 bottom-1 w-full h-[3px] bg-delta-red/50 rounded-full" /></span>.
               </h1>
               
-              <p className="mt-5 text-[16px] sm:text-[18px] leading-[26px] sm:leading-[30px] text-delta-ink-muted max-w-[720px] font-normal">
+              <p className="mt-5 text-[16px] sm:text-[18px] leading-[26px] sm:leading-[30px] text-white/90 max-w-[720px] font-normal">
                 Explore hundreds of direct and connected routes across our global fleet. Experience{" "}
-                <strong className="font-[700] text-delta-navy">real-time seat layouts</strong>, transparent fares in{" "}
-                <strong className="font-[700] text-delta-navy">Bangladeshi Taka (৳)</strong>, and{" "}
-                <strong className="font-[700] text-delta-navy">zero booking blackout dates</strong>.
+                <strong className="font-[750] text-white">real-time seat layouts</strong>, transparent fares in{" "}
+                <strong className="font-[750] text-white">Bangladeshi Taka (৳)</strong>, and{" "}
+                <strong className="font-[750] text-white">zero booking blackout dates</strong>.
               </p>
             </div>
 
-            {/* Search widget wrapper */}
-            <div ref={searchWidgetRef}>
+            {/* Search widget wrapper - Styled with premium Glassmorphism */}
+            <div ref={searchWidgetRef} className="backdrop-blur-md bg-white/95 rounded-[6px] shadow-2xl border border-white/20 p-2 sm:p-4">
               <FlightSearchWidget
                 initialOrigin={prefilledSearch.origin}
                 initialOriginCode={prefilledSearch.originCode}
@@ -219,42 +222,42 @@ function LandingPageContent() {
               />
             </div>
 
-            {/* Quick trust metrics (Redesigned with spacing, no divider lines) */}
-            <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6 pt-6">
+            {/* Quick trust metrics (Redesigned with glassmorphic cards, no divider lines) */}
+            <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6 pt-6 border-t border-white/10">
               <div className="flex items-center gap-3.5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-delta-surface-2 text-delta-navy font-bold rounded-[4px] border border-delta-hairline-light">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-white/10 backdrop-blur-xs text-white font-bold rounded-[4px] border border-white/20">
                   ✓
                 </div>
                 <div>
-                  <p className="text-[13px] font-[700] text-delta-navy">Instant E-Ticket</p>
-                  <p className="text-[11px] text-delta-ink-muted font-normal">Confirmed on checkout</p>
+                  <p className="text-[13px] font-[700] text-white">Instant E-Ticket</p>
+                  <p className="text-[11px] text-white/70 font-normal">Confirmed on checkout</p>
                 </div>
               </div>
               <div className="flex items-center gap-3.5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-delta-surface-2 text-delta-navy font-bold rounded-[4px] border border-delta-hairline-light">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-white/10 backdrop-blur-xs text-white font-bold rounded-[4px] border border-white/20">
                   ৳
                 </div>
                 <div>
-                  <p className="text-[13px] font-[700] text-delta-navy">Transparent Pricing</p>
-                  <p className="text-[11px] text-delta-ink-muted font-normal">No surprise hidden fees</p>
+                  <p className="text-[13px] font-[700] text-white">Transparent Pricing</p>
+                  <p className="text-[11px] text-white/70 font-normal">No surprise hidden fees</p>
                 </div>
               </div>
               <div className="flex items-center gap-3.5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-delta-surface-2 text-delta-navy rounded-[4px] border border-delta-hairline-light">
-                  <Luggage className="h-5 w-5 text-delta-navy" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-white/10 backdrop-blur-xs text-white rounded-[4px] border border-white/20">
+                  <Luggage className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-[13px] font-[700] text-delta-navy">Baggage Clarity</p>
-                  <p className="text-[11px] text-delta-ink-muted font-normal">Clear carry-on & check-in</p>
+                  <p className="text-[13px] font-[700] text-white">Baggage Clarity</p>
+                  <p className="text-[11px] text-white/70 font-normal">Clear carry-on & check-in</p>
                 </div>
               </div>
               <div className="flex items-center gap-3.5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-delta-surface-2 text-delta-navy rounded-[4px] border border-delta-hairline-light">
-                  <Headphones className="h-5 w-5 text-delta-navy" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-white/10 backdrop-blur-xs text-white rounded-[4px] border border-white/20">
+                  <Headphones className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-[13px] font-[700] text-delta-navy">24/7 Support</p>
-                  <p className="text-[11px] text-delta-ink-muted font-normal">Live booking assistance</p>
+                  <p className="text-[13px] font-[700] text-white">24/7 Support</p>
+                  <p className="text-[11px] text-white/70 font-normal">Live booking assistance</p>
                 </div>
               </div>
             </div>
@@ -353,6 +356,134 @@ function LandingPageContent() {
           </div>
         </section>
 
+        {/* Offers & Partner Promotions Section (NEW Standard Ads Grid) */}
+        <section className="bg-delta-canvas py-16 border-t border-delta-hairline-light">
+          <div className="mx-auto max-w-[1280px] px-6 sm:px-8 flex flex-col gap-10">
+            <div className="flex flex-col gap-2">
+              <p className="text-[12px] font-[700] uppercase tracking-wider text-delta-red flex items-center gap-1.5 animate-pulse">
+                <Compass className="h-3.5 w-3.5 text-delta-red" />
+                Exclusive Campaigns
+              </p>
+              <h2 className="text-[24px] sm:text-[32px] font-[700] text-delta-navy leading-tight">
+                Offers & Partner Promotions
+              </h2>
+              <p className="text-[14px] text-delta-ink-muted max-w-[580px] font-normal">
+                Take advantage of our exclusive digital wallet deals, co-branded reward schemes, mobile apps, and bundled package discounts.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Wallet Recharge Promotion */}
+              <Link 
+                href="/user/wallet"
+                className="group relative h-[260px] rounded-[6px] overflow-hidden border border-delta-hairline bg-white shadow-2xs hover:shadow-lg hover:border-delta-navy transition-all duration-300 cursor-pointer"
+              >
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
+                  style={{ backgroundImage: "url('/images/promo_wallet.jpg')" }}
+                />
+                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/35 transition-colors duration-300" />
+                <div className="absolute bottom-0 left-0 w-full p-6 text-white z-10 flex flex-col justify-end h-full">
+                  <span className="bg-delta-red text-white text-[10px] font-[800] uppercase px-2.5 py-0.5 rounded-[4px] self-start mb-2 tracking-wider shadow-sm">
+                    Recharge Bonus
+                  </span>
+                  <h3 className="text-[22px] font-[800] tracking-tight leading-snug text-white text-shadow-sm text-shadow-md">
+                    Earn up to 15% Instant Cashback!
+                  </h3>
+                  <p className="text-[13px] text-white/90 mt-1 font-normal max-w-[420px] text-shadow-sm">
+                    Recharge your SkyLedger Wallet via SSLCommerz today and unlock exclusive flight discount credits.
+                  </p>
+                  <span className="mt-3 text-[11px] font-[750] uppercase tracking-wider text-delta-red group-hover:text-white transition-colors flex items-center gap-1.5 self-start">
+                    <span>Recharge Now</span>
+                    <ArrowRight className="h-3.5 w-3.5 animate-bounce-horizontal" />
+                  </span>
+                </div>
+              </Link>
+
+              {/* Visa Credit Card Promo */}
+              <Link 
+                href="/skymiles"
+                className="group relative h-[260px] rounded-[6px] overflow-hidden border border-delta-hairline bg-white shadow-2xs hover:shadow-lg hover:border-delta-navy transition-all duration-300 cursor-pointer"
+              >
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
+                  style={{ backgroundImage: "url('/images/promo_credit_card.jpg')" }}
+                />
+                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/35 transition-colors duration-300" />
+                <div className="absolute bottom-0 left-0 w-full p-6 text-white z-10 flex flex-col justify-end h-full">
+                  <span className="bg-delta-navy text-white text-[10px] font-[800] uppercase px-2.5 py-0.5 rounded-[4px] self-start mb-2 tracking-wider shadow-sm border border-white/10">
+                    Co-Branded Offer
+                  </span>
+                  <h3 className="text-[22px] font-[800] tracking-tight leading-snug text-white text-shadow-md">
+                    Apply for the Visa Platinum Card
+                  </h3>
+                  <p className="text-[13px] text-white/90 mt-1 font-normal max-w-[420px] text-shadow-sm">
+                    Unlock airport luxury lounge access, priority check-in, and earn 3x points on every ticket.
+                  </p>
+                  <span className="mt-3 text-[11px] font-[750] uppercase tracking-wider text-delta-red group-hover:text-white transition-colors flex items-center gap-1.5 self-start">
+                    <span>Learn More</span>
+                    <ArrowRight className="h-3.5 w-3.5 animate-bounce-horizontal" />
+                  </span>
+                </div>
+              </Link>
+
+              {/* Mobile App download banner */}
+              <div 
+                className="group relative h-[260px] rounded-[6px] overflow-hidden border border-delta-hairline bg-white shadow-2xs hover:shadow-lg transition-all duration-300"
+              >
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
+                  style={{ backgroundImage: "url('/images/promo_mobile_app.jpg')" }}
+                />
+                <div className="absolute inset-0 bg-black/45" />
+                <div className="absolute bottom-0 left-0 w-full p-6 text-white z-10 flex flex-col justify-end h-full">
+                  <span className="bg-emerald-600 text-white text-[10px] font-[800] uppercase px-2.5 py-0.5 rounded-[4px] self-start mb-2 tracking-wider shadow-sm">
+                    Mobile App
+                  </span>
+                  <h3 className="text-[22px] font-[800] tracking-tight leading-snug text-white text-shadow-md">
+                    Install SkyLedger on your Phone
+                  </h3>
+                  <p className="text-[13px] text-white/90 mt-1 font-normal max-w-[400px] text-shadow-sm">
+                    Scan the QR code to install our iOS or Android app for live flight alerts and fast offline bookings.
+                  </p>
+                  <div className="mt-3 flex items-center gap-4 text-[10px] font-[700] text-white/70 uppercase tracking-widest">
+                    <span>App Store</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
+                    <span>Google Play</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Vacation Combo Promo */}
+              <Link 
+                href="/deals"
+                className="group relative h-[260px] rounded-[6px] overflow-hidden border border-delta-hairline bg-white shadow-2xs hover:shadow-lg hover:border-delta-navy transition-all duration-300 cursor-pointer"
+              >
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
+                  style={{ backgroundImage: "url('/images/promo_vacation.jpg')" }}
+                />
+                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/35 transition-colors duration-300" />
+                <div className="absolute bottom-0 left-0 w-full p-6 text-white z-10 flex flex-col justify-end h-full">
+                  <span className="bg-amber-600 text-white text-[10px] font-[800] uppercase px-2.5 py-0.5 rounded-[4px] self-start mb-2 tracking-wider shadow-sm">
+                    Vacation Deals
+                  </span>
+                  <h3 className="text-[22px] font-[800] tracking-tight leading-snug text-white text-shadow-md">
+                    Book Flight + Hotel & Save 35%!
+                  </h3>
+                  <p className="text-[13px] text-white/90 mt-1 font-normal max-w-[420px] text-shadow-sm">
+                    Discover luxury resort packages, direct flights, and staycations at unbeatable bundle prices.
+                  </p>
+                  <span className="mt-3 text-[11px] font-[750] uppercase tracking-wider text-delta-red group-hover:text-white transition-colors flex items-center gap-1.5 self-start">
+                    <span>View Combos</span>
+                    <ArrowRight className="h-3.5 w-3.5 animate-bounce-horizontal" />
+                  </span>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </section>
+
         {/* Curated Deals Section (Grouped by Tag) */}
         <section className="bg-delta-surface-1 py-16">
           <div className="mx-auto max-w-[1280px] px-6 sm:px-8 flex flex-col gap-12">
@@ -404,32 +535,43 @@ function LandingPageContent() {
                         const origCity = getCityFromAirport(deal.origin_name, deal.origin_iata)
                         const routeStr = `${deal.origin_iata} → ${deal.destination_iata}`
                         const fareStr = `৳${Number(deal.price).toLocaleString("en-US", { maximumFractionDigits: 0 })}`
+                        const destImage = destinationImages[deal.destination_iata] || "/images/hero_flight.jpg"
 
                         return (
                           <div
                             key={deal.flight_id}
-                            className="group rounded-[4px] border border-delta-hairline bg-white hover:border-delta-navy hover:shadow-md transition-all flex flex-col justify-between overflow-hidden"
+                            className="group rounded-[4px] border border-delta-hairline bg-white hover:border-delta-navy hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden"
                           >
-                            <div className="p-5 flex flex-col">
-                              <div className="flex items-center justify-between">
-                                <span className="rounded-full bg-delta-surface-2 px-2.5 py-0.5 text-[11px] font-[700] uppercase tracking-wide text-delta-navy">
+                            {/* Card Visual Header */}
+                            <div className="relative h-[150px] overflow-hidden">
+                              <div 
+                                className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                                style={{ backgroundImage: `url('${destImage}')` }}
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+                              <div className="absolute top-4 left-4">
+                                <span className="rounded-full bg-delta-red text-white px-2.5 py-0.5 text-[10px] font-[800] uppercase tracking-wider shadow-sm">
                                   {deal.tag}
                                 </span>
-                                <span className="flex items-center gap-1 font-mono text-[12px] font-[700] text-delta-navy bg-delta-surface-1 px-2.5 py-0.5 rounded border border-delta-hairline-light">
+                              </div>
+                              <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-white">
+                                <span className="flex items-center gap-1 font-mono text-[11px] font-[700] bg-black/40 backdrop-blur-xs px-2.5 py-0.5 rounded border border-white/10 text-shadow-sm">
                                   <MapPin className="h-3 w-3 text-delta-red shrink-0" />
                                   {routeStr}
                                 </span>
                               </div>
+                            </div>
 
-                              <h3 className="mt-5 text-[24px] font-[700] text-delta-navy group-hover:text-delta-red transition-colors">
+                            <div className="p-5 flex flex-col flex-1">
+                              <h3 className="text-[20px] font-[800] text-delta-navy group-hover:text-delta-red transition-colors leading-tight">
                                 {destCity}
                               </h3>
-                              <p className="mt-1 text-[13px] text-delta-ink-muted font-normal">
+                              <p className="mt-1.5 text-[13px] text-delta-ink-muted font-normal">
                                 Flight from <span className="font-[600] text-delta-ink">{origCity}</span>
                               </p>
                             </div>
 
-                            <div className="bg-delta-surface-1 px-5 py-4 flex items-end justify-between">
+                            <div className="bg-delta-surface-1 px-5 py-4 flex items-end justify-between border-t border-delta-hairline-light">
                               <div>
                                 <span className="text-[10px] font-[700] uppercase tracking-wide text-delta-ink-muted">
                                   Fares from
@@ -456,6 +598,79 @@ function LandingPageContent() {
                 ))}
               </div>
             )}
+          </div>
+        </section>
+
+        {/* Premium Loyalty Banner Section */}
+        <section className="bg-delta-surface-2 py-16 border-t border-delta-hairline-light">
+          <div className="mx-auto max-w-[1280px] px-6 sm:px-8">
+            <div className="relative overflow-hidden rounded-[8px] bg-gradient-to-r from-delta-navy-dark via-delta-navy to-delta-navy-mid text-white border border-white/10 shadow-xl">
+              {/* Decorative elements */}
+              <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-30 md:opacity-100 hidden md:block">
+                <div 
+                  className="w-full h-full bg-cover bg-center"
+                  style={{ backgroundImage: "url('/images/loyalty_promo.jpg')" }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-delta-navy via-transparent to-transparent" />
+              </div>
+
+              <div className="relative z-10 p-8 md:p-12 max-w-[650px] flex flex-col gap-6">
+                <div>
+                  <div className="inline-flex items-center gap-2 bg-delta-red/35 border border-delta-red/30 text-white text-[10px] font-[800] uppercase tracking-wider px-3 py-1 rounded-full mb-4 shadow-sm">
+                    <Award className="w-3.5 h-3.5 text-white animate-pulse" />
+                    SkyMiles Loyalty Program
+                  </div>
+                  <h2 className="text-[28px] sm:text-[36px] font-[800] tracking-tight leading-tight text-white text-shadow-md">
+                    Elevate your travel experience to elite status
+                  </h2>
+                  <p className="mt-4 text-[14px] sm:text-[15px] text-white/80 leading-[22px] font-normal">
+                    Join SkyMiles to earn miles on every flight, qualify for elite Medallion tiers, and unlock luxury travel privileges like airport lounge access and priority boarding.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-delta-red font-bold text-xs border border-white/20">
+                      ✓
+                    </div>
+                    <span className="text-[13px] text-white/90 font-medium">Lounge Access (Club Lounge)</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-delta-red font-bold text-xs border border-white/20">
+                      ✓
+                    </div>
+                    <span className="text-[13px] text-white/90 font-medium">Unlimited Miles Validity</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-delta-red font-bold text-xs border border-white/20">
+                      ✓
+                    </div>
+                    <span className="text-[13px] text-white/90 font-medium">Priority Baggage Handling</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-delta-red font-bold text-xs border border-white/20">
+                      ✓
+                    </div>
+                    <span className="text-[13px] text-white/90 font-medium">100% Free Tiers Enrollment</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4 mt-2">
+                  <Link 
+                    href="/skymiles" 
+                    className="bg-delta-red hover:bg-delta-red-hover text-white text-[12px] font-[800] uppercase tracking-wider px-6 py-3 rounded-[4px] shadow-lg shadow-delta-red/35 transition-all text-center hover:scale-[1.02]"
+                  >
+                    Explore Medallion Tiers
+                  </Link>
+                  <Link 
+                    href="/register" 
+                    className="bg-white/10 hover:bg-white/25 text-white border border-white/30 text-[12px] font-[800] uppercase tracking-wider px-6 py-3 rounded-[4px] transition-all text-center hover:scale-[1.02]"
+                  >
+                    Join SkyMiles Free
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 

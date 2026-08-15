@@ -13,9 +13,9 @@ export function Footer() {
         <Plane className="w-[500px] h-[500px] -rotate-45" />
       </div>
 
-      <div className="mx-auto max-w-[1280px] px-6 sm:px-8 relative z-10">
+      <div className="mx-auto px-6 sm:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
-          
+
           {/* Brand & Contact Section */}
           <div className="lg:col-span-4">
             <Link href="/" className="inline-flex items-center gap-2 mb-6 group">
@@ -29,7 +29,7 @@ export function Footer() {
             <p className="text-white/60 text-sm leading-relaxed mb-8 max-w-sm">
               Experience the new standard of air travel. We connect the world with cutting-edge technology and unparalleled service.
             </p>
-            
+
             <div className="space-y-3 text-sm text-white/70">
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-delta-red" />
@@ -41,7 +41,7 @@ export function Footer() {
               </div>
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-delta-red mt-1" />
-                <span>123 Aviation Way, Suite 500<br/>New York, NY 10001</span>
+                <span>123 Aviation Way, Suite 500<br />New York, NY 10001</span>
               </div>
             </div>
           </div>
@@ -96,9 +96,9 @@ export function Footer() {
               Subscribe to get the latest deals and travel news.
             </p>
             <div className="flex flex-col gap-3">
-              <input 
-                type="email" 
-                placeholder="Email address" 
+              <input
+                type="email"
+                placeholder="Email address"
                 className="w-full bg-white/5 border border-white/10 rounded-md px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-delta-red focus:ring-1 focus:ring-delta-red transition-all"
               />
               <button className="w-full bg-delta-red hover:bg-delta-red-hover text-white rounded-md px-4 py-2.5 text-sm font-bold transition-colors">
@@ -114,7 +114,7 @@ export function Footer() {
         {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/40">
           <p>© {new Date().getFullYear()} SkyLedger Airways. All rights reserved.</p>
-          
+
           <div className="flex items-center gap-6">
             <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-white transition-colors">Terms of Use</a>

@@ -19,11 +19,11 @@ import { useAuth } from "@/context/auth-context"
 import { cn } from "@/lib/utils"
 
 const NAV_LINKS = [
-  { label: "Book Flights", href: "/", icon: Plane },
-  { label: "Flight Status", href: "/flight-status", icon: Clock },
-  { label: "Curated Deals", href: "/deals", icon: Tag },
-  { label: "SkyMiles Benefits", href: "/skymiles", icon: Award },
-  { label: "Travel Info", href: "/travel-info", icon: Info },
+  { label: "Book", href: "/", icon: Plane },
+  { label: "Status", href: "/flight-status", icon: Clock },
+  { label: "Deals", href: "/deals", icon: Tag },
+  { label: "SkyMiles", href: "/skymiles", icon: Award },
+  { label: "Info", href: "/travel-info", icon: Info },
 ]
 
 export function Navbar() {

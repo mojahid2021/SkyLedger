@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Tag, MapPin, ArrowRight } from "lucide-react"
 import { Navbar } from "@/components/layout/navbar"
+import { Footer } from "@/components/layout/footer"
 import { cn } from "@/lib/utils"
 
 function getCityFromAirport(name: string, iata: string): string {
@@ -30,6 +31,12 @@ function getCityFromAirport(name: string, iata: string): string {
   return clean || name
 }
 
+const destinationImages: Record<string, string> = {
+  CXB: "/images/dest_coxs_bazar.jpg",
+  JFK: "/images/dest_new_york.jpg",
+  DXB: "/images/dest_dubai.jpg",
+}
+
 export default function DealsPage() {
   const router = useRouter()
   const [dbDeals, setDbDeals] = useState<any[]>([])
@@ -51,7 +58,7 @@ export default function DealsPage() {
     const originLabel = `${deal.origin_name} (${deal.origin_iata})`
     const destinationLabel = `${deal.destination_name} (${deal.destination_iata})`
     router.push(
-      `/?origin=${encodeURIComponent(originLabel)}&originCode={deal.origin_iata}&destination=${encodeURIComponent(destinationLabel)}&destinationCode=${deal.destination_iata}`
+      `/?origin=${encodeURIComponent(originLabel)}&originCode=${deal.origin_iata}&destination=${encodeURIComponent(destinationLabel)}&destinationCode=${deal.destination_iata}`
     )
   }
 
@@ -62,18 +69,28 @@ export default function DealsPage() {
       <Navbar />
 
       <main className="flex-1 mx-auto w-full max-w-[1280px] px-6 sm:px-8 py-10 flex flex-col gap-8">
-        {/* Header Block */}
-        <div className="flex flex-col gap-2">
-          <div className="inline-flex items-center gap-1.5 bg-delta-navy text-white px-3 py-1 text-[11px] font-[700] uppercase tracking-wider w-fit rounded-[2px]">
-            <Tag className="h-3.5 w-3.5 text-delta-red" />
-            <span>Featured Travel Offers</span>
+        {/* Header Block with Hero Banner */}
+        <div className="relative rounded-[8px] overflow-hidden bg-gradient-to-r from-delta-navy-dark via-delta-navy to-delta-navy-mid text-white border border-white/10 shadow-xl">
+          <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-30 md:opacity-100 hidden md:block">
+            <div 
+              className="w-full h-full bg-cover bg-center"
+              style={{ backgroundImage: "url('/images/promo_vacation.jpg')" }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-delta-navy via-transparent to-transparent" />
           </div>
-          <h1 className="text-[32px] sm:text-[40px] font-[700] text-delta-navy tracking-tight leading-none mt-2">
-            Today&apos;s Curated Deals
-          </h1>
-          <p className="text-[15px] text-delta-ink-muted max-w-[640px] mt-1 font-normal">
-            Special promotional airfares for popular domestic and international flight routes. Prefill your search instantly by selecting any route.
-          </p>
+
+          <div className="relative z-10 p-8 md:p-12 max-w-[650px] flex flex-col gap-3">
+            <div className="inline-flex items-center gap-1.5 bg-delta-red/35 border border-delta-red/30 text-white px-3 py-1 text-[11px] font-[800] uppercase tracking-wider w-fit rounded-full shadow-sm">
+              <Tag className="h-3.5 w-3.5 text-delta-red animate-pulse" />
+              <span>Featured Travel Offers</span>
+            </div>
+            <h1 className="text-[32px] sm:text-[40px] font-[800] text-white tracking-tight leading-none mt-2 text-shadow-md">
+              Today&apos;s Curated Deals
+            </h1>
+            <p className="text-[15px] text-white/80 max-w-[580px] mt-2 font-normal leading-[22px] text-shadow-sm">
+              Special promotional airfares for popular domestic and international flight routes. Prefill your search instantly by selecting any route.
+            </p>
+          </div>
         </div>
 
         {/* Loading / Results Grid */}
@@ -107,34 +124,45 @@ export default function DealsPage() {
                       const routeStr = `${deal.origin_iata} → ${deal.destination_iata}`
                       const fareStr = `৳${Number(deal.price).toLocaleString("en-US", { maximumFractionDigits: 0 })}`
                       const tripTypeStr = deal.flight_type === "direct" ? "One-way Direct" : "Round Trip / Connecting"
+                      const destImage = destinationImages[deal.destination_iata] || "/images/hero_flight.jpg"
 
                       return (
                         <div
                           key={deal.flight_id}
-                          className="group rounded-[4px] border border-delta-hairline bg-white hover:border-delta-navy hover:shadow-md transition-all flex flex-col justify-between overflow-hidden"
+                          className="group rounded-[4px] border border-delta-hairline bg-white hover:border-delta-navy hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden"
                         >
-                          {/* Card Content Area */}
-                          <div className="p-5 flex flex-col">
-                            <div className="flex items-center justify-between">
-                              <span className="rounded-full bg-delta-surface-2 px-2.5 py-0.5 text-[11px] font-[700] uppercase tracking-wide text-delta-navy">
+                          {/* Card Visual Header */}
+                          <div className="relative h-[150px] overflow-hidden">
+                            <div 
+                              className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                              style={{ backgroundImage: `url('${destImage}')` }}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+                            <div className="absolute top-4 left-4">
+                              <span className="rounded-full bg-delta-red text-white px-2.5 py-0.5 text-[10px] font-[800] uppercase tracking-wider shadow-sm">
                                 {deal.tag}
                               </span>
-                              <span className="flex items-center gap-1 font-mono text-[12px] font-[700] text-delta-navy bg-delta-surface-1 px-2.5 py-0.5 rounded border border-delta-hairline-light">
+                            </div>
+                            <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-white">
+                              <span className="flex items-center gap-1 font-mono text-[11px] font-[700] bg-black/40 backdrop-blur-xs px-2.5 py-0.5 rounded border border-white/10 text-shadow-sm">
                                 <MapPin className="h-3 w-3 text-delta-red shrink-0" />
                                 {routeStr}
                               </span>
                             </div>
+                          </div>
 
-                            <h3 className="mt-5 text-[24px] font-[700] text-delta-navy group-hover:text-delta-red transition-colors">
+                          {/* Card Content Area */}
+                          <div className="p-5 flex flex-col flex-1">
+                            <h3 className="text-[20px] font-[800] text-delta-navy group-hover:text-delta-red transition-colors leading-tight">
                               {destCity}
                             </h3>
-                            <p className="mt-1 text-[13px] text-delta-ink-muted font-normal">
+                            <p className="mt-1.5 text-[13px] text-delta-ink-muted font-normal">
                               {tripTypeStr} from <span className="font-[600] text-delta-ink">{origCity}</span>
                             </p>
                           </div>
 
-                          {/* Card Footer - styled with block background instead of border-t line */}
-                          <div className="bg-delta-surface-1 px-5 py-4 flex items-end justify-between">
+                          {/* Card Footer */}
+                          <div className="bg-delta-surface-1 px-5 py-4 flex items-end justify-between border-t border-delta-hairline-light">
                             <div>
                               <span className="text-[10px] font-[700] uppercase tracking-wide text-delta-ink-muted">
                                 Fares from
@@ -163,6 +191,7 @@ export default function DealsPage() {
           </div>
         )}
       </main>
+      <Footer />
     </div>
   )
 }

@@ -3,6 +3,7 @@
 import React from "react"
 import { Info, Luggage, ShieldCheck, Wallet, RefreshCw } from "lucide-react"
 import { Navbar } from "@/components/layout/navbar"
+import { Footer } from "@/components/layout/footer"
 
 export default function TravelInfoPage() {
   return (
@@ -66,6 +67,7 @@ export default function TravelInfoPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   )
 }
