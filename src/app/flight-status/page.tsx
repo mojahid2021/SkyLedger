@@ -113,7 +113,7 @@ export default function FlightStatusPage() {
         {/* Header Block with Hero Banner */}
         <div 
           className="relative rounded-[8px] overflow-hidden bg-cover bg-center text-white border border-white/10 shadow-xl p-8 md:p-12"
-          style={{ backgroundImage: "url('/images/dest_new_york.jpg')" }}
+          style={{ backgroundImage: "url('/images/hero_flight_status.jpg')" }}
         >
           {/* Gradients overlay to ensure legibility */}
           <div className="absolute inset-0 bg-gradient-to-r from-delta-navy-dark/95 via-delta-navy-dark/80 to-delta-navy-dark/30 pointer-events-none" />
