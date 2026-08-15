@@ -319,6 +319,10 @@ async function run() {
       await connection.query("ALTER TABLE airports MODIFY COLUMN lat DOUBLE NULL")
       await connection.query("ALTER TABLE airports MODIFY COLUMN lng DOUBLE NULL")
       await connection.query("ALTER TABLE flights ADD COLUMN IF NOT EXISTS flight_description TEXT NULL")
+      try {
+        await connection.query("ALTER TABLE flight_deals DROP COLUMN image_url")
+      } catch (e) { /* ignore if doesn't exist */ }
+      await connection.query("ALTER TABLE flight_deals ADD COLUMN IF NOT EXISTS image_file_name VARCHAR(500) NULL")
       console.log("✓ Applied advanced data types to live tables successfully")
     } catch (e) {
       console.log("⚠ Error applying ALTER TABLE:", e)
@@ -328,6 +332,7 @@ async function run() {
       CREATE TABLE IF NOT EXISTS flight_deals (
         flight_id INT PRIMARY KEY,
         tag VARCHAR(50) NOT NULL DEFAULT 'Low fare',
+        image_file_name VARCHAR(500) NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (flight_id) REFERENCES flights(id) ON DELETE CASCADE
       )

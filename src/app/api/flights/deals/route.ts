@@ -7,6 +7,7 @@ export async function GET() {
       SELECT 
         fd.flight_id,
         fd.tag,
+        fd.image_file_name as deal_image_file_name,
         f.flight_number,
         f.price,
         f.flight_type,

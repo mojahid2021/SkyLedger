@@ -36,6 +36,7 @@ export async function GET(request: Request) {
         ac.model as aircraft_model,
         ac.reg_number as aircraft_reg,
         fd.tag as deal_tag,
+        fd.image_file_name as deal_image_file_name,
         (CASE WHEN fd.flight_id IS NOT NULL THEN 1 ELSE 0 END) as is_deal,
         (SELECT COUNT(bp.id) FROM bookings b JOIN booking_passengers bp ON bp.booking_id = b.id WHERE b.flight_id = f.id AND b.status = 'confirmed') as booked_seats
       FROM flights f

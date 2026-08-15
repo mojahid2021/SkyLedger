@@ -19,6 +19,12 @@ function AdminFlightsContent() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
 
+  const [dealModalOpen, setDealModalOpen] = useState(false)
+  const [dealFlightId, setDealFlightId] = useState<number | null>(null)
+  const [dealTag, setDealTag] = useState("Low fare")
+  const [dealImage, setDealImage] = useState<File | null>(null)
+  const [dealUploading, setDealUploading] = useState(false)
+
   const handleSectionChange = (section: AdminSection) => {
     if (section === "flights") return
     router.push(`/admin/${section}`)
@@ -37,21 +43,65 @@ function AdminFlightsContent() {
       .finally(() => setLoading(false))
   }
 
-  const handleAddDeal = (flightId: number, tag: string) => {
-    fetch("/api/admin/flights/deal", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ flightId, tag }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          fetchFlights()
+  const openDealModal = (flightId: number) => {
+    setDealFlightId(flightId)
+    setDealTag("Low fare")
+    setDealImage(null)
+    setDealModalOpen(true)
+  }
+
+  const handleAddDealSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!dealFlightId) return
+    setDealUploading(true)
+    
+    let imageFileName = null
+    
+    // Upload image if selected
+    if (dealImage) {
+      const formData = new FormData()
+      formData.append("file", dealImage)
+      
+      try {
+        const uploadRes = await fetch("/api/admin/upload-image", {
+          method: "POST",
+          body: formData
+        })
+        const uploadData = await uploadRes.json()
+        if (uploadData.success) {
+          imageFileName = uploadData.fileName
         } else {
-          alert("Failed to add deal: " + data.error)
+          alert("Image upload failed: " + uploadData.error)
+          setDealUploading(false)
+          return
         }
+      } catch (err) {
+        console.error("Upload error:", err)
+        alert("Image upload failed.")
+        setDealUploading(false)
+        return
+      }
+    }
+    
+    // Assign tag
+    try {
+      const res = await fetch("/api/admin/flights/deal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ flightId: dealFlightId, tag: dealTag, imageFileName }),
       })
-      .catch((err) => console.error("Error adding deal:", err))
+      const data = await res.json()
+      if (data.success) {
+        setDealModalOpen(false)
+        fetchFlights()
+      } else {
+        alert("Failed to add deal: " + data.error)
+      }
+    } catch (err) {
+      console.error("Error adding deal:", err)
+    } finally {
+      setDealUploading(false)
+    }
   }
 
   const handleRemoveDeal = (flightId: number) => {
@@ -306,23 +356,14 @@ function AdminFlightsContent() {
                               </div>
                             ) : (
                               <div className="flex items-center justify-center">
-                                <select
-                                  defaultValue=""
-                                  onChange={(e) => {
-                                    if (e.target.value) {
-                                      handleAddDeal(flight.id, e.target.value)
-                                      e.target.value = "" // Reset selector
-                                    }
-                                  }}
-                                  className="h-7 rounded-[4px] border border-delta-hairline bg-white text-[10px] px-1 font-bold text-delta-navy focus:outline-none focus:border-delta-navy cursor-pointer"
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openDealModal(flight.id)}
+                                  className="h-7 text-[10px] uppercase font-[800] tracking-wider"
                                 >
-                                  <option value="">+ Add Deal...</option>
-                                  <option value="Low fare">Low fare</option>
-                                  <option value="Popular">Popular</option>
-                                  <option value="Best deal">Best deal</option>
-                                  <option value="Hot Deal">Hot Deal</option>
-                                  <option value="Last Minute">Last Minute</option>
-                                </select>
+                                  + Add Tag
+                                </Button>
                               </div>
                             )}
                           </td>
@@ -350,19 +391,68 @@ function AdminFlightsContent() {
           </div>
         </main>
       </div>
+
+      {/* Add Deal Modal */}
+      {dealModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-white rounded-[6px] shadow-2xl w-full max-w-sm p-6 relative">
+            <h3 className="text-[18px] font-[800] text-delta-navy tracking-tight mb-4">Tag Flight & Add Image</h3>
+            <form onSubmit={handleAddDealSubmit} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[12px] font-[800] text-delta-navy uppercase tracking-wider">Promotion Tag</label>
+                <select 
+                  value={dealTag} 
+                  onChange={(e) => setDealTag(e.target.value)}
+                  className="h-10 px-3 rounded-[4px] border border-delta-hairline text-sm"
+                >
+                  <option value="Low fare">Low fare</option>
+                  <option value="Popular">Popular</option>
+                  <option value="Best deal">Best deal</option>
+                  <option value="Hot Deal">Hot Deal</option>
+                  <option value="Last Minute">Last Minute</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[12px] font-[800] text-delta-navy uppercase tracking-wider">Promotional Image (Optional)</label>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setDealImage(e.target.files[0])
+                    }
+                  }}
+                  className="text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-delta-navy/10 file:text-delta-navy hover:file:bg-delta-navy/20 cursor-pointer"
+                />
+              </div>
+              <div className="flex justify-end gap-3 mt-2">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  onClick={() => setDealModalOpen(false)}
+                  disabled={dealUploading}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="bg-delta-red hover:bg-delta-red-hover text-white"
+                  disabled={dealUploading}
+                >
+                  {dealUploading ? "Saving..." : "Save Deal"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
 export default function AdminFlightsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-dvh items-center justify-center bg-delta-canvas text-sm font-delta text-delta-ink-muted">
-          Loading Flights Directory...
-        </div>
-      }
-    >
+    <Suspense fallback={<div className="min-h-screen bg-delta-surface-1 flex items-center justify-center text-delta-ink-muted">Loading Admin Flights...</div>}>
       <AdminFlightsContent />
     </Suspense>
   )

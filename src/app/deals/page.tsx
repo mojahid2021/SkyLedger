@@ -122,7 +122,9 @@ export default function DealsPage() {
                       const routeStr = `${deal.origin_iata} → ${deal.destination_iata}`
                       const fareStr = `৳${Number(deal.price).toLocaleString("en-US", { maximumFractionDigits: 0 })}`
                       const tripTypeStr = deal.flight_type === "direct" ? "One-way Direct" : "Round Trip / Connecting"
-                      const destImage = destinationImages[deal.destination_iata] || "/images/hero_flight.jpg"
+                      const destImage = deal.deal_image_file_name 
+                        ? `/api/media?file=${deal.deal_image_file_name}` 
+                        : (destinationImages[deal.destination_iata] || "/images/hero_flight.jpg")
 
                       return (
                         <div

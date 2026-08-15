@@ -4,17 +4,18 @@ import { query } from "@/lib/db"
 // POST /api/admin/flights/deal — Mark a flight as a homepage deal
 export async function POST(request: Request) {
   try {
-    const { flightId, tag } = await request.json()
+    const { flightId, tag, imageFileName } = await request.json()
     
     if (!flightId) {
       return NextResponse.json({ success: false, error: "Missing required flightId" }, { status: 400 })
     }
 
     const activeTag = tag || "Low fare"
+    const activeImage = imageFileName || null
 
     await query(
-      "INSERT INTO flight_deals (flight_id, tag) VALUES (?, ?) ON DUPLICATE KEY UPDATE tag = VALUES(tag)",
-      [flightId, activeTag]
+      "INSERT INTO flight_deals (flight_id, tag, image_file_name) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE tag = VALUES(tag), image_file_name = VALUES(image_file_name)",
+      [flightId, activeTag, activeImage]
     )
 
     return NextResponse.json({ success: true, message: "Flight added to deals successfully!" })
