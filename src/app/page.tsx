@@ -356,100 +356,118 @@ function LandingPageContent() {
           </div>
         </section>
 
-        {/* Offers & Partner Promotions Section (NEW Standard Ads Grid) */}
-        <section className="bg-delta-canvas py-16 border-t border-delta-hairline-light">
+        {/* Offers & Partner Promotions Section (Redesigned to International Standard Clean Cards Grid) */}
+        <section className="bg-delta-surface-1 py-20 border-t border-delta-hairline-light">
           <div className="mx-auto max-w-[1280px] px-6 sm:px-8 flex flex-col gap-10">
             <div className="flex flex-col gap-2">
-              <p className="text-[12px] font-[700] uppercase tracking-wider text-delta-red flex items-center gap-1.5 animate-pulse">
-                <Compass className="h-3.5 w-3.5 text-delta-red" />
-                Exclusive Campaigns
+              <p className="text-[12px] font-[800] uppercase tracking-widest text-delta-red flex items-center gap-1.5">
+                <Compass className="h-3.5 w-3.5 text-delta-red animate-spin-slow" />
+                <span>Exclusive Campaigns</span>
               </p>
-              <h2 className="text-[24px] sm:text-[32px] font-[700] text-delta-navy leading-tight">
+              <h2 className="text-[28px] sm:text-[36px] font-[800] text-delta-navy tracking-tight leading-none mt-1">
                 Offers & Partner Promotions
               </h2>
-              <p className="text-[14px] text-delta-ink-muted max-w-[580px] font-normal">
+              <p className="text-[15px] text-delta-ink-muted max-w-[620px] font-normal leading-[22px] mt-1">
                 Take advantage of our exclusive digital wallet deals, co-branded reward schemes, mobile apps, and bundled package discounts.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
               {/* Wallet Recharge Promotion */}
               <Link 
                 href="/user/wallet"
-                className="group relative h-[260px] rounded-[6px] overflow-hidden border border-delta-hairline bg-white shadow-2xs hover:shadow-lg hover:border-delta-navy transition-all duration-300 cursor-pointer"
+                className="group flex flex-col rounded-[6px] border border-delta-hairline bg-white shadow-2xs hover:shadow-md hover:border-delta-navy transition-all duration-300 cursor-pointer overflow-hidden"
               >
-                <div 
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
-                  style={{ backgroundImage: "url('/images/promo_wallet.jpg')" }}
-                />
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/35 transition-colors duration-300" />
-                <div className="absolute bottom-0 left-0 w-full p-6 text-white z-10 flex flex-col justify-end h-full">
-                  <span className="bg-delta-red text-white text-[10px] font-[800] uppercase px-2.5 py-0.5 rounded-[4px] self-start mb-2 tracking-wider shadow-sm">
-                    Recharge Bonus
-                  </span>
-                  <h3 className="text-[22px] font-[800] tracking-tight leading-snug text-white text-shadow-sm text-shadow-md">
-                    Earn up to 15% Instant Cashback!
-                  </h3>
-                  <p className="text-[13px] text-white/90 mt-1 font-normal max-w-[420px] text-shadow-sm">
-                    Recharge your SkyLedger Wallet via SSLCommerz today and unlock exclusive flight discount credits.
-                  </p>
-                  <span className="mt-3 text-[11px] font-[750] uppercase tracking-wider text-delta-red group-hover:text-white transition-colors flex items-center gap-1.5 self-start">
+                <div className="relative h-44 w-full overflow-hidden bg-delta-surface-2 shrink-0 border-b border-delta-hairline-light">
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
+                    style={{ backgroundImage: "url('/images/promo_wallet.jpg')" }}
+                  />
+                </div>
+                
+                <div className="p-5 flex flex-col flex-1 justify-between">
+                  <div>
+                    <span className="text-[10px] font-[800] uppercase tracking-wider text-delta-red">
+                      Wallet Promo
+                    </span>
+                    <h3 className="text-[17px] font-[800] tracking-tight leading-snug text-delta-navy group-hover:text-delta-red transition-colors mt-2">
+                      Earn up to 15% Cashback
+                    </h3>
+                    <p className="text-[13px] text-delta-ink-muted mt-2 font-normal leading-relaxed">
+                      Recharge your SkyLedger Wallet via SSLCommerz today and unlock exclusive flight discount credits instantly.
+                    </p>
+                  </div>
+                  
+                  <div className="mt-5 inline-flex items-center gap-1 text-[11px] font-[800] uppercase tracking-wider text-delta-red group-hover:text-delta-navy transition-colors">
                     <span>Recharge Now</span>
-                    <ArrowRight className="h-3.5 w-3.5 animate-bounce-horizontal" />
-                  </span>
+                    <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
               </Link>
 
               {/* Visa Credit Card Promo */}
               <Link 
                 href="/skymiles"
-                className="group relative h-[260px] rounded-[6px] overflow-hidden border border-delta-hairline bg-white shadow-2xs hover:shadow-lg hover:border-delta-navy transition-all duration-300 cursor-pointer"
+                className="group flex flex-col rounded-[6px] border border-delta-hairline bg-white shadow-2xs hover:shadow-md hover:border-delta-navy transition-all duration-300 cursor-pointer overflow-hidden"
               >
-                <div 
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
-                  style={{ backgroundImage: "url('/images/promo_credit_card.jpg')" }}
-                />
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/35 transition-colors duration-300" />
-                <div className="absolute bottom-0 left-0 w-full p-6 text-white z-10 flex flex-col justify-end h-full">
-                  <span className="bg-delta-navy text-white text-[10px] font-[800] uppercase px-2.5 py-0.5 rounded-[4px] self-start mb-2 tracking-wider shadow-sm border border-white/10">
-                    Co-Branded Offer
-                  </span>
-                  <h3 className="text-[22px] font-[800] tracking-tight leading-snug text-white text-shadow-md">
-                    Apply for the Visa Platinum Card
-                  </h3>
-                  <p className="text-[13px] text-white/90 mt-1 font-normal max-w-[420px] text-shadow-sm">
-                    Unlock airport luxury lounge access, priority check-in, and earn 3x points on every ticket.
-                  </p>
-                  <span className="mt-3 text-[11px] font-[750] uppercase tracking-wider text-delta-red group-hover:text-white transition-colors flex items-center gap-1.5 self-start">
-                    <span>Learn More</span>
-                    <ArrowRight className="h-3.5 w-3.5 animate-bounce-horizontal" />
-                  </span>
+                <div className="relative h-44 w-full overflow-hidden bg-delta-surface-2 shrink-0 border-b border-delta-hairline-light">
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
+                    style={{ backgroundImage: "url('/images/promo_credit_card.jpg')" }}
+                  />
+                </div>
+                
+                <div className="p-5 flex flex-col flex-1 justify-between">
+                  <div>
+                    <span className="text-[10px] font-[800] uppercase tracking-wider text-delta-navy">
+                      Co-Branded Offer
+                    </span>
+                    <h3 className="text-[17px] font-[800] tracking-tight leading-snug text-delta-navy group-hover:text-delta-red transition-colors mt-2">
+                      Visa Platinum Rewards
+                    </h3>
+                    <p className="text-[13px] text-delta-ink-muted mt-2 font-normal leading-relaxed">
+                      Unlock airport luxury lounge access, priority check-in, and earn 3x points on every ticket purchases.
+                    </p>
+                  </div>
+                  
+                  <div className="mt-5 inline-flex items-center gap-1 text-[11px] font-[800] uppercase tracking-wider text-delta-red group-hover:text-delta-navy transition-colors">
+                    <span>Apply Card</span>
+                    <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
               </Link>
 
               {/* Mobile App download banner */}
               <div 
-                className="group relative h-[260px] rounded-[6px] overflow-hidden border border-delta-hairline bg-white shadow-2xs hover:shadow-lg transition-all duration-300"
+                className="group flex flex-col rounded-[6px] border border-delta-hairline bg-white shadow-2xs hover:shadow-md transition-all duration-300 overflow-hidden"
               >
-                <div 
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
-                  style={{ backgroundImage: "url('/images/promo_mobile_app.jpg')" }}
-                />
-                <div className="absolute inset-0 bg-black/45" />
-                <div className="absolute bottom-0 left-0 w-full p-6 text-white z-10 flex flex-col justify-end h-full">
-                  <span className="bg-emerald-600 text-white text-[10px] font-[800] uppercase px-2.5 py-0.5 rounded-[4px] self-start mb-2 tracking-wider shadow-sm">
-                    Mobile App
-                  </span>
-                  <h3 className="text-[22px] font-[800] tracking-tight leading-snug text-white text-shadow-md">
-                    Install SkyLedger on your Phone
-                  </h3>
-                  <p className="text-[13px] text-white/90 mt-1 font-normal max-w-[400px] text-shadow-sm">
-                    Scan the QR code to install our iOS or Android app for live flight alerts and fast offline bookings.
-                  </p>
-                  <div className="mt-3 flex items-center gap-4 text-[10px] font-[700] text-white/70 uppercase tracking-widest">
-                    <span>App Store</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
-                    <span>Google Play</span>
+                <div className="relative h-44 w-full overflow-hidden bg-delta-surface-2 shrink-0 border-b border-delta-hairline-light">
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
+                    style={{ backgroundImage: "url('/images/promo_mobile_app.jpg')" }}
+                  />
+                </div>
+                
+                <div className="p-5 flex flex-col flex-1 justify-between">
+                  <div>
+                    <span className="text-[10px] font-[800] uppercase tracking-wider text-emerald-600">
+                      Mobile App
+                    </span>
+                    <h3 className="text-[17px] font-[800] tracking-tight leading-snug text-delta-navy mt-2">
+                      SkyLedger on Mobile
+                    </h3>
+                    <p className="text-[13px] text-delta-ink-muted mt-2 font-normal leading-relaxed">
+                      Install our iOS or Android app to get live flight status alerts and manage your digital wallet offline.
+                    </p>
+                  </div>
+                  
+                  <div className="mt-4 flex gap-1.5 flex-wrap">
+                    <span className="px-2.5 py-1 rounded-[4px] border border-delta-hairline text-delta-navy text-[9px] font-[800] uppercase tracking-wider select-none">
+                      App Store
+                    </span>
+                    <span className="px-2.5 py-1 rounded-[4px] border border-delta-hairline text-delta-navy text-[9px] font-[800] uppercase tracking-wider select-none">
+                      Google Play
+                    </span>
                   </div>
                 </div>
               </div>
@@ -457,27 +475,32 @@ function LandingPageContent() {
               {/* Vacation Combo Promo */}
               <Link 
                 href="/deals"
-                className="group relative h-[260px] rounded-[6px] overflow-hidden border border-delta-hairline bg-white shadow-2xs hover:shadow-lg hover:border-delta-navy transition-all duration-300 cursor-pointer"
+                className="group flex flex-col rounded-[6px] border border-delta-hairline bg-white shadow-2xs hover:shadow-md hover:border-delta-navy transition-all duration-300 cursor-pointer overflow-hidden"
               >
-                <div 
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
-                  style={{ backgroundImage: "url('/images/promo_vacation.jpg')" }}
-                />
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/35 transition-colors duration-300" />
-                <div className="absolute bottom-0 left-0 w-full p-6 text-white z-10 flex flex-col justify-end h-full">
-                  <span className="bg-amber-600 text-white text-[10px] font-[800] uppercase px-2.5 py-0.5 rounded-[4px] self-start mb-2 tracking-wider shadow-sm">
-                    Vacation Deals
-                  </span>
-                  <h3 className="text-[22px] font-[800] tracking-tight leading-snug text-white text-shadow-md">
-                    Book Flight + Hotel & Save 35%!
-                  </h3>
-                  <p className="text-[13px] text-white/90 mt-1 font-normal max-w-[420px] text-shadow-sm">
-                    Discover luxury resort packages, direct flights, and staycations at unbeatable bundle prices.
-                  </p>
-                  <span className="mt-3 text-[11px] font-[750] uppercase tracking-wider text-delta-red group-hover:text-white transition-colors flex items-center gap-1.5 self-start">
+                <div className="relative h-44 w-full overflow-hidden bg-delta-surface-2 shrink-0 border-b border-delta-hairline-light">
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
+                    style={{ backgroundImage: "url('/images/promo_vacation.jpg')" }}
+                  />
+                </div>
+                
+                <div className="p-5 flex flex-col flex-1 justify-between">
+                  <div>
+                    <span className="text-[10px] font-[800] uppercase tracking-wider text-amber-600">
+                      Vacation Deals
+                    </span>
+                    <h3 className="text-[17px] font-[800] tracking-tight leading-snug text-delta-navy group-hover:text-delta-red transition-colors mt-2">
+                      Flight + Hotel Packages
+                    </h3>
+                    <p className="text-[13px] text-delta-ink-muted mt-2 font-normal leading-relaxed">
+                      Discover luxury resort packages, direct flights, and staycations at unbeatable bundle prices.
+                    </p>
+                  </div>
+                  
+                  <div className="mt-5 inline-flex items-center gap-1 text-[11px] font-[800] uppercase tracking-wider text-delta-red group-hover:text-delta-navy transition-colors">
                     <span>View Combos</span>
-                    <ArrowRight className="h-3.5 w-3.5 animate-bounce-horizontal" />
-                  </span>
+                    <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
               </Link>
             </div>

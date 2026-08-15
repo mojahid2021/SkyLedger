@@ -12,16 +12,14 @@ export default function SkyMilesPage() {
 
       <main className="flex-1 mx-auto w-full max-w-[1280px] px-6 sm:px-8 py-10 flex flex-col gap-8">
         {/* Header Block with Loyalty Hero Banner */}
-        <div className="relative rounded-[8px] overflow-hidden bg-gradient-to-r from-delta-navy-dark via-delta-navy to-delta-navy-mid text-white border border-white/10 shadow-xl">
-          <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-35 md:opacity-100 hidden md:block">
-            <div 
-              className="w-full h-full bg-cover bg-center"
-              style={{ backgroundImage: "url('/images/loyalty_promo.jpg')" }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-delta-navy via-transparent to-transparent" />
-          </div>
+        <div 
+          className="relative rounded-[8px] overflow-hidden bg-cover bg-center text-white border border-white/10 shadow-xl p-8 md:p-12"
+          style={{ backgroundImage: "url('/images/promo_credit_card.jpg')" }}
+        >
+          {/* Gradients overlay to ensure legibility */}
+          <div className="absolute inset-0 bg-gradient-to-r from-delta-navy-dark/95 via-delta-navy-dark/80 to-delta-navy-dark/30 pointer-events-none" />
 
-          <div className="relative z-10 p-8 md:p-12 max-w-[650px] flex flex-col gap-3">
+          <div className="relative z-10 max-w-[650px] flex flex-col gap-3">
             <div className="inline-flex items-center gap-1.5 bg-delta-red/35 border border-delta-red/30 text-white px-3 py-1 text-[11px] font-[800] uppercase tracking-wider w-fit rounded-full shadow-sm animate-pulse">
               <Award className="h-3.5 w-3.5 text-white" />
               <span>SkyMiles® Loyalty Benefits</span>

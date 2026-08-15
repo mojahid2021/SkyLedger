@@ -80,8 +80,8 @@ export function Footer() {
             </h4>
             <ul className="space-y-3 text-sm text-white/60">
               <li><Link href="/travel-info" className="hover:text-white hover:translate-x-1 inline-block transition-all duration-200">Help Center</Link></li>
-              <li><Link href="/travel-info" className="hover:text-white hover:translate-x-1 inline-block transition-all duration-200">Refund Policies</Link></li>
-              <li><Link href="/travel-info" className="hover:text-white hover:translate-x-1 inline-block transition-all duration-200">Cancellations</Link></li>
+              <li><Link href="/contact" className="hover:text-white hover:translate-x-1 inline-block transition-all duration-200">Contact Us</Link></li>
+              <li><Link href="/team" className="hover:text-white hover:translate-x-1 inline-block transition-all duration-200">Our Team</Link></li>
               <li><Link href="/travel-info" className="hover:text-white hover:translate-x-1 inline-block transition-all duration-200">Delay Info</Link></li>
             </ul>
           </div>
