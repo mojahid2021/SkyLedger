@@ -150,21 +150,21 @@ export function FlightSearchWidget({
 
   return (
     <div className="w-full flex flex-col gap-8 font-delta">
-      {/* Search Widget - polished full-width card layout */}
-      <div className="w-full bg-delta-canvas rounded-[8px] p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.05)] border border-delta-hairline-light flex flex-col gap-6">
+      {/* Search Widget - polished full-width card layout with rich Glassmorphism */}
+      <div className="w-full backdrop-blur-md bg-white/95 rounded-[8px] p-6 sm:p-8 shadow-2xl border border-white/20 flex flex-col gap-6 transform transition-all duration-300">
         {/* Trip type toggle (Redesigned capsule slider, no bottom border line) */}
         <div className="flex">
-          <div className="inline-flex p-1 bg-delta-surface-2 rounded-[4px] gap-1">
+          <div className="inline-flex p-1 bg-delta-surface-2 rounded-[6px] gap-1 border border-delta-hairline-light">
             {(["round", "oneway"] as const).map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setTripType(t)}
                 className={cn(
-                  "text-[12px] font-[700] px-4 py-1.5 rounded-[2px] transition-all duration-200 cursor-pointer uppercase tracking-wider",
+                  "text-[11px] font-[800] px-5 py-2 rounded-[4px] transition-all duration-300 cursor-pointer uppercase tracking-widest",
                   tripType === t
-                    ? "bg-white text-delta-navy shadow-[0_1px_3px_rgba(0,0,0,0.05)]"
-                    : "text-delta-ink-muted hover:text-delta-navy hover:bg-white/40"
+                    ? "bg-delta-navy text-white shadow-md"
+                    : "text-delta-navy/70 hover:text-delta-navy hover:bg-white/50"
                 )}
               >
                 {t === "round" ? "Round Trip" : "One Way"}
@@ -176,65 +176,67 @@ export function FlightSearchWidget({
         {/* Inputs Layout - full width 4-column alignment */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end">
           {/* Origin & Destination (spanning 2 columns on desktop with absolute centered Swap button) */}
-          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
-            <LocationInput
-              label="From"
-              icon={<Plane className="h-4 w-4" />}
-              value={from}
-              onChange={(val, code) => {
-                setFrom(val)
-                setFromCode(code)
-              }}
-            />
+          <div className="lg:col-span-2 relative">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-10">
+              <LocationInput
+                label="From"
+                icon={<Plane className="h-4 w-4" />}
+                value={from}
+                onChange={(val, code) => {
+                  setFrom(val)
+                  setFromCode(code)
+                }}
+              />
+
+              <LocationInput
+                label="To"
+                icon={<Plane className="h-4 w-4" />}
+                value={to}
+                onChange={(val, code) => {
+                  setTo(val)
+                  setToCode(code)
+                }}
+              />
+            </div>
 
             {/* Swap Button absolutely centered between From & To fields */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 hidden sm:flex pt-5">
+            <div className="absolute left-1/2 bottom-[6px] -translate-x-1/2 z-10 hidden sm:flex">
               <button
                 type="button"
                 onClick={handleSwap}
-                className="h-8 w-8 rounded-full bg-white text-delta-navy hover:bg-delta-navy hover:text-white transition-all shadow-[0_2px_8px_rgba(0,0,0,0.08)] flex items-center justify-center border border-delta-hairline cursor-pointer"
+                className="h-9 w-9 rounded-full bg-delta-red text-white hover:bg-delta-red-hover hover:scale-110 active:scale-95 transition-all shadow-lg shadow-delta-red/35 flex items-center justify-center border border-white/20 cursor-pointer shrink-0"
                 title="Swap Locations"
               >
-                <ArrowRightLeft className="h-3.5 w-3.5" />
+                <ArrowRightLeft className="h-4 w-4" />
               </button>
             </div>
-
-            <LocationInput
-              label="To"
-              icon={<Plane className="h-4 w-4" />}
-              value={to}
-              onChange={(val, code) => {
-                setTo(val)
-                setToCode(code)
-              }}
-            />
           </div>
 
           {/* Depart Date (1 column) */}
           <div className="space-y-1.5 w-full">
-            <label className="text-[12px] font-[500] text-delta-navy uppercase tracking-wide block">
+            <label className="text-[11px] font-[800] text-delta-navy uppercase tracking-widest block mb-1">
               Depart
             </label>
             <div className="relative">
-              <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-delta-ink-muted">
+              <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-delta-navy/55 z-10">
                 <CalendarDays className="h-4 w-4" />
               </div>
               <input
                 type="date"
                 value={depart}
                 onChange={(e) => setDepart(e.target.value)}
-                className="h-[44px] w-full rounded-[4px] border border-delta-hairline bg-delta-canvas pl-9 pr-3 text-[14px] text-delta-ink outline-none transition-all focus:border-delta-navy focus:ring-2 focus:ring-delta-navy/10 cursor-pointer font-normal"
+                className="h-[48px] w-full rounded-[4px] border border-delta-hairline-light bg-delta-surface-1 pl-10 pr-4 text-[14px] font-semibold text-delta-navy outline-none transition-all focus:bg-white focus:border-delta-navy focus:ring-2 focus:ring-delta-navy/10 cursor-pointer"
               />
             </div>
           </div>
 
-          {/* Return Date (1 column, disabled placeholder for One Way trip to maintain layout stability) */}
+          {/* Return Date (1 column) */}
           <div className="space-y-1.5 w-full">
-            <label className="text-[12px] font-[500] text-delta-navy uppercase tracking-wide block">
+            <label className="text-[11px] font-[800] text-delta-navy uppercase tracking-widest block mb-1">
               Return
             </label>
             <div className="relative">
-              <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-delta-ink-muted">
+              <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-delta-navy/55 z-10">
                 <CalendarDays className="h-4 w-4" />
               </div>
               {tripType === "round" ? (
@@ -242,10 +244,10 @@ export function FlightSearchWidget({
                   type="date"
                   value={returnDate}
                   onChange={(e) => setReturnDate(e.target.value)}
-                  className="h-[44px] w-full rounded-[4px] border border-delta-hairline bg-delta-canvas pl-9 pr-3 text-[14px] text-delta-ink outline-none transition-all focus:border-delta-navy focus:ring-2 focus:ring-delta-navy/10 cursor-pointer font-normal"
+                  className="h-[48px] w-full rounded-[4px] border border-delta-hairline-light bg-delta-surface-1 pl-10 pr-4 text-[14px] font-semibold text-delta-navy outline-none transition-all focus:bg-white focus:border-delta-navy focus:ring-2 focus:ring-delta-navy/10 cursor-pointer"
                 />
               ) : (
-                <div className="h-[44px] w-full rounded-[4px] border border-delta-hairline-light bg-delta-surface-2 opacity-50 pl-9 pr-3 text-[14px] text-delta-ink-muted flex items-center cursor-not-allowed select-none">
+                <div className="h-[48px] w-full rounded-[4px] border border-delta-hairline-light bg-delta-surface-2 opacity-50 pl-10 pr-4 text-[14px] text-delta-navy/40 flex items-center cursor-not-allowed select-none font-semibold">
                   One Way Trip
                 </div>
               )}
@@ -257,27 +259,27 @@ export function FlightSearchWidget({
         <div className="flex flex-col sm:flex-row gap-4 items-end">
           {/* Travelers Popover trigger */}
           <div ref={popoverRef} className="relative space-y-1.5 w-full sm:w-[260px]">
-            <label className="text-[12px] font-[500] text-delta-navy uppercase tracking-wide block">
+            <label className="text-[11px] font-[800] text-delta-navy uppercase tracking-widest block mb-1">
               Travelers
             </label>
             <button
               type="button"
               onClick={() => setShowPassengerPopover((v) => !v)}
-              className="h-[44px] w-full rounded-[4px] border border-delta-hairline bg-delta-canvas px-3 text-left text-[14px] text-delta-ink hover:border-delta-navy flex items-center justify-between transition-all focus:border-delta-navy focus:ring-2 focus:ring-delta-navy/10 cursor-pointer font-normal"
+              className="h-[48px] w-full rounded-[4px] border border-delta-hairline-light bg-delta-surface-1 px-4 text-left text-[14px] text-delta-navy hover:border-delta-navy flex items-center justify-between transition-all focus:bg-white focus:ring-2 focus:ring-delta-navy/10 cursor-pointer font-semibold"
             >
               <span className="flex items-center gap-2 truncate">
-                <Users className="h-4 w-4 text-delta-ink-muted shrink-0" />
-                <span className="truncate text-delta-navy font-[550]">
+                <Users className="h-4 w-4 text-delta-navy/55 shrink-0" />
+                <span className="truncate text-delta-navy">
                   {passengers} {passengers === 1 ? "Traveler" : "Travelers"}
                 </span>
               </span>
-              <ChevronDown className="h-4 w-4 text-delta-ink-muted shrink-0" />
+              <ChevronDown className="h-4 w-4 text-delta-navy/55 shrink-0" />
             </button>
 
             {showPassengerPopover && (
-              <div className="absolute z-25 mt-1 w-full min-w-[285px] rounded-[4px] border border-delta-hairline bg-delta-canvas p-4 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+              <div className="absolute z-25 mt-1.5 w-full min-w-[285px] rounded-[6px] border border-white/20 bg-white/95 dark:bg-delta-navy/95 p-4 shadow-2xl backdrop-blur-md">
                 <div className="flex items-center justify-between">
-                  <span className="text-[13px] font-[600] text-delta-ink">Travelers</span>
+                  <span className="text-[13px] font-[750] text-delta-navy uppercase tracking-wider">Travelers</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -286,7 +288,7 @@ export function FlightSearchWidget({
                     >
                       <Minus className="h-3.5 w-3.5" />
                     </button>
-                    <span className="w-6 text-center text-[14px] font-[700] text-delta-ink">
+                    <span className="w-6 text-center text-[14px] font-[700] text-delta-navy">
                       {passengers}
                     </span>
                     <button
@@ -308,9 +310,9 @@ export function FlightSearchWidget({
               size="lg"
               onClick={handleSearch}
               disabled={searching}
-              className="h-[48px] w-full sm:w-auto sm:px-12 bg-delta-red text-white font-[700] hover:bg-delta-red-hover flex items-center justify-center gap-2 rounded-[4px] cursor-pointer text-[16px] uppercase tracking-wider"
+              className="h-[48px] w-full sm:w-auto sm:px-14 bg-delta-red text-white font-[800] hover:bg-delta-red-hover flex items-center justify-center gap-2.5 rounded-[4px] cursor-pointer text-[14px] uppercase tracking-widest shadow-lg shadow-delta-red/35 hover:scale-[1.02] active:scale-95 transition-all duration-200"
             >
-              <Search className="h-4 w-4" />
+              <Search className="h-4.5 w-4.5" />
               {searching ? "Searching..." : "Search Flights"}
             </Button>
           </div>

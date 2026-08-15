@@ -212,8 +212,8 @@ function LandingPageContent() {
               </p>
             </div>
 
-            {/* Search widget wrapper - Styled with premium Glassmorphism */}
-            <div ref={searchWidgetRef} className="backdrop-blur-md bg-white/95 rounded-[6px] shadow-2xl border border-white/20 p-2 sm:p-4">
+            {/* Search widget wrapper - Direct rendering (delegated to widget glassmorphic card) */}
+            <div ref={searchWidgetRef} className="w-full">
               <FlightSearchWidget
                 initialOrigin={prefilledSearch.origin}
                 initialOriginCode={prefilledSearch.originCode}

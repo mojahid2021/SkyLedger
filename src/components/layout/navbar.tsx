@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -14,6 +14,7 @@ import {
   LogOut,
   Menu,
   X,
+  Wallet,
 } from "lucide-react"
 import { useAuth } from "@/context/auth-context"
 import { cn } from "@/lib/utils"
@@ -30,6 +31,20 @@ export function Navbar() {
   const pathname = usePathname()
   const { user, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
 
   return (
     <header className="sticky top-0 z-50 h-16 bg-delta-navy text-white shadow-md font-delta select-none">
@@ -71,32 +86,67 @@ export function Navbar() {
 
         {/* Right Actions Block (matching the example structure) */}
         <div className="hidden lg:flex items-center gap-4 shrink-0">
-          {/* Outlined Contact/Locale box */}
-          <div className="flex items-center gap-1.5 rounded-[4px] px-3.5 py-2 text-[12px] font-[700] uppercase tracking-wide text-white/80 border border-white/20 hover:bg-white/5 hover:text-white transition-colors cursor-pointer">
-            <Globe className="h-4 w-4" />
-            <span>BDT (৳)</span>
-          </div>
-
           {user ? (
-            <>
-              {/* Primary Filled CTA Button */}
-              <Link
-                href={user.role === "admin" ? "/admin/overview" : "/user/dashboard"}
-                className="flex items-center justify-center rounded-[4px] bg-delta-red px-5 py-2 text-[13px] font-[700] uppercase tracking-wider text-white hover:bg-delta-red-hover transition-colors shadow-sm"
-              >
-                Dashboard
-              </Link>
-
-              {/* Text Login/Out Link with User Icon */}
+            <div ref={dropdownRef} className="relative">
+              {/* User Profile Circle Trigger */}
               <button
                 type="button"
-                onClick={logout}
-                className="flex items-center gap-1.5 text-white/80 hover:text-white text-[13px] font-[700] uppercase tracking-wider transition-colors cursor-pointer pl-1"
+                onClick={() => setDropdownOpen((o) => !o)}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white font-[800] text-sm uppercase tracking-wider transition-all cursor-pointer transform hover:scale-105 active:scale-95"
+                title={`${user.first_name} ${user.last_name}`}
               >
-                <LogOut className="h-4.5 w-4.5" />
-                <span>Sign Out</span>
+                {user.first_name[0]}{user.last_name[0]}
               </button>
-            </>
+
+              {/* Profile Dropdown Menu */}
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2.5 w-56 rounded-[6px] border border-white/10 bg-delta-navy-dark text-white p-2.5 shadow-2xl z-55 flex flex-col gap-1 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="px-3 py-2 border-b border-white/10 mb-1">
+                    <p className="text-xs font-extrabold truncate text-white">{user.first_name} {user.last_name}</p>
+                    <p className="text-[10px] text-white/60 truncate font-normal mt-0.5">{user.email}</p>
+                  </div>
+                  
+                  <Link
+                    href={user.role === "admin" ? "/admin/overview" : "/user/dashboard"}
+                    className="flex items-center gap-2.5 px-3 py-2 text-xs font-[700] text-white/80 hover:text-white hover:bg-white/5 rounded-[4px] transition-colors"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <User className="h-4 w-4 shrink-0 text-delta-red" />
+                    <span>Dashboard</span>
+                  </Link>
+
+                  <Link
+                    href="/user/profile"
+                    className="flex items-center gap-2.5 px-3 py-2 text-xs font-[700] text-white/80 hover:text-white hover:bg-white/5 rounded-[4px] transition-colors"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <User className="h-4 w-4 shrink-0 text-delta-red" />
+                    <span>My Profile</span>
+                  </Link>
+
+                  <Link
+                    href="/user/wallet"
+                    className="flex items-center gap-2.5 px-3 py-2 text-xs font-[700] text-white/80 hover:text-white hover:bg-white/5 rounded-[4px] transition-colors"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <Wallet className="h-4 w-4 shrink-0 text-delta-red" />
+                    <span>Wallet</span>
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      logout()
+                      setDropdownOpen(false)
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-[800] text-delta-red hover:text-delta-red-hover hover:bg-white/5 rounded-[4px] transition-colors text-left cursor-pointer border-t border-white/10 mt-1 pt-2.5"
+                  >
+                    <LogOut className="h-4 w-4 shrink-0" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               {/* Primary Filled CTA Button */}

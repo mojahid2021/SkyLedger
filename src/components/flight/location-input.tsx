@@ -59,11 +59,11 @@ export function LocationInput({
 
   return (
     <div className="space-y-1.5 flex-1 w-full font-delta">
-      <label className="text-[12px] font-[500] text-delta-navy uppercase tracking-wide block">
+      <label className="text-[11px] font-[800] text-delta-navy uppercase tracking-widest block mb-1">
         {label}
       </label>
       <div className="relative">
-        <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-delta-ink-muted">
+        <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-delta-navy/55 z-10">
           {icon}
         </div>
         <input
@@ -76,10 +76,10 @@ export function LocationInput({
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 200)}
           placeholder={`Search airport or city...`}
-          className="h-[44px] w-full rounded-[4px] border border-delta-hairline bg-delta-canvas pl-9 pr-3 text-[14px] text-delta-ink outline-none transition-all focus:border-delta-navy focus:ring-2 focus:ring-delta-navy/10 placeholder-delta-ink-muted/50 font-normal"
+          className="h-[48px] w-full rounded-[4px] border border-delta-hairline-light bg-delta-surface-1 pl-10 pr-10 text-[14px] font-semibold text-delta-navy outline-none transition-all focus:bg-white focus:border-delta-navy focus:ring-2 focus:ring-delta-navy/10 placeholder-delta-navy/35 shadow-inner-sm"
         />
         {open && query.trim().length >= 2 && (
-          <div className="absolute z-35 mt-1 max-h-72 w-full overflow-auto rounded-[4px] border border-delta-hairline bg-delta-canvas p-1 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+          <div className="absolute z-35 mt-1.5 max-h-72 w-full overflow-auto rounded-[6px] border border-white/20 backdrop-blur-md bg-white/95 dark:bg-delta-navy/90 p-1.5 shadow-2xl">
             {loading && (
               <p className="px-3.5 py-3 text-[13px] text-delta-ink-muted animate-pulse">
                 Searching airports...
