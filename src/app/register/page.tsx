@@ -4,23 +4,19 @@ import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
-  IconBuildingBank,
-  IconUserPlus,
-  IconShieldOff,
-  IconLock,
-  IconMail,
-  IconUser,
-  IconPhone,
-  IconCalendar,
-  IconArrowRight,
-  IconAlertCircle,
-} from "@tabler/icons-react"
+  Mail,
+  Lock,
+  User,
+  Phone,
+  Calendar,
+  ArrowRight,
+  AlertCircle,
+  ArrowLeft,
+  Plane,
+  ShieldOff
+} from "lucide-react"
 
 import { useAuth } from "@/context/auth-context"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 
 export default function RegisterPage() {
   const { user, register, isLoading } = useAuth()
@@ -49,6 +45,11 @@ export default function RegisterPage() {
     e.preventDefault()
     setError("")
     setSubmitting(true)
+    if (phone.length !== 11) {
+      setError("Phone number must be exactly 11 digits without country code.")
+      setSubmitting(false)
+      return
+    }
 
     const result = await register({
       first_name: firstName,
@@ -66,177 +67,220 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-delta-navy-dark text-white flex flex-col justify-center items-center p-4 sm:p-6 relative overflow-hidden">
-      {/* Subtle Background Glows */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[radial-gradient(circle_at_center,#003366,transparent_70%)] opacity-[0.4] -mr-40 -mt-40 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[radial-gradient(circle_at_center,#e31837,transparent_70%)] opacity-[0.25] -ml-20 -mb-20 pointer-events-none" />
+    <div className="min-h-screen bg-white text-delta-ink font-delta flex select-none">
 
-      <div className="w-full max-w-md space-y-6 relative z-10">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-delta-red text-white shadow-lg shadow-delta-red/35 transform hover:scale-105 transition-transform duration-300">
-            <IconUserPlus className="h-8 w-8" />
+      {/* Left Panel: High-End Cover Visuals (Hidden on mobile) */}
+      <div className="hidden md:flex md:w-3/2 relative bg-delta-navy-dark overflow-hidden select-none">
+        {/* Cover Photo */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-75"
+          style={{ backgroundImage: "url('/images/hero_airplane_flying.jpg')" }}
+        />
+        {/* Glassmorphism Dark Tint Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-delta-navy-dark via-delta-navy-dark/70 to-delta-navy-dark/40" />
+
+        {/* Content Overlay */}
+        <div className="relative z-10 p-12 lg:p-16 flex flex-col justify-between h-full w-full text-white">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-[4px] bg-white text-delta-navy shadow-sm">
+              <Plane className="h-5 w-5 fill-delta-navy text-delta-navy" />
+            </div>
+            <span className="text-xl font-[800] tracking-tight text-white font-delta">SkyLedger</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center justify-center gap-2 text-white">
-            SkyLedger
-            <Badge variant="outline" className="text-xs font-bold bg-white/10 text-white border border-white/20">
-              New Account
-            </Badge>
-          </h1>
-          <p className="text-xs sm:text-sm text-white/60">
-            Register as a Treasury & Financial Ledger Member
-          </p>
-        </div>
 
-        {/* Security Rule Banner: Admin Registration Restriction */}
-        <div className="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs text-white space-y-1">
-          <div className="flex items-center gap-2 font-bold text-amber-400">
-            <IconShieldOff className="h-4 w-4 shrink-0 text-amber-400" />
-            <span>Admin Restriction Notice</span>
+          <div className="flex flex-col gap-6 max-w-lg">
+            <h2 className="text-[36px] sm:text-[42px] font-[800] tracking-tight leading-none text-white">
+              Unlock Elite Privileges.
+            </h2>
+            <p className="text-[16px] text-white/80 font-normal leading-relaxed">
+              Create a free standard member account to access your digital travel wallet, track transaction history, and earn partner promotions instantly.
+            </p>
+            <div className="flex items-center gap-4 mt-2">
+              <div className="flex -space-x-2">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-delta-red text-[11px] font-[800] ring-2 ring-delta-navy-dark">DAC</span>
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-delta-navy text-[11px] font-[800] ring-2 ring-delta-navy-dark">JFK</span>
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-delta-navy-mid text-[11px] font-[800] ring-2 ring-delta-navy-dark">DXB</span>
+              </div>
+              <span className="text-[12px] text-white/60 font-semibold tracking-wider uppercase">Active Global Routes</span>
+            </div>
           </div>
-          <p className="text-[11px] leading-relaxed text-white/80">
-            All public registrations create standard <strong className="font-bold text-amber-300">User</strong> accounts.
-            Administrative roles (<strong className="font-bold text-amber-300">Admin</strong>) cannot be registered publicly and must be assigned internally by existing System Administrators.
-          </p>
-        </div>
 
-        {/* Registration Form Card */}
-        <Card className="shadow-2xl border border-white/10 bg-delta-navy/70 backdrop-blur-md text-white">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold text-white">Create Member Account</CardTitle>
-            <CardDescription className="text-xs text-white/60">
-              Enter your information to gain standard user access to SkyLedger.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="p-3 rounded-lg bg-delta-red/20 border border-delta-red/30 text-white text-xs flex items-center gap-2">
-                  <IconAlertCircle className="h-4 w-4 shrink-0 text-delta-red" />
-                  <span>{error}</span>
+          <div className="text-[12px] text-white/50 font-normal">
+            &copy; {new Date().getFullYear()} SkyLedger Systems Inc. All rights reserved.
+          </div>
+        </div>
+      </div>
+
+      {/* Right Panel: Clean Form Panel (Centered layout, scrollable for form length) */}
+      <div className="w-full md:w-1/2 flex flex-col justify-between bg-white relative p-6 sm:p-10 lg:p-16 overflow-y-auto max-h-screen">
+
+        {/* Form Container */}
+        <div className="w-full max-w-sm mx-auto my-auto py-8 flex flex-col gap-6">
+          <div className="flex flex-col gap-1.5">
+            <h1 className="text-[26px] font-[800] text-delta-navy tracking-tight leading-none">
+              Create Account
+            </h1>
+            <p className="text-[14px] text-delta-ink-muted font-normal leading-relaxed">
+              Register as a travel member to access our global flight booking system.
+            </p>
+          </div>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {error && (
+              <div className="p-3.5 rounded-[6px] bg-delta-red/5 border border-delta-red/20 text-delta-red text-[13px] flex items-start gap-2.5">
+                <AlertCircle className="h-4 w-4 shrink-0 text-delta-red mt-0.5" />
+                <span className="font-medium leading-normal">{error}</span>
+              </div>
+            )}
+
+            {/* First & Last Name */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[12px] font-[800] text-delta-navy uppercase tracking-wider">
+                  First Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-delta-ink-muted/60" />
+                  <input
+                    type="text"
+                    placeholder="First Name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    className="w-full h-11 pl-10 pr-4 text-[14px] bg-white border border-delta-hairline hover:border-delta-navy-mid focus:border-delta-red focus:ring-1 focus:ring-delta-red focus:outline-none rounded-[4px] text-delta-navy transition-all placeholder:text-delta-ink-muted/40"
+                  />
                 </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[12px] font-[800] text-delta-navy uppercase tracking-wider">
+                  Last Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-delta-ink-muted/60" />
+                  <input
+                    type="text"
+                    placeholder="Last Name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                    className="w-full h-11 pl-10 pr-4 text-[14px] bg-white border border-delta-hairline hover:border-delta-navy-mid focus:border-delta-red focus:ring-1 focus:ring-delta-red focus:outline-none rounded-[4px] text-delta-navy transition-all placeholder:text-delta-ink-muted/40"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Email Field */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[12px] font-[800] text-delta-navy uppercase tracking-wider">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-delta-ink-muted/60" />
+                <input
+                  type="email"
+                  placeholder="name@company.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full h-11 pl-10 pr-4 text-[14px] bg-white border border-delta-hairline hover:border-delta-navy-mid focus:border-delta-red focus:ring-1 focus:ring-delta-red focus:outline-none rounded-[4px] text-delta-navy transition-all placeholder:text-delta-ink-muted/40"
+                />
+              </div>
+            </div>
+
+            {/* Phone & Date of Birth */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[12px] font-[800] text-delta-navy uppercase tracking-wider">
+                  Phone
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-delta-ink-muted/60" />
+                  <input
+                    type="tel"
+                    placeholder="Phone"
+                    value={phone}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 11);
+                      setPhone(val);
+                    }}
+                    maxLength={11}
+                    pattern="[0-9]*"
+                    required
+                    className="w-full h-11 pl-10 pr-4 text-[13px] bg-white border border-delta-hairline hover:border-delta-navy-mid focus:border-delta-red focus:ring-1 focus:ring-delta-red focus:outline-none rounded-[4px] text-delta-navy transition-all placeholder:text-delta-ink-muted/40"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[12px] font-[800] text-delta-navy uppercase tracking-wider">
+                  Date of Birth
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-delta-ink-muted/60" />
+                  <input
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    required
+                    className="w-full h-11 pl-10 pr-4 text-[13px] bg-white border border-delta-hairline hover:border-delta-navy-mid focus:border-delta-red focus:ring-1 focus:ring-delta-red focus:outline-none rounded-[4px] text-delta-navy transition-all placeholder:text-delta-ink-muted/40"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Password Field */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[12px] font-[800] text-delta-navy uppercase tracking-wider">
+                Create Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-delta-ink-muted/60" />
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full h-11 pl-10 pr-4 text-[14px] bg-white border border-delta-hairline hover:border-delta-navy-mid focus:border-delta-red focus:ring-1 focus:ring-delta-red focus:outline-none rounded-[4px] text-delta-navy transition-all placeholder:text-delta-ink-muted/40"
+                />
+              </div>
+            </div>
+
+            {/* Register Button */}
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full h-11 mt-2 bg-delta-navy hover:bg-delta-navy-mid text-white text-[12px] font-[800] uppercase tracking-wider rounded-[4px] shadow-sm transition-colors flex items-center justify-center gap-1.5 cursor-pointer border-none"
+            >
+              {submitting ? (
+                <span>Registering Account...</span>
+              ) : (
+                <>
+                  <span>Create Account</span>
+                  <ArrowRight className="h-4 w-4" />
+                </>
               )}
+            </button>
+          </form>
 
-              {/* First Name & Last Name */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-white/80">First Name</label>
-                  <div className="relative">
-                    <IconUser className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
-                    <Input
-                      type="text"
-                      placeholder="First Name"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      required
-                      className="pl-9 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus-visible:ring-delta-red focus-visible:border-delta-red rounded-[4px] shadow-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-white/80">Last Name</label>
-                  <div className="relative">
-                    <IconUser className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
-                    <Input
-                      type="text"
-                      placeholder="Last Name"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      required
-                      className="pl-9 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus-visible:ring-delta-red focus-visible:border-delta-red rounded-[4px] shadow-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Email Address */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-white/80">Email Address</label>
-                <div className="relative">
-                  <IconMail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
-                  <Input
-                    type="email"
-                    placeholder="e.g. user@skyledger.io"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="pl-9 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus-visible:ring-delta-red focus-visible:border-delta-red rounded-[4px] shadow-none"
-                  />
-                </div>
-              </div>
-
-              {/* Phone & Date of Birth */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-white/80">Phone Number</label>
-                  <div className="relative">
-                    <IconPhone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
-                    <Input
-                      type="tel"
-                      placeholder="+1 (555) 000-0000"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="pl-9 text-xs bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus-visible:ring-delta-red focus-visible:border-delta-red rounded-[4px] shadow-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-white/80">Date of Birth</label>
-                  <div className="relative">
-                    <IconCalendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
-                    <Input
-                      type="date"
-                      value={dateOfBirth}
-                      onChange={(e) => setDateOfBirth(e.target.value)}
-                      className="pl-9 text-xs bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus-visible:ring-delta-red focus-visible:border-delta-red rounded-[4px] shadow-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Password */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-white/80">Password</label>
-                <div className="relative">
-                  <IconLock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
-                  <Input
-                    type="password"
-                    placeholder="Create secure password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="pl-9 text-sm bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus-visible:ring-delta-red focus-visible:border-delta-red rounded-[4px] shadow-none"
-                  />
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={submitting}
-                className="w-full font-bold gap-2 shadow-lg bg-delta-red hover:bg-delta-red-hover text-white transition-colors cursor-pointer select-none rounded-[4px] border-none"
+          {/* Login Redirect Link */}
+          <div className="text-center mt-2">
+            <p className="text-[13px] text-delta-ink-muted font-normal">
+              Already registered?{" "}
+              <Link
+                href="/login"
+                className="font-[800] text-delta-red hover:underline underline-offset-4 cursor-pointer"
               >
-                {submitting ? (
-                  <span>Registering Member...</span>
-                ) : (
-                  <>
-                    <span>Register as Standard User</span>
-                    <IconArrowRight className="h-4 w-4 animate-bounce-horizontal" />
-                  </>
-                )}
-              </Button>
-            </form>
-          </CardContent>
-          <CardFooter className="flex flex-col text-center border-t border-white/10 bg-white/5 pt-4 pb-4 rounded-b-[4px]">
-            <p className="text-xs text-white/60">
-              Already have a SkyLedger account?{" "}
-              <Link href="/login" className="font-bold text-delta-red hover:text-delta-red-hover underline underline-offset-4">
                 Sign In here
               </Link>
             </p>
-          </CardFooter>
-        </Card>
+          </div>
+        </div>
+
+        {/* Footer for mobile only */}
+        <div className="block md:hidden text-center text-[11px] text-delta-ink-muted mt-6 font-normal shrink-0">
+          &copy; {new Date().getFullYear()} SkyLedger Systems Inc.
+        </div>
       </div>
     </div>
   )
