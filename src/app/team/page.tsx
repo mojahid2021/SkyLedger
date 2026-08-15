@@ -1,60 +1,119 @@
 "use client"
 
 import React from "react"
-import { Users, Award, Mail, ChevronRight } from "lucide-react"
+import { Users, Mail, ChevronRight, Terminal, ShieldCheck, Palette, BookOpen, FileSpreadsheet } from "lucide-react"
 import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
+import { motion } from "framer-motion"
 
 interface TeamMember {
   name: string
+  id: string
   role: string
+  roleDescription: string
   initials: string
   gradient: string
   bio: string
   email: string
+  icon: any
+  responsibilities: string[]
 }
 
 const TEAM_MEMBERS: TeamMember[] = [
   {
-    name: "Sarah Jenkins",
-    role: "Chief Executive Officer (CEO)",
-    initials: "SJ",
-    gradient: "from-delta-navy to-delta-navy-mid",
-    bio: "Over 18 years of aviation logistics and corporate management experience. Former Director of Network Operations at global commercial carriers.",
-    email: "s.jenkins@skyledger.io",
+    name: "Mojahid",
+    id: "242-15-005",
+    role: "Development",
+    roleDescription: "Core Developer",
+    initials: "MO",
+    gradient: "from-delta-navy via-delta-navy-mid to-sky-600",
+    bio: "Manages full-stack development, database integrations, and ledger deployment pipelines.",
+    responsibilities: ["Feature Development", "System Architecture", "Bug Fixing & Reviews"],
+    email: "mojahid@example.com",
+    icon: Terminal,
   },
   {
-    name: "David Miller",
-    role: "Chief Technology Officer (CTO)",
-    initials: "DM",
-    gradient: "from-delta-red to-delta-red-hover",
-    bio: "Ex-aerospace systems engineer. Specializes in real-time booking algorithms, microservices scaling, and distributed airline database ledgers.",
-    email: "d.miller@skyledger.io",
+    name: "Mishad",
+    id: "242-15-261",
+    role: "Tester",
+    roleDescription: "Quality Assurance",
+    initials: "MI",
+    gradient: "from-delta-red to-rose-600",
+    bio: "Focuses on test-driven development, automated validation, and user flow integration testing.",
+    responsibilities: ["Testing & QA", "Bug Detection", "Performance Auditing"],
+    email: "mishad@example.com",
+    icon: ShieldCheck,
   },
   {
-    name: "Elena Rodriguez",
-    role: "VP of Engineering",
-    initials: "ER",
-    gradient: "from-emerald-600 to-emerald-500",
-    bio: "Leads database integrity and core payment Gateway integrations. Dedicated to security audits, performance indexing, and code quality controls.",
-    email: "e.rodriguez@skyledger.io",
+    name: "Mitul",
+    id: "242-15-100",
+    role: "UI Design",
+    roleDescription: "Frontend & Layout",
+    initials: "MT",
+    gradient: "from-emerald-600 to-teal-500",
+    bio: "Creates responsive user interfaces, layout grids, components styling, and premium interactive animations.",
+    responsibilities: ["UI/UX Layouts", "Component Design", "Responsive Interfaces"],
+    email: "mitul@example.com",
+    icon: Palette,
   },
   {
-    name: "James Coleman",
-    role: "Head of Product Design",
-    initials: "JC",
-    gradient: "from-amber-600 to-amber-500",
-    bio: "Crafts premium travel interfaces and user experiences. Focused on responsive component libraries, travel accessibility, and simplified checkout flows.",
-    email: "j.coleman@skyledger.io",
+    name: "Afrin",
+    id: "242-15-011",
+    role: "Doc & Resource Collect",
+    roleDescription: "Research & Documentation",
+    initials: "AF",
+    gradient: "from-amber-600 to-orange-500",
+    bio: "Gathers system requirements, handles data seeding preparation, and documents microservices endpoints.",
+    responsibilities: ["Research & Planning", "API Documentation", "Data Seeding Configs"],
+    email: "afrin@example.com",
+    icon: BookOpen,
+  },
+  {
+    name: "Rony",
+    id: "242-15-266",
+    role: "Project Report",
+    roleDescription: "Technical Writer",
+    initials: "RO",
+    gradient: "from-purple-600 to-indigo-500",
+    bio: "Compiles system overview logs, creates final layout reports, and manages overall project formatting standards.",
+    responsibilities: ["Report Writing", "Formatting Standards", "Log Aggregation"],
+    email: "rony@example.com",
+    icon: FileSpreadsheet,
   },
 ]
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+}
+
+const itemVariants = {
+  hidden: { y: 25, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring" as const,
+      stiffness: 90,
+      damping: 14,
+    },
+  },
+}
+
 export default function TeamPage() {
+  const leader = TEAM_MEMBERS[0]
+  const mates = TEAM_MEMBERS.slice(1)
+
   return (
     <div className="min-h-screen bg-delta-surface-1 text-delta-ink font-delta flex flex-col">
       <Navbar />
 
-      <main className="flex-1 mx-auto w-full max-w-[1280px] px-6 sm:px-8 py-10 flex flex-col gap-10">
+      <main className="flex-1 mx-auto w-full max-w-[1280px] px-6 sm:px-8 py-12 flex flex-col gap-12">
         {/* Header Block with Hero Banner */}
         <div 
           className="relative rounded-[8px] overflow-hidden bg-cover bg-center text-white border border-white/10 shadow-xl p-8 md:p-12"
@@ -66,64 +125,184 @@ export default function TeamPage() {
           <div className="relative z-10 max-w-[650px] flex flex-col gap-3">
             <div className="inline-flex items-center gap-1.5 bg-delta-red/35 border border-delta-red/30 text-white px-3 py-1 text-[11px] font-[800] uppercase tracking-wider w-fit rounded-full shadow-sm animate-pulse">
               <Users className="h-3.5 w-3.5 text-white" />
-              <span>Project Leadership</span>
+              <span>Project Hub</span>
             </div>
             <h1 className="text-[32px] sm:text-[40px] font-[800] text-white tracking-tight leading-none mt-2 text-shadow-md">
-              Meet Our Core Team
+              Meet Our Flight Crew
             </h1>
             <p className="text-[15px] text-white/80 max-w-[580px] mt-2 font-normal leading-[22px] text-shadow-sm">
-              We combine deep airline business knowledge with top-tier technology experience to make modern flight booking and travel loyalty rewarding.
+              The engineering, design, and analysis team powering modern airline booking systems. Structured roles, robust deliverables.
             </p>
           </div>
         </div>
 
-        {/* Team Grid */}
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <p className="text-[12px] font-[800] uppercase tracking-wider text-delta-red">Executive & Engineering Directors</p>
-            <h2 className="text-[22px] sm:text-[26px] font-[850] text-delta-navy tracking-tight leading-none">
-              SkyLedger Officers
-            </h2>
-          </div>
+        {/* Section Heading */}
+        <div className="flex flex-col gap-2 items-center text-center">
+          <span className="text-[12px] font-[800] uppercase tracking-widest text-delta-red px-3 py-1 bg-delta-red/5 rounded-full border border-delta-red/10">
+            SkyLedger Operations
+          </span>
+          <h2 className="text-[26px] sm:text-[32px] font-[850] text-delta-navy tracking-tight mt-1">
+            Engineering & Project Leadership
+          </h2>
+          <div className="h-1 w-12 bg-delta-red mt-2 rounded-full" />
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
-            {TEAM_MEMBERS.map((member, idx) => (
-              <div 
-                key={idx}
-                className="group flex flex-col rounded-[6px] border border-delta-hairline-light bg-white p-6 shadow-2xs hover:shadow-md hover:border-delta-navy transition-all duration-300 items-center text-center"
+        {/* Motion Container */}
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="flex flex-col gap-10"
+        >
+          {/* Team Leader - Mojahid */}
+          <motion.div 
+            variants={itemVariants}
+            className="relative bg-white border border-delta-hairline/60 rounded-[8px] shadow-sm hover:shadow-md hover:border-delta-navy/40 transition-all duration-300 p-8 flex flex-col md:flex-row gap-8 items-center md:items-start overflow-hidden group"
+          >
+            {/* Background design accents */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-delta-navy/5 rounded-bl-full pointer-events-none group-hover:bg-delta-navy/8 transition-colors duration-300" />
+            <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-delta-red/5 rounded-full blur-xl pointer-events-none" />
+
+            {/* Custom Rectangular ID Badge */}
+            <div className="relative shrink-0 flex flex-col items-center">
+              <div className="p-1 rounded-md border border-delta-hairline group-hover:border-delta-navy transition-colors duration-300">
+                <div className={`h-44 w-44 rounded-md bg-gradient-to-br ${leader.gradient} text-white flex flex-col items-center justify-center shadow-md relative overflow-hidden`}>
+                  <span className="text-[56px] font-[900] tracking-tight">{leader.initials}</span>
+                  <span className="absolute bottom-3 bg-black/35 text-[10px] px-2.5 py-0.5 rounded font-mono font-[700] tracking-wider select-all uppercase">
+                    ID: {leader.id}
+                  </span>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-1.5 text-delta-red font-[800] text-[10px] uppercase tracking-wider bg-delta-red/10 border border-delta-red/10 px-2.5 py-0.5 rounded-full">
+                <span className="h-1.5 w-1.5 rounded-full bg-delta-red animate-ping" />
+                Team Leader
+              </div>
+            </div>
+
+            {/* Content Details */}
+            <div className="flex-1 flex flex-col gap-4 text-center md:text-left z-10 w-full">
+              <div>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                  <h3 className="text-[24px] font-[900] text-delta-navy tracking-tight">
+                    {leader.name}
+                  </h3>
+                  <div className="inline-flex items-center gap-1.5 bg-delta-navy/5 text-delta-navy border border-delta-navy/15 text-[11px] font-[850] px-3 py-1 rounded w-fit self-center md:self-auto uppercase tracking-wide">
+                    <leader.icon className="h-3.5 w-3.5 text-delta-navy" />
+                    <span>{leader.role}</span>
+                  </div>
+                </div>
+                <p className="text-[14px] text-delta-red font-[700] uppercase tracking-wider mt-1">
+                  {leader.roleDescription}
+                </p>
+              </div>
+
+              <p className="text-[14px] text-delta-ink-muted leading-[22px] font-normal">
+                {leader.bio}
+              </p>
+
+              {/* Responsibilities list */}
+              <div className="flex flex-col gap-2 border-t border-delta-hairline/60 pt-4">
+                <span className="text-[11px] font-[850] text-delta-navy uppercase tracking-wider block">
+                  Core Responsibilities
+                </span>
+                <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                  {leader.responsibilities.map((resp, i) => (
+                    <span key={i} className="text-[12px] font-semibold bg-delta-surface-2 text-delta-ink px-3 py-1 rounded-[4px] border border-delta-hairline-light">
+                      {resp}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Contact Button */}
+              <a 
+                href={`mailto:${leader.email}`}
+                className="mt-2 self-center md:self-start inline-flex items-center gap-2 text-[12px] font-[850] uppercase tracking-widest text-white bg-delta-navy hover:bg-delta-red transition-all px-5 py-2.5 rounded-[4px] shadow-sm hover:scale-[1.02] duration-200"
               >
-                {/* Custom Initials Avatar with Gradient Ring */}
-                <div className="relative mb-5 p-1 rounded-full border border-delta-hairline-light group-hover:border-delta-navy transition-all duration-300">
-                  <div className={`h-20 w-20 rounded-full bg-gradient-to-tr ${member.gradient} text-white flex items-center justify-center text-[24px] font-[800] tracking-wider shadow-sm uppercase`}>
-                    {member.initials}
+                <Mail className="h-4 w-4" />
+                <span>Contact Leader</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </a>
+            </div>
+          </motion.div>
+
+          {/* Subheading for teammates */}
+          <motion.div variants={itemVariants} className="border-t border-delta-hairline/60 pt-6">
+            <h3 className="text-[18px] font-[850] text-delta-navy tracking-tight mb-2">
+              SkyLedger Officers & Technical Crew
+            </h3>
+          </motion.div>
+
+          {/* Teammates Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {mates.map((member, idx) => (
+              <motion.div
+                key={idx}
+                variants={itemVariants}
+                className="group relative bg-white border border-delta-hairline/60 rounded-[8px] p-6 shadow-2xs hover:shadow-md hover:border-delta-navy/40 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+              >
+                {/* Background Accent */}
+                <div className="absolute top-0 right-0 w-16 h-16 bg-delta-navy/3 rounded-bl-full pointer-events-none group-hover:bg-delta-navy/5 transition-colors duration-300" />
+
+                {/* Top Section */}
+                <div className="flex flex-col items-center text-center">
+                  {/* Avatar */}
+                  <div className="p-1 rounded-md border border-delta-hairline group-hover:border-delta-navy transition-colors duration-300 mb-4">
+                    <div className={`h-32 w-32 rounded-md bg-gradient-to-br ${member.gradient} text-white flex flex-col items-center justify-center shadow-sm relative overflow-hidden`}>
+                      <span className="text-[44px] font-[900] tracking-tight">{member.initials}</span>
+                      <span className="absolute bottom-2.5 bg-black/35 text-[9px] px-2 py-0.5 rounded font-mono font-[700] tracking-wider select-all uppercase">
+                        {member.id}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Name and Role */}
+                  <h4 className="text-[17px] font-[900] text-delta-navy group-hover:text-delta-red transition-colors duration-200">
+                    {member.name}
+                  </h4>
+                  <div className="mt-1.5 inline-flex items-center gap-1 bg-delta-navy/5 text-delta-navy border border-delta-navy/10 text-[10px] font-[850] px-2 py-0.5 rounded uppercase tracking-wide">
+                    <member.icon className="h-3 w-3 text-delta-navy" />
+                    <span>{member.role}</span>
+                  </div>
+                  <span className="text-[11px] font-[700] text-delta-red/90 uppercase tracking-wider mt-1 block">
+                    {member.roleDescription}
+                  </span>
+
+                  <p className="mt-3 text-[13px] text-delta-ink-muted leading-[19px] font-normal">
+                    {member.bio}
+                  </p>
+                </div>
+
+                {/* Middle - Responsibilities list */}
+                <div className="border-t border-delta-hairline-light pt-3 mt-4 flex flex-col gap-1.5 flex-1 w-full text-left">
+                  <span className="text-[10px] font-[850] text-delta-navy uppercase tracking-wider">
+                    Responsibilities
+                  </span>
+                  <div className="flex flex-col gap-1.5">
+                    {member.responsibilities.map((resp, i) => (
+                      <div key={i} className="flex items-start gap-1.5 text-[12px] text-delta-ink font-medium leading-[16px]">
+                        <div className="h-1.5 w-1.5 bg-delta-red rounded-full mt-1.5 shrink-0" />
+                        <span>{resp}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* Info details */}
-                <h3 className="text-[17px] font-[800] text-delta-navy group-hover:text-delta-red transition-colors duration-200">
-                  {member.name}
-                </h3>
-                <span className="text-[12px] font-[750] text-delta-red/90 uppercase tracking-wide mt-1">
-                  {member.role}
-                </span>
-
-                <p className="mt-4 text-[13px] text-delta-ink-muted leading-[20px] font-normal flex-1">
-                  {member.bio}
-                </p>
-
-                {/* Email link trigger */}
-                <a 
-                  href={`mailto:${member.email}`}
-                  className="mt-6 flex items-center gap-1.5 text-[11px] font-[850] uppercase tracking-widest text-delta-navy hover:text-delta-red transition-colors"
-                >
-                  <Mail className="h-3.5 w-3.5" />
-                  <span>Contact</span>
-                  <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
-                </a>
-              </div>
+                {/* Bottom - Contact Link */}
+                <div className="border-t border-delta-hairline-light pt-4 mt-4 w-full">
+                  <a 
+                    href={`mailto:${member.email}`}
+                    className="w-full flex items-center justify-center gap-1.5 text-[11px] font-[850] uppercase tracking-widest text-delta-navy hover:text-delta-red transition-colors py-1.5 hover:bg-delta-surface-2 rounded"
+                  >
+                    <Mail className="h-3.5 w-3.5" />
+                    <span>Send Message</span>
+                    <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                  </a>
+                </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </main>
       <Footer />
     </div>
