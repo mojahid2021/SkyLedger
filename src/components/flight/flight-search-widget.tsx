@@ -277,7 +277,7 @@ export function FlightSearchWidget({
             </button>
 
             {showPassengerPopover && (
-              <div className="absolute z-25 mt-1.5 w-full min-w-[285px] rounded-[6px] border border-white/20 bg-white/95 dark:bg-delta-navy/95 p-4 shadow-2xl backdrop-blur-md">
+              <div className="absolute z-25 mt-1.5 w-full min-w-[285px] rounded-[6px] border border-delta-hairline-light bg-white p-4 shadow-2xl">
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] font-[750] text-delta-navy uppercase tracking-wider">Travelers</span>
                   <div className="flex items-center gap-2">
@@ -326,25 +326,25 @@ export function FlightSearchWidget({
         )}
       </div>
 
-      {/* Flight Search Results - sits outside centered card to occupy full content width */}
+      {/* Flight Search Results - Wrapped in a clean white card for maximum contrast against dark hero backgrounds */}
       {searchResults !== null && (
-        <div className="mt-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[18px] font-[700] text-delta-navy flex items-center gap-2">
+        <div className="mt-6 rounded-[8px] bg-white p-6 sm:p-8 shadow-2xl border border-delta-hairline-light flex flex-col gap-6 text-delta-ink">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-delta-hairline-light">
+            <h3 className="text-[20px] font-[800] text-delta-navy flex items-center gap-2 tracking-tight">
               <Plane className="h-5 w-5 text-delta-red" />
               Flight Deals for {routeInfo?.origin} → {routeInfo?.destination}
             </h3>
-            <span className="text-[13px] text-delta-ink-muted font-[500]">
+            <span className="text-[12px] font-[750] uppercase tracking-wider text-delta-navy bg-delta-surface-2 px-3 py-1 rounded-full border border-delta-hairline-light">
               {searchResults.length} {searchResults.length === 1 ? "deal" : "deals"} found
             </span>
           </div>
 
           {searchResults.length === 0 ? (
-            <div className="rounded-[4px] bg-delta-surface-2 p-8 text-center text-delta-ink-muted text-[14px]">
+            <div className="rounded-[6px] bg-delta-surface-1 p-8 text-center text-delta-ink-muted text-[14px] font-medium border border-delta-hairline-light">
               No flight deals found for this route on the selected dates. Try adjusting your departure date or choosing different airports.
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-5">
               {searchResults.map((offer, idx) => (
                 <FlightOfferCard
                   key={offer.id || `offer-${idx}`}

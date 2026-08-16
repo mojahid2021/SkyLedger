@@ -79,7 +79,7 @@ export function LocationInput({
           className="h-[48px] w-full rounded-[4px] border border-delta-hairline-light bg-delta-surface-1 pl-10 pr-10 text-[14px] font-semibold text-delta-navy outline-none transition-all focus:bg-white focus:border-delta-navy focus:ring-2 focus:ring-delta-navy/10 placeholder-delta-navy/35 shadow-inner-sm"
         />
         {open && query.trim().length >= 2 && (
-          <div className="absolute z-35 mt-1.5 max-h-72 w-full overflow-auto rounded-[6px] border border-white/20 backdrop-blur-md bg-white/95 dark:bg-delta-navy/90 p-1.5 shadow-2xl">
+          <div className="absolute z-35 mt-1.5 max-h-72 w-full overflow-auto rounded-[6px] border border-delta-hairline-light bg-white p-1.5 shadow-2xl">
             {loading && (
               <p className="px-3.5 py-3 text-[13px] text-delta-ink-muted animate-pulse">
                 Searching airports...
