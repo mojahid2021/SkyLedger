@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
-import { query } from "@/lib/db"
+import { query, getMySQLPool } from "@/lib/db"
+import { recordAuditLog } from "@/lib/mongodb"
 
 export async function GET(request: Request) {
   try {
@@ -71,12 +72,17 @@ export async function DELETE(request: Request) {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("id")
     const actor = request.headers.get("x-actor") || "System Admin"
-    const { getMySQLPool } = require("@/lib/db")
     const pool = getMySQLPool()
-    const { recordAuditLog } = require("@/lib/mongodb")
 
     if (id) {
-      await pool.query("DELETE FROM airports WHERE id = ?", [id])
+      const connection = await pool.getConnection()
+      try {
+        await connection.query("SET FOREIGN_KEY_CHECKS = 0")
+        await connection.query("DELETE FROM airports WHERE id = ?", [id])
+        await connection.query("SET FOREIGN_KEY_CHECKS = 1")
+      } finally {
+        connection.release()
+      }
       await recordAuditLog({
         event: "Single Airport Deleted",
         actor: actor,
@@ -88,7 +94,14 @@ export async function DELETE(request: Request) {
         message: "Airport deleted successfully.",
       })
     } else {
-      await pool.query("DELETE FROM airports")
+      const connection = await pool.getConnection()
+      try {
+        await connection.query("SET FOREIGN_KEY_CHECKS = 0")
+        await connection.query("DELETE FROM airports")
+        await connection.query("SET FOREIGN_KEY_CHECKS = 1")
+      } finally {
+        connection.release()
+      }
       await recordAuditLog({
         event: "Airports Database Cleared",
         actor: actor,

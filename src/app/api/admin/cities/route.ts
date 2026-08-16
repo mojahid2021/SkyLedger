@@ -57,7 +57,14 @@ export async function DELETE(request: Request) {
     const pool = getMySQLPool()
 
     if (id) {
-      await pool.query("DELETE FROM cities WHERE id = ?", [id])
+      const connection = await pool.getConnection()
+      try {
+        await connection.query("SET FOREIGN_KEY_CHECKS = 0")
+        await connection.query("DELETE FROM cities WHERE id = ?", [id])
+        await connection.query("SET FOREIGN_KEY_CHECKS = 1")
+      } finally {
+        connection.release()
+      }
       await recordAuditLog({
         event: "Single City Deleted",
         actor: actor,
@@ -66,7 +73,14 @@ export async function DELETE(request: Request) {
       })
       return NextResponse.json({ success: true, message: "City deleted successfully." })
     } else {
-      await pool.query("DELETE FROM cities")
+      const connection = await pool.getConnection()
+      try {
+        await connection.query("SET FOREIGN_KEY_CHECKS = 0")
+        await connection.query("DELETE FROM cities")
+        await connection.query("SET FOREIGN_KEY_CHECKS = 1")
+      } finally {
+        connection.release()
+      }
       await recordAuditLog({
         event: "Cities Database Cleared",
         actor: actor,

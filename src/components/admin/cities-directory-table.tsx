@@ -81,12 +81,20 @@ export function CitiesDirectoryTable() {
   const handleClear = async () => {
     if (!confirm("Are you sure?")) return
     setClearing(true)
+    setSyncStatus(null)
     try {
       const res = await fetch("/api/admin/cities", { method: "DELETE" })
-      if (res.ok) {
-        setSyncStatus({ type: "success", message: "Database cleared." })
+      const data = await res.json()
+      if (data.success) {
+        setSyncStatus({ type: "success", message: data.message || "Cities database cleared." })
+        setPage(1)
+        setSearch("")
         fetchCities(1, "")
+      } else {
+        setSyncStatus({ type: "error", message: data.error || "Failed to clear cities database." })
       }
+    } catch (err) {
+      setSyncStatus({ type: "error", message: (err as Error).message })
     } finally {
       setClearing(false)
     }
@@ -98,12 +106,13 @@ export function CitiesDirectoryTable() {
       const res = await fetch(`/api/admin/cities?id=${id}`, { method: "DELETE" })
       const data = await res.json()
       if (data.success) {
+        setSyncStatus({ type: "success", message: data.message || "City deleted successfully." })
         fetchCities(page, search)
       } else {
-        alert("Failed to delete city: " + (data.error || "Unknown error"))
+        setSyncStatus({ type: "error", message: data.error || "Failed to delete city." })
       }
     } catch (err) {
-      alert("Error deleting city: " + (err as Error).message)
+      setSyncStatus({ type: "error", message: (err as Error).message })
     }
   }
 

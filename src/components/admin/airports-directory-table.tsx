@@ -54,13 +54,20 @@ export function AirportsDirectoryTable() {
   const handleClearAirports = async () => {
     if (!confirm("Are you sure you want to clear all airport records?")) return
     setClearing(true)
+    setSyncStatus(null)
     try {
       const res = await fetch("/api/admin/airports", { method: "DELETE" })
       const data = await res.json()
       if (data.success) {
-        setSyncStatus({ type: "success", message: "Airports database cleared." })
+        setSyncStatus({ type: "success", message: data.message || "Airports database cleared." })
+        setPage(1)
+        setSearch("")
         fetchAirports(1, "")
+      } else {
+        setSyncStatus({ type: "error", message: data.error || "Failed to clear airports database." })
       }
+    } catch (err) {
+      setSyncStatus({ type: "error", message: (err as Error).message })
     } finally {
       setClearing(false)
     }
@@ -72,12 +79,13 @@ export function AirportsDirectoryTable() {
       const res = await fetch(`/api/admin/airports?id=${id}`, { method: "DELETE" })
       const data = await res.json()
       if (data.success) {
+        setSyncStatus({ type: "success", message: data.message || "Airport deleted successfully." })
         fetchAirports(page, search)
       } else {
-        alert("Failed to delete airport: " + (data.error || "Unknown error"))
+        setSyncStatus({ type: "error", message: data.error || "Failed to delete airport." })
       }
     } catch (err) {
-      alert("Error deleting airport: " + (err as Error).message)
+      setSyncStatus({ type: "error", message: (err as Error).message })
     }
   }
   

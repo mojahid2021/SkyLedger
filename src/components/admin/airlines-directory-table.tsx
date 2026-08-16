@@ -87,13 +87,20 @@ export function AirlinesDirectoryTable() {
   const handleClearAirlines = async () => {
     if (!confirm("Are you sure you want to clear all airline records?")) return
     setClearing(true)
+    setSyncStatus(null)
     try {
       const res = await fetch("/api/admin/airlines", { method: "DELETE" })
       const data = await res.json()
       if (data.success) {
-        setSyncStatus({ type: "success", message: "Airlines database cleared." })
+        setSyncStatus({ type: "success", message: data.message || "Airlines database cleared." })
+        setPage(1)
+        setSearch("")
         fetchAirlines(1, "")
+      } else {
+        setSyncStatus({ type: "error", message: data.error || "Failed to clear airlines database." })
       }
+    } catch (err) {
+      setSyncStatus({ type: "error", message: (err as Error).message })
     } finally {
       setClearing(false)
     }
@@ -105,12 +112,13 @@ export function AirlinesDirectoryTable() {
       const res = await fetch(`/api/admin/airlines?id=${id}`, { method: "DELETE" })
       const data = await res.json()
       if (data.success) {
+        setSyncStatus({ type: "success", message: data.message || "Airline deleted successfully." })
         fetchAirlines(page, search)
       } else {
-        alert("Failed to delete airline: " + (data.error || "Unknown error"))
+        setSyncStatus({ type: "error", message: data.error || "Failed to delete airline." })
       }
     } catch (err) {
-      alert("Error deleting airline: " + (err as Error).message)
+      setSyncStatus({ type: "error", message: (err as Error).message })
     }
   }
 
@@ -195,7 +203,7 @@ export function AirlinesDirectoryTable() {
         alert("Failed to add airline")
       }
     } catch (err) {
-      alert("An error occurred")
+      alert("An error occurred: " + (err as Error).message)
     } finally {
       setIsSubmitting(false)
     }
@@ -585,7 +593,7 @@ export function AirlinesDirectoryTable() {
                         {airline.is_international === 1 && (
                           <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 text-[9px] px-1.5 py-0.5">
                             <Globe2 className="h-2.5 w-2.5 inline mr-0.5" />
-                            Int'l
+                            Int&apos;l
                           </Badge>
                         )}
                       </div>

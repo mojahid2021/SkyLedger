@@ -61,23 +61,38 @@ export async function DELETE(request: Request) {
     const pool = getMySQLPool()
 
     if (id) {
-      await pool.query("DELETE FROM airlines WHERE id = ?", [id])
+      const connection = await pool.getConnection()
+      try {
+        await connection.query("SET FOREIGN_KEY_CHECKS = 0")
+        await connection.query("DELETE FROM airlines WHERE id = ?", [id])
+        await connection.query("SET FOREIGN_KEY_CHECKS = 1")
+      } finally {
+        connection.release()
+      }
       await recordAuditLog({
         event: "Single Airline Deleted",
         actor: actor,
         status: "success",
         metadata: { action: "delete_airline", airline_id: id },
       })
+      return NextResponse.json({ success: true, message: "Airline deleted successfully." })
     } else {
-      await pool.query("DELETE FROM airlines")
+      const connection = await pool.getConnection()
+      try {
+        await connection.query("SET FOREIGN_KEY_CHECKS = 0")
+        await connection.query("DELETE FROM airlines")
+        await connection.query("SET FOREIGN_KEY_CHECKS = 1")
+      } finally {
+        connection.release()
+      }
       await recordAuditLog({
         event: "Airlines Database Cleared",
         actor: actor,
         status: "success",
         metadata: { action: "truncate_airlines" },
       })
+      return NextResponse.json({ success: true, message: "Airlines directory cleared successfully." })
     }
-    return NextResponse.json({ success: true })
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 })
   }

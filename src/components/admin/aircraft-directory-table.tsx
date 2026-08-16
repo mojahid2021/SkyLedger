@@ -92,13 +92,20 @@ export function AircraftDirectoryTable() {
   const handleClearAircraft = async () => {
     if (!confirm("Are you sure you want to clear all aircraft fleet records?")) return
     setClearing(true)
+    setSyncStatus(null)
     try {
       const res = await fetch("/api/admin/fleets", { method: "DELETE" })
       const data = await res.json()
       if (data.success) {
-        setSyncStatus({ type: "success", message: "Aircraft fleet database cleared." })
+        setSyncStatus({ type: "success", message: data.message || "Aircraft fleet database cleared." })
+        setPage(1)
+        setSearch("")
         fetchAircraft(1, "")
+      } else {
+        setSyncStatus({ type: "error", message: data.error || "Failed to clear aircraft fleet database." })
       }
+    } catch (err) {
+      setSyncStatus({ type: "error", message: (err as Error).message })
     } finally {
       setClearing(false)
     }
@@ -110,12 +117,13 @@ export function AircraftDirectoryTable() {
       const res = await fetch(`/api/admin/fleets?id=${id}`, { method: "DELETE" })
       const data = await res.json()
       if (data.success) {
+        setSyncStatus({ type: "success", message: data.message || "Aircraft deleted successfully." })
         fetchAircraft(page, search)
       } else {
-        alert("Failed to delete aircraft: " + (data.error || "Unknown error"))
+        setSyncStatus({ type: "error", message: data.error || "Failed to delete aircraft." })
       }
     } catch (err) {
-      alert("Error deleting aircraft: " + (err as Error).message)
+      setSyncStatus({ type: "error", message: (err as Error).message })
     }
   }
 

@@ -68,7 +68,14 @@ export async function DELETE(request: Request) {
     const pool = getMySQLPool()
 
     if (id) {
-      await pool.query("DELETE FROM aircraft WHERE id = ?", [id])
+      const connection = await pool.getConnection()
+      try {
+        await connection.query("SET FOREIGN_KEY_CHECKS = 0")
+        await connection.query("DELETE FROM aircraft WHERE id = ?", [id])
+        await connection.query("SET FOREIGN_KEY_CHECKS = 1")
+      } finally {
+        connection.release()
+      }
       await recordAuditLog({
         event: "Single Aircraft Deleted",
         actor: actor,
@@ -77,7 +84,14 @@ export async function DELETE(request: Request) {
       })
       return NextResponse.json({ success: true, message: "Aircraft deleted successfully." })
     } else {
-      await pool.query("DELETE FROM aircraft")
+      const connection = await pool.getConnection()
+      try {
+        await connection.query("SET FOREIGN_KEY_CHECKS = 0")
+        await connection.query("DELETE FROM aircraft")
+        await connection.query("SET FOREIGN_KEY_CHECKS = 1")
+      } finally {
+        connection.release()
+      }
       await recordAuditLog({
         event: "Aircraft Fleet Database Cleared",
         actor: actor,
