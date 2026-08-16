@@ -15,6 +15,8 @@ import {
   Menu,
   X,
   Wallet,
+  Mail,
+  Users,
 } from "lucide-react"
 import { useAuth } from "@/context/auth-context"
 import { cn } from "@/lib/utils"
@@ -25,6 +27,8 @@ const NAV_LINKS = [
   { label: "Deals", href: "/deals", icon: Tag },
   { label: "SkyMiles", href: "/skymiles", icon: Award },
   { label: "Info", href: "/travel-info", icon: Info },
+  { label: "Contact", href: "/contact", icon: Mail },
+  { label: "Team", href: "/team", icon: Users },
 ]
 
 export function Navbar() {

@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { User, Mail, Phone, Calendar, Shield, Check, ArrowRight } from "lucide-react"
 
 export interface PassengerDetail {
@@ -71,7 +71,7 @@ export function PassengerInfoDialog({
     }
   }, [open, passengersCount, defaultUserEmail, defaultUserName])
 
-  const updatePassengerField = (idx: number, field: keyof PassengerDetail, value: any) => {
+  const updatePassengerField = (idx: number, field: keyof PassengerDetail, value: string) => {
     setPassengers((prev) =>
       prev.map((p) => (p.passengerIndex === idx ? { ...p, [field]: value } : p))
     )
@@ -192,7 +192,7 @@ export function PassengerInfoDialog({
                   </label>
                   <Input
                     type="email"
-                    placeholder="passengers@skyledger.io"
+                    placeholder="skyledger@gmail.com"
                     value={passengers[activePassengerIndex].email}
                     onChange={(e) =>
                       updatePassengerField(activePassengerIndex, "email", e.target.value)
@@ -206,7 +206,7 @@ export function PassengerInfoDialog({
                   </label>
                   <Input
                     type="tel"
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="+8801736345525"
                     value={passengers[activePassengerIndex].phone}
                     onChange={(e) =>
                       updatePassengerField(activePassengerIndex, "phone", e.target.value)

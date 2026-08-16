@@ -33,15 +33,15 @@ export function Footer() {
             <div className="space-y-3 text-sm text-white/70">
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-delta-red" />
-                <span>+1 (800) 555-0199</span>
+                <span>+8801736345525</span>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-delta-red" />
-                <span>support@skyledger.io</span>
+                <span>skyledger@gmail.com</span>
               </div>
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-delta-red mt-1" />
-                <span>123 Aviation Way, Suite 500<br />New York, NY 10001</span>
+                <span>Daffodil Smart City, Birulia, Savar<br />Dhaka 1340</span>
               </div>
             </div>
           </div>

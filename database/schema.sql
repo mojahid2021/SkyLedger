@@ -232,7 +232,7 @@ CREATE TABLE IF NOT EXISTS flight_deals (
 -- Seed Admin Login (inserted only if not already present)
 INSERT IGNORE INTO users (first_name, last_name, email, phone, date_of_birth, password_hash, role)
 VALUES
-('Alexander', 'Vance', 'admin@skyledger.io', '+1 (404) 555-0101', '1985-03-14', 'admin123', 'admin');
+('Alexander', 'Vance', 'skyledger@gmail.com', '+8801736345525', '1985-03-14', 'admin123', 'admin');
 
 -- 5. Trigger: Automatically Create User Wallet Account on User Registration
 DROP TRIGGER IF EXISTS after_user_insert;

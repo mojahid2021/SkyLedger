@@ -62,8 +62,8 @@ interface FieldDef {
 const FIELDS: FieldDef[] = [
   { key: "firstName",      label: "First Name",      placeholder: "Alexander",        type: "text",  icon: User,     required: true  },
   { key: "lastName",       label: "Last Name",        placeholder: "Vance",            type: "text",  icon: User,     required: true  },
-  { key: "email",          label: "Email Address",    placeholder: "you@email.com",    type: "email", icon: Mail,     required: false },
-  { key: "phone",          label: "Phone Number",     placeholder: "+1 555 000 0000",  type: "tel",   icon: Phone,    required: false },
+  { key: "email",          label: "Email Address",    placeholder: "skyledger@gmail.com", type: "email", icon: Mail,     required: false },
+  { key: "phone",          label: "Phone Number",     placeholder: "+8801736345525",  type: "tel",   icon: Phone,    required: false },
   { key: "dateOfBirth",    label: "Date of Birth",    placeholder: "",                 type: "date",  icon: Calendar, required: false },
   { key: "passportNumber", label: "Passport Number",  placeholder: "A98234102",        type: "text",  icon: Shield,   required: false },
 ]

@@ -190,7 +190,7 @@ export default function CreateUserPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="sarah.connor@skyledger.io"
+                      placeholder="skyledger@gmail.com"
                       className="mt-1 h-10 w-full rounded-[4px] border border-delta-hairline bg-delta-canvas px-3 text-sm text-delta-ink font-mono focus:border-delta-navy focus:outline-none"
                     />
                   </div>

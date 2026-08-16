@@ -150,8 +150,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="text-[10px] font-[800] text-delta-navy uppercase tracking-wider">Call Center Support</p>
-                    <p className="text-[14px] font-[750] text-delta-navy mt-0.5">+1 (800) 555-0199</p>
-                    <p className="text-[12px] text-delta-ink-muted">Toll-free within North America</p>
+                    <p className="text-[14px] font-[750] text-delta-navy mt-0.5">+8801736345525</p>
+                    <p className="text-[12px] text-delta-ink-muted">Available 24/7</p>
                   </div>
                 </div>
 
@@ -161,7 +161,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="text-[10px] font-[800] text-delta-navy uppercase tracking-wider">Email Inquiry</p>
-                    <p className="text-[14px] font-[750] text-delta-navy mt-0.5">support@skyledger.io</p>
+                    <p className="text-[14px] font-[750] text-delta-navy mt-0.5">skyledger@gmail.com</p>
                     <p className="text-[12px] text-delta-ink-muted">Response within 2 hours</p>
                   </div>
                 </div>
@@ -172,8 +172,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="text-[10px] font-[800] text-delta-navy uppercase tracking-wider">Headquarters Office</p>
-                    <p className="text-[13px] font-[600] text-delta-navy mt-0.5">123 Aviation Way, Suite 500</p>
-                    <p className="text-[12px] text-delta-ink-muted">New York, NY 10001</p>
+                    <p className="text-[13px] font-[600] text-delta-navy mt-0.5">Daffodil Smart City, Birulia, Savar</p>
+                    <p className="text-[12px] text-delta-ink-muted">Dhaka 1340</p>
                   </div>
                 </div>
               </div>

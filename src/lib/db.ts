@@ -306,7 +306,7 @@ export async function initMySQLDatabase() {
     await p.execute(`
       INSERT IGNORE INTO users (first_name, last_name, email, phone, date_of_birth, password_hash, role)
       VALUES
-      ('Alexander', 'Vance', 'admin@skyledger.io', '+1 (404) 555-0101', '1985-03-14', 'admin123', 'admin');
+      ('Alexander', 'Vance', 'skyledger@gmail.com', '+8801736345525', '1985-03-14', 'admin123', 'admin');
     `)
 
     // Create MariaDB Trigger to automatically create a wallet account upon user registration
