@@ -22,7 +22,7 @@ interface TeamMember {
 
 const TEAM_MEMBERS: TeamMember[] = [
   {
-    name: "Mojahid",
+    name: "Ali Ahsan Mohammad Mojahid",
     id: "242-15-005",
     role: "Development",
     roleDescription: "Core Developer",
@@ -30,12 +30,12 @@ const TEAM_MEMBERS: TeamMember[] = [
     gradient: "from-delta-navy via-delta-navy-mid to-sky-600",
     bio: "Manages full-stack development, database integrations, and ledger deployment pipelines.",
     responsibilities: ["Feature Development", "System Architecture", "Bug Fixing & Reviews"],
-    email: "mojahid@example.com",
+    email: "aammojahid@gmail.com",
     icon: Terminal,
     image: "/mojahid.jpg",
   },
   {
-    name: "Mishad",
+    name: "Md. Mishad Babu",
     id: "242-15-261",
     role: "Tester",
     roleDescription: "Quality Assurance",
@@ -48,7 +48,7 @@ const TEAM_MEMBERS: TeamMember[] = [
     image: "/mishad.jpeg",
   },
   {
-    name: "Mitul",
+    name: "Mobashsherul Islam Mitul",
     id: "242-15-100",
     role: "UI Design",
     roleDescription: "Frontend & Layout",
@@ -60,7 +60,7 @@ const TEAM_MEMBERS: TeamMember[] = [
     icon: Palette,
   },
   {
-    name: "Afrin",
+    name: "Afrin Sultana Mim",
     id: "242-15-011",
     role: "Doc & Resource Collect",
     roleDescription: "Research & Documentation",
@@ -73,7 +73,7 @@ const TEAM_MEMBERS: TeamMember[] = [
     image: "/afrin.jpeg",
   },
   {
-    name: "Rony",
+    name: "Rony chandra Sarker",
     id: "242-15-266",
     role: "Project Report",
     roleDescription: "Technical Writer",
