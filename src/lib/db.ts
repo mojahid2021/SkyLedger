@@ -26,7 +26,7 @@ export function getMySQLPool(): mysql.Pool {
 export async function query<T = any>(sql: string, params: any[] = []): Promise<T> {
   try {
     const connectionPool = getMySQLPool()
-    const [rows] = await connectionPool.execute(sql, params)
+    const [rows] = await connectionPool.query(sql, params)
     return rows as T
   } catch (error) {
     console.warn("MySQL query execution warning:", (error as Error).message)

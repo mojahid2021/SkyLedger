@@ -41,7 +41,7 @@ export async function getMongoClient(): Promise<MongoClient> {
 
 export async function getAuditCollection(): Promise<Collection<AuditLogDocument>> {
   const mongoClient = await getMongoClient()
-  const db = mongoClient.db(process.env.MONGO_DATABASE || "skyledger")
+  const db = mongoClient.db()
   return db.collection<AuditLogDocument>("audit_logs")
 }
 
