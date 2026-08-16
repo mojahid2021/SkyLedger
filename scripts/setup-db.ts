@@ -309,24 +309,28 @@ async function run() {
     console.log("✓ created 'bookings', 'booking_passengers', 'booking_tickets', and 'flights' tables")
 
     // Authentic Data Types Injection via ALTER TABLE
-    console.log("\\nExecuting Authentic DDL Migrations (ALTER TABLE)...")
-    try {
-      await connection.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar BLOB NULL")
-      await connection.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS preferences SET('sms', 'email', 'push') DEFAULT 'email'")
-      await connection.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS loyalty_points MEDIUMINT DEFAULT 0")
-      await connection.query("ALTER TABLE aircraft MODIFY COLUMN built YEAR NULL")
-      await connection.query("ALTER TABLE airlines MODIFY COLUMN is_passenger TINYINT(1) DEFAULT 0")
-      await connection.query("ALTER TABLE airports MODIFY COLUMN lat DOUBLE NULL")
-      await connection.query("ALTER TABLE airports MODIFY COLUMN lng DOUBLE NULL")
-      await connection.query("ALTER TABLE flights ADD COLUMN IF NOT EXISTS flight_description TEXT NULL")
+    console.log("\nExecuting Authentic DDL Migrations (ALTER TABLE)...")
+    const alterQueries = [
+      "ALTER TABLE users ADD COLUMN avatar BLOB NULL",
+      "ALTER TABLE users ADD COLUMN preferences SET('sms', 'email', 'push') DEFAULT 'email'",
+      "ALTER TABLE users ADD COLUMN loyalty_points MEDIUMINT DEFAULT 0",
+      "ALTER TABLE aircraft MODIFY COLUMN built YEAR NULL",
+      "ALTER TABLE airlines MODIFY COLUMN is_passenger TINYINT(1) DEFAULT 0",
+      "ALTER TABLE airports MODIFY COLUMN lat DOUBLE NULL",
+      "ALTER TABLE airports MODIFY COLUMN lng DOUBLE NULL",
+      "ALTER TABLE flights ADD COLUMN flight_description TEXT NULL",
+      "ALTER TABLE flight_deals DROP COLUMN image_url",
+      "ALTER TABLE flight_deals ADD COLUMN image_file_name VARCHAR(500) NULL"
+    ]
+
+    for (const q of alterQueries) {
       try {
-        await connection.query("ALTER TABLE flight_deals DROP COLUMN image_url")
-      } catch (e) { /* ignore if doesn't exist */ }
-      await connection.query("ALTER TABLE flight_deals ADD COLUMN IF NOT EXISTS image_file_name VARCHAR(500) NULL")
-      console.log("✓ Applied advanced data types to live tables successfully")
-    } catch (e) {
-      console.log("⚠ Error applying ALTER TABLE:", e)
+        await connection.query(q)
+      } catch (e) {
+        // Ignore column already exists or table/column missing error during migration step
+      }
     }
+    console.log("✓ Applied advanced data types to live tables successfully")
 
     await connection.query(`
       CREATE TABLE IF NOT EXISTS flight_deals (

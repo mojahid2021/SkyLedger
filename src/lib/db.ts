@@ -69,7 +69,7 @@ export async function initMySQLDatabase() {
     `)
 
     try {
-      await p.query(`ALTER TABLE accounts ADD COLUMN IF NOT EXISTS user_id INT UNIQUE NULL AFTER id;`)
+      await p.query(`ALTER TABLE accounts ADD COLUMN user_id INT UNIQUE NULL AFTER id;`)
     } catch {
       // Column may already exist
     }
