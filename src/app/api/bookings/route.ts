@@ -204,7 +204,7 @@ export async function POST(request: Request) {
     // Insert passengers & tickets
     for (const p of passengers) {
       // TCL: Create a savepoint before inserting a passenger's tickets
-      await connection.execute("SAVEPOINT ticket_savepoint")
+      await connection.query("SAVEPOINT ticket_savepoint")
       
       try {
         const [passengerResult] = await connection.execute<any>(
@@ -263,7 +263,7 @@ export async function POST(request: Request) {
         }
       } catch (innerError) {
         // TCL: Rollback to savepoint in case a specific passenger's ticketing fails
-        await connection.execute("ROLLBACK TO SAVEPOINT ticket_savepoint")
+        await connection.query("ROLLBACK TO SAVEPOINT ticket_savepoint")
         throw new Error("Failed to issue tickets for passenger: " + p.firstName)
       }
     }
